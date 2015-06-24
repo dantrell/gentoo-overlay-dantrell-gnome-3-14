@@ -1,0 +1,42 @@
+diff '--exclude=.git' -urN gnome-terminal-3.14.3/src/org.gnome.Terminal.gschema.xml gnome-terminal-3.14.3-patched/src/org.gnome.Terminal.gschema.xml
+--- gnome-terminal-3.14.3/src/org.gnome.Terminal.gschema.xml	2015-03-23 14:53:38.000000000 -0400
++++ gnome-terminal-3.14.3-patched/src/org.gnome.Terminal.gschema.xml	2015-06-18 04:29:23.368585558 -0400
+@@ -356,7 +356,7 @@
+       <summary>Keyboard shortcut to paste text</summary>
+     </key>
+     <key name="full-screen" type="s">
+-      <default>'F11'</default>
++      <default>'disabled'</default>
+       <summary>Keyboard shortcut to toggle full screen mode</summary>
+     </key>
+     <key name="toggle-menubar" type="s">
+@@ -548,7 +548,7 @@
+       <summary>Keyboard shortcut to switch to the numbered tab</summary>
+     </key>
+     <key name="help" type="s">
+-      <default>'F1'</default>
++      <default>'disabled'</default>
+       <summary>Keyboard shortcut to launch help</summary>
+     </key>
+     <key name="zoom-in" type="s">
+@@ -590,7 +590,7 @@
+     </key>
+ 
+     <key name="menu-accelerator-enabled" type="b">
+-      <default>true</default>
++      <default>false</default>
+       <summary>Whether the standard GTK shortcut for menubar access is enabled</summary>
+       <description>
+         Normally you can access the menubar with F10. This can also
+diff '--exclude=.git' -urN gnome-terminal-3.14.3/src/terminal-window.c gnome-terminal-3.14.3-patched/src/terminal-window.c
+--- gnome-terminal-3.14.3/src/terminal-window.c	2015-03-23 14:53:38.000000000 -0400
++++ gnome-terminal-3.14.3-patched/src/terminal-window.c	2015-06-18 04:29:23.369585552 -0400
+@@ -2480,7 +2480,7 @@
+         G_CALLBACK (tabs_detach_tab_callback) },
+ 
+       /* Help menu */
+-      { "HelpContents", "help-browser", N_("_Contents"), "F1",
++      { "HelpContents", "help-browser", N_("_Contents"), NULL,
+         NULL,
+         G_CALLBACK (help_contents_callback) },
+       { "HelpAbout", "help-about", N_("_About"), NULL,
