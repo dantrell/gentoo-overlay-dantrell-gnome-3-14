@@ -18,7 +18,7 @@ RDEPEND="
 	>=x11-libs/gtk+-3.6.0:3[introspection?]
 	>=media-libs/clutter-1.18.0:1.0[introspection?]
 	media-libs/cogl:1.0=[introspection?]
-	introspection? ( >=dev-libs/gobject-introspection-0.9.12 )
+	introspection? ( >=dev-libs/gobject-introspection-0.9.12:= )
 "
 DEPEND="${RDEPEND}
 	dev-util/gtk-doc-am
