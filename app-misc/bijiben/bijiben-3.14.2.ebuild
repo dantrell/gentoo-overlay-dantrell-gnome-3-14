@@ -19,7 +19,9 @@ RDEPEND="
 	>=dev-libs/glib-2.28:2
 	dev-libs/libxml2
 	>=gnome-extra/evolution-data-server-3
+	<gnome-extra/evolution-data-server-3.13.90
 	>=mail-client/evolution-3
+	<mail-client/evolution-3.13.90
 	gnome-extra/zeitgeist
 	net-libs/gnome-online-accounts
 	net-libs/webkit-gtk:3
