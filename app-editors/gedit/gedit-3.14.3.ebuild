@@ -87,6 +87,10 @@ src_configure() {
 		ITSTOOL=$(type -P true)
 }
 
+src_compile() {
+	gnome2_src_compile -j1
+}
+
 src_test() {
 	# FIXME: this should be handled at eclass level
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/data" || die
