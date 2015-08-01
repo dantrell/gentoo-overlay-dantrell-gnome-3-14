@@ -30,6 +30,7 @@ COMMON_DEPEND="
 	zeroconf? ( >=net-dns/avahi-0.6:= )
 "
 DEPEND="${COMMON_DEPEND}
+	dev-util/gdbus-codegen
 	>=dev-util/intltool-0.35
 	sys-devel/gettext
 	virtual/pkgconfig
