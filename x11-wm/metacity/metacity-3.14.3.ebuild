@@ -8,7 +8,7 @@ GNOME2_LA_PUNT="yes"
 inherit gnome2
 
 DESCRIPTION="GNOME default window manager"
-HOMEPAGE="http://blogs.gnome.org/metacity/"
+HOMEPAGE="https://blogs.gnome.org/metacity/"
 
 LICENSE="GPL-2"
 SLOT="0"

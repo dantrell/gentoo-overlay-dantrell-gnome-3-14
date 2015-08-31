@@ -31,8 +31,8 @@ RDEPEND="
 # xmllint required for glib-compile-resources, see bug #549304
 DEPEND="${RDEPEND}
 	app-text/yelp-tools
-	dev-libs/appstream-glib
 	dev-libs/libxml2
+	dev-util/appdata-tools
 	dev-util/gdbus-codegen
 	dev-util/gtk-builder-convert
 	dev-util/itstool
