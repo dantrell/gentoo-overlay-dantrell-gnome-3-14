@@ -46,9 +46,10 @@ RDEPEND="${COMMON_DEPEND}
 # paxctl needed for bug #407085
 # eautoreconf requires gnome-common-3.5.5
 DEPEND="${COMMON_DEPEND}
-	app-text/yelp-tools
 	>=gnome-base/gnome-common-3.6
 	>=dev-util/intltool-0.50
+	app-text/yelp-tools
+	dev-util/itstool
 	sys-apps/paxctl
 	sys-devel/gettext
 	virtual/pkgconfig
@@ -71,8 +72,7 @@ src_configure() {
 		--disable-static \
 		--with-distributor-name=Gentoo \
 		$(use_enable nss) \
-		$(use_enable test tests) \
-		ITSTOOL=$(type -P true)
+		$(use_enable test tests)
 }
 
 src_compile() {
