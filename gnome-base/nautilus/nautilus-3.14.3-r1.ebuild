@@ -83,7 +83,11 @@ src_prepare() {
 	epatch "${FILESDIR}/${PN}-3.5.91-delete.patch"
 
 	# From GNOME
+	# 	https://git.gnome.org/browse/nautilus/commit/?id=a0cbf72827b87a28fba47988957001a8b4fbddf5
+	# 	https://git.gnome.org/browse/nautilus/commit/?id=45413c18167cddaefefc092b63ec75d8fadc6f50
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=bfe878e4313e21b4c539d95a88d243065d30fc2c
+	epatch "${FILESDIR}"/${P}-window-menus-unref-extension-created-action.patch
+	epatch "${FILESDIR}"/${P}-application-actions-use-valid-window-list.patch
 	epatch "${FILESDIR}"/${PN}-9999-ignore-no-desktop-if-not-first-launch.patch
 
 	# Remove -D*DEPRECATED flags. Don't leave this for eclass! (bug #448822)

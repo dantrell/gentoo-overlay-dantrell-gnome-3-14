@@ -1,0 +1,37 @@
+From a0cbf72827b87a28fba47988957001a8b4fbddf5 Mon Sep 17 00:00:00 2001
+From: Carlos Soriano <csoriano@gnome.org>
+Date: Tue, 6 Oct 2015 02:27:42 +0200
+Subject: window-menus: unref extension created action
+
+This looks not very harmful. But definitely is.
+Thing is, when using nautilus_action_from_menu_item it keeps
+a reference to the NautilusMenuItem from the extension.
+So that menu item will never be freed.
+Now, let's imagine nautilus-open-terminal have a ref to the file
+that the item points to, and only unref it when the item is destroyed.
+Now, sum that when a file is not unrefed completely from nautilus
+when unmounting the file, so it's mark as gone and cannot be used again.
+Now try to use it in this state. Nautilus crashes.
+
+This fix few crashes reported downstream on distros that uses
+this extension.
+---
+ src/nautilus-window-menus.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/nautilus-window-menus.c b/src/nautilus-window-menus.c
+index 999d163..32aba4a 100644
+--- a/src/nautilus-window-menus.c
++++ b/src/nautilus-window-menus.c
+@@ -685,6 +685,8 @@ add_extension_menu_items (NautilusWindow *window,
+ 			nautilus_menu_item_list_free (children);
+ 			g_free (subdir);
+ 		}			
++
++                g_object_unref (action);
+ 	}
+ }
+ 
+-- 
+cgit v0.11.2
+
