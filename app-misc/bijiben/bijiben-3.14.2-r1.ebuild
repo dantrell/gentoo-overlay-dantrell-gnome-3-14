@@ -18,10 +18,8 @@ RDEPEND="
 	>=app-misc/tracker-1:=
 	>=dev-libs/glib-2.28:2
 	dev-libs/libxml2
-	>=gnome-extra/evolution-data-server-3
-	<gnome-extra/evolution-data-server-3.13.90
+	>=gnome-extra/evolution-data-server-3.13.90:=
 	>=mail-client/evolution-3
-	<mail-client/evolution-3.13.90
 	gnome-extra/zeitgeist
 	net-libs/gnome-online-accounts
 	net-libs/webkit-gtk:3
@@ -34,6 +32,14 @@ DEPEND="${RDEPEND}
 	virtual/pkgconfig
 "
 #	app-text/yelp-tools
+
+src_prepare() {
+	# From GNOME
+	# 	https://git.gnome.org/browse/bijiben/commit/?id=2c5a80bdc6a469153a7e8ca34ee6f4fa72e6a34a
+	epatch "${FILESDIR}"/${PN}-3.15.3-fix-build-with-evolution-data-server-3.13.90.patch
+
+	gnome2_src_prepare
+}
 
 src_configure() {
 	gnome2_src_configure \

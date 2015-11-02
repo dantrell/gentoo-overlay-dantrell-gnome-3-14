@@ -1,0 +1,48 @@
+From 2c5a80bdc6a469153a7e8ca34ee6f4fa72e6a34a Mon Sep 17 00:00:00 2001
+From: Milan Crha <mcrha redhat com>
+Date: Thu, 19 Feb 2015 23:05:38 +0100
+Subject: Fix build with evolution-data-server 3.13.90
+
+---
+ configure.ac                              | 5 +++--
+ src/libbiji/provider/biji-memo-provider.c | 1 +
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 8153551..2b91079 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -62,6 +62,7 @@ APPSTREAM_XML
+ # version, modules
+ GLIB_REQUIRED_VERSION=2.28
+ GTK_REQUIRED_VERSION=3.11.4
++EDSEVO_REQUIRED_VERSION=3.13.90
+ 
+ 
+ PKG_CHECK_MODULES([TRACKER], [tracker-sparql-1.0], [sparql_version="tracker-sparql-1.0"],
+@@ -69,8 +70,8 @@ PKG_CHECK_MODULES([TRACKER], [tracker-sparql-1.0], [sparql_version="tracker-spar
+ ])
+ 
+ PKG_CHECK_MODULES(BIJIBEN,
+-                  [ evolution-calendar-3.0
+-		    evolution-data-server-1.2
++                  [ evolution-calendar-3.0 >= $EDSEVO_REQUIRED_VERSION
++		    evolution-data-server-1.2 >= $EDSEVO_REQUIRED_VERSION
+                     gio-unix-2.0
+                     glib-2.0 >= $GLIB_REQUIRED_VERSION
+                     goa-1.0
+diff --git a/src/libbiji/provider/biji-memo-provider.c b/src/libbiji/provider/biji-memo-provider.c
+index 82a46d3..3083163 100644
+--- a/src/libbiji/provider/biji-memo-provider.c
++++ b/src/libbiji/provider/biji-memo-provider.c
+@@ -498,6 +498,7 @@ biji_memo_provider_constructed (GObject *obj)
+ 
+   e_cal_client_connect (self->priv->source,
+                         E_CAL_CLIENT_SOURCE_TYPE_MEMOS,
++			10, /* wait up to 10 seconds until the memo list is connected */
+                         NULL, /* cancel */
+                         on_client_connected,
+                         self);
+-- 
+cgit v0.11.2
+
