@@ -132,7 +132,10 @@ src_prepare() {
 
 	if ! use vanilla; then
 		epatch "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
+		epatch "${FILESDIR}"/${PN}-3.14.4-improve-motd-handling.patch
 	fi
+
+	epatch "${FILESDIR}"/${PN}-3.14.4-authprompt-fix-hang-if-user-types-password-really-fast.patch
 
 	# Change favorites defaults, bug #479918
 	epatch "${FILESDIR}"/${PN}-3.14.0-defaults.patch
