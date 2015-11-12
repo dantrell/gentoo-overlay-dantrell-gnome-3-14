@@ -1,0 +1,107 @@
+diff '--exclude=.git' -urN a/src/nautilus-directory-view-ui.xml b/src/nautilus-directory-view-ui.xml
+--- a/src/nautilus-directory-view-ui.xml	2015-06-16 15:56:26.000000000 -0400
++++ b/src/nautilus-directory-view-ui.xml	2015-11-10 09:13:07.670186826 -0500
+@@ -17,6 +17,8 @@
+     <menu action="New Documents">
+       <placeholder name="New Documents Placeholder"/>
+     </menu>
++    <separator name="Terminal Extension actions separator"/>
++    <placeholder name="Terminal Extension Actions"/>
+   </placeholder>
+   <placeholder name="Global File Items Placeholder">
+     <menuitem name="Empty Trash" action="Empty Trash"/>
+@@ -70,6 +72,7 @@
+     <menuitem name="Open Item Location" action="OpenItemLocation"/>
+     <menuitem name="Open" action="Open"/>
+     <menuitem name="OpenInNewTab" action="OpenInNewTab"/>
++    <placeholder name="Terminal Extension Actions"/>
+     <separator name="applications separator"/>
+     <placeholder name="Applications Placeholder"/>
+     <menu action="Open With">
+@@ -86,6 +89,8 @@
+       <menuitem name="Open Scripts Folder" action="Open Scripts Folder"/>
+     </menu>
+   </placeholder>
++  <separator name="Extension actions separator"/>
++  <placeholder name="Extension Actions"/>
+   <separator name="Clipboard separator"/>
+   <placeholder name="File Clipboard Actions">
+     <menuitem name="Cut" action="Cut"/>
+@@ -109,8 +114,6 @@
+   <separator name="Appearance separator"/>
+   <placeholder name="Canvas Appearance Items">
+   </placeholder>
+-  <separator name="Extension actions separator"/>
+-  <placeholder name="Extension Actions"/>
+   <separator name="Removable separator"/>
+   <placeholder name="Removable Media Placeholder">
+     <menuitem name="Mount Volume" action="Mount Volume"/>
+diff '--exclude=.git' -urN a/src/nautilus-view.c b/src/nautilus-view.c
+--- a/src/nautilus-view.c	2015-06-16 15:56:26.000000000 -0400
++++ b/src/nautilus-view.c	2015-11-10 09:11:28.818443684 -0500
+@@ -114,6 +114,7 @@
+ #define NAUTILUS_VIEW_MENU_PATH_APPLICATIONS_PLACEHOLDER    	  "/ActionMenu/Open Placeholder/Applications Placeholder"
+ #define NAUTILUS_VIEW_MENU_PATH_SCRIPTS_PLACEHOLDER               "/ActionMenu/Open Placeholder/Scripts/Scripts Placeholder"
+ #define NAUTILUS_VIEW_MENU_PATH_EXTENSION_ACTIONS_PLACEHOLDER     "/ActionMenu/Edit/Extension Actions"
++#define NAUTILUS_VIEW_MENU_PATH_TERMINAL_EXTENSION_ACTIONS_PLACEHOLDER     "/ActionMenu/New Items Placeholder/Terminal Extension Actions"
+ #define NAUTILUS_VIEW_MENU_PATH_NEW_DOCUMENTS_PLACEHOLDER  	  "/ActionMenu/New Items Placeholder/New Documents/New Documents Placeholder"
+ #define NAUTILUS_VIEW_MENU_PATH_OPEN				  "/ActionMenu/Open Placeholder/Open"
+ 
+@@ -122,6 +123,7 @@
+ #define NAUTILUS_VIEW_POPUP_PATH_APPLICATIONS_PLACEHOLDER    	  "/selection/Open Placeholder/Applications Placeholder"
+ #define NAUTILUS_VIEW_POPUP_PATH_SCRIPTS_PLACEHOLDER    	  "/selection/Open Placeholder/Scripts/Scripts Placeholder"
+ #define NAUTILUS_VIEW_POPUP_PATH_EXTENSION_ACTIONS		  "/selection/Extension Actions"
++#define NAUTILUS_VIEW_POPUP_PATH_TERMINAL_EXTENSION_ACTIONS		  "/selection/Open Placeholder/Terminal Extension Actions"
+ #define NAUTILUS_VIEW_POPUP_PATH_OPEN				  "/selection/Open Placeholder/Open"
+ 
+ #define NAUTILUS_VIEW_POPUP_PATH_BACKGROUND			  "/background"
+@@ -4765,7 +4767,11 @@
+ 		
+ 		action = add_extension_action_for_files (view, item, files);
+ 		
+-		path = g_build_path ("/", NAUTILUS_VIEW_POPUP_PATH_EXTENSION_ACTIONS, subdirectory, NULL);
++		if (strncmp(gtk_action_get_name (action), "TerminalNautilus", strlen("TerminalNautilus")) == 0) {
++			path = g_build_path ("/", NAUTILUS_VIEW_POPUP_PATH_TERMINAL_EXTENSION_ACTIONS, subdirectory, NULL);
++		} else {
++			path = g_build_path ("/", NAUTILUS_VIEW_POPUP_PATH_EXTENSION_ACTIONS, subdirectory, NULL);
++		}
+ 		gtk_ui_manager_add_ui (ui_manager,
+ 				       view->details->extensions_menu_merge_id,
+ 				       path,
+@@ -4775,7 +4781,11 @@
+ 				       FALSE);
+ 		g_free (path);
+ 
+-		path = g_build_path ("/", NAUTILUS_VIEW_MENU_PATH_EXTENSION_ACTIONS_PLACEHOLDER, subdirectory, NULL);
++		if (strncmp(gtk_action_get_name (action), "TerminalNautilus", strlen("TerminalNautilus")) == 0) {
++			path = g_build_path ("/", NAUTILUS_VIEW_MENU_PATH_TERMINAL_EXTENSION_ACTIONS_PLACEHOLDER, subdirectory, NULL);
++		} else {
++			path = g_build_path ("/", NAUTILUS_VIEW_MENU_PATH_EXTENSION_ACTIONS_PLACEHOLDER, subdirectory, NULL);
++		}
+ 		gtk_ui_manager_add_ui (ui_manager,
+ 				       view->details->extensions_menu_merge_id,
+ 				       path,
+diff '--exclude=.git' -urN a/src/nautilus-window-menus.c b/src/nautilus-window-menus.c
+--- a/src/nautilus-window-menus.c	2015-06-16 15:56:26.000000000 -0400
++++ b/src/nautilus-window-menus.c	2015-11-10 09:11:40.669413134 -0500
+@@ -61,6 +61,7 @@
+ #include <string.h>
+ 
+ #define MENU_PATH_EXTENSION_ACTIONS                     "/ActionMenu/Extension Actions"
++#define MENU_PATH_TERMINAL_EXTENSION_ACTIONS                     "/ActionMenu/New Items Placeholder/Terminal Extension Actions"
+ #define POPUP_PATH_EXTENSION_ACTIONS                     "/background/Before Zoom Items/Extension Actions"
+ 
+ #define NETWORK_URI          "network:"
+@@ -658,7 +659,11 @@
+ 				       FALSE);
+ 		g_free (path);
+ 
+-		path = g_build_path ("/", MENU_PATH_EXTENSION_ACTIONS, subdirectory, NULL);
++		if (strncmp(gtk_action_get_name (action), "TerminalNautilus", strlen("TerminalNautilus")) == 0) {
++			path = g_build_path ("/", MENU_PATH_TERMINAL_EXTENSION_ACTIONS, subdirectory, NULL);
++		} else {
++			path = g_build_path ("/", MENU_PATH_EXTENSION_ACTIONS, subdirectory, NULL);
++		}
+ 		gtk_ui_manager_add_ui (ui_manager,
+ 				       merge_id,
+ 				       path,
