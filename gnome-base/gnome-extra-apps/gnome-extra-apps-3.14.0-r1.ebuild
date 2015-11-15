@@ -18,7 +18,7 @@ KEYWORDS="*"
 RDEPEND="
 	>=gnome-base/gnome-core-libs-${PV}
 
-	>=app-admin/gnome-system-log-20150521
+	>=app-admin/gnome-system-log-20151007
 	>=app-arch/file-roller-${PV}
 	>=app-dicts/gnome-dictionary-${PV}
 	>=gnome-extra/gconf-editor-3
