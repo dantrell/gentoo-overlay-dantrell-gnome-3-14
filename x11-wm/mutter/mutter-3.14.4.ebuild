@@ -10,7 +10,7 @@ HOMEPAGE="https://git.gnome.org/browse/mutter/"
 
 LICENSE="GPL-2+"
 SLOT="0"
-IUSE="+introspection kms test wayland vanilla"
+IUSE="+deprecated-background +introspection kms test wayland"
 KEYWORDS="*"
 
 # libXi-1.7.4 or newer needed per:
@@ -77,15 +77,15 @@ RDEPEND="${COMMON_DEPEND}
 "
 
 src_prepare() {
-	if ! use vanilla; then
-		epatch "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
-	fi
-
 	# Compat with Ubuntu metacity themes (e.g. x11-themes/light-themes)
 	epatch "${FILESDIR}"/${PN}-3.2.1-ignore-shadow-and-padding.patch
 
 	# Automagic fixes, upstream bug #746929
 	epatch "${FILESDIR}"/${PN}-3.14.2-automagic.patch
+
+	if use deprecated-background; then
+		epatch "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
+	fi
 
 	epatch_user
 
