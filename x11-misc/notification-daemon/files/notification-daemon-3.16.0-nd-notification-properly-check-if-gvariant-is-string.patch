@@ -1,0 +1,25 @@
+From 4dbd90ebac1a3005137f57b027b5dff07d5032d5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Tue, 14 Apr 2015 18:53:24 +0300
+Subject: nd-notification: properly check if gvariant is string
+
+---
+ src/nd-notification.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/nd-notification.c b/src/nd-notification.c
+index 51e656d..ff81e2d 100644
+--- a/src/nd-notification.c
++++ b/src/nd-notification.c
+@@ -490,7 +490,7 @@ nd_notification_load_image (NdNotification *notification,
+                 pixbuf = _notify_daemon_pixbuf_from_data_hint (data, size);
+         } else if ((data = (GVariant *) g_hash_table_lookup (notification->hints, "image-path"))
+                    || (data = (GVariant *) g_hash_table_lookup (notification->hints, "image_path"))) {
+-                if (g_variant_is_of_type (data, G_VARIANT_TYPE ("(s)"))) {
++                if (g_variant_is_of_type (data, G_VARIANT_TYPE_STRING)) {
+                         const char *path;
+                         path = g_variant_get_string (data, NULL);
+                         pixbuf = _notify_daemon_pixbuf_from_path (path, size);
+-- 
+cgit v0.11.2
+

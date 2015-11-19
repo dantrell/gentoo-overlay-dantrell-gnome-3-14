@@ -1,0 +1,26 @@
+From 3430a3425c44329073d1fb522c5661ea64c4eb38 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Thu, 16 Apr 2015 18:50:28 +0300
+Subject: nd-bubble: reset timeout when updating notification
+
+Without reseting timeout user might never see updated content.
+---
+ src/nd-bubble.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/nd-bubble.c b/src/nd-bubble.c
+index 3b5ab2c..75596a1 100644
+--- a/src/nd-bubble.c
++++ b/src/nd-bubble.c
+@@ -863,6 +863,8 @@ update_bubble (NdBubble *bubble)
+         add_actions (bubble);
+         update_image (bubble);
+         update_content_hbox_visibility (bubble);
++
++        add_timeout (bubble);
+ }
+ 
+ static void
+-- 
+cgit v0.11.2
+

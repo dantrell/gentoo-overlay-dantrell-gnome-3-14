@@ -1,0 +1,82 @@
+From 6e472aa507939a60b9cd8be8c2428d37e10fd81c Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Tue, 14 Apr 2015 19:54:09 +0300
+Subject: nd-bubble: fix timeout
+
+Patch based on a patch by Jakub Adam.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=658189
+---
+ src/nd-bubble.c       | 18 +++++++++++++++---
+ src/nd-notification.c |  9 +++++++++
+ 2 files changed, 24 insertions(+), 3 deletions(-)
+
+diff --git a/src/nd-bubble.c b/src/nd-bubble.c
+index 47efebf..67e5d90 100644
+--- a/src/nd-bubble.c
++++ b/src/nd-bubble.c
+@@ -29,6 +29,8 @@
+ 
+ #define ND_BUBBLE_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), ND_TYPE_BUBBLE, NdBubblePrivate))
+ 
++#define EXPIRATION_TIME_DEFAULT -1
++#define EXPIRATION_TIME_NEVER_EXPIRES 0
+ #define TIMEOUT_SEC   5
+ 
+ #define WIDTH         400
+@@ -395,12 +397,22 @@ timeout_bubble (NdBubble *bubble)
+ static void
+ add_timeout (NdBubble *bubble)
+ {
++        int timeout = nd_notification_get_timeout(bubble->priv->notification);
++
+         if (bubble->priv->timeout_id != 0) {
+                 g_source_remove (bubble->priv->timeout_id);
++                bubble->priv->timeout_id = 0;
+         }
+-        bubble->priv->timeout_id = g_timeout_add_seconds (TIMEOUT_SEC,
+-                                                          (GSourceFunc)timeout_bubble,
+-                                                          bubble);
++
++        if (timeout == EXPIRATION_TIME_NEVER_EXPIRES)
++                return;
++
++        if (timeout == EXPIRATION_TIME_DEFAULT)
++                timeout = TIMEOUT_SEC * 1000;
++
++        bubble->priv->timeout_id = g_timeout_add (timeout,
++                                                  (GSourceFunc) timeout_bubble,
++                                                  bubble);
+ }
+ 
+ static void
+diff --git a/src/nd-notification.c b/src/nd-notification.c
+index ff81e2d..37e991d 100644
+--- a/src/nd-notification.c
++++ b/src/nd-notification.c
+@@ -194,6 +194,8 @@ nd_notification_update (NdNotification *notification,
+                                      value); /* steals value */
+         }
+ 
++        notification->timeout = timeout;
++
+         g_signal_emit (notification, signals[CHANGED], 0);
+ 
+         g_get_current_time (&notification->update_time);
+@@ -326,6 +328,13 @@ nd_notification_get_icon (NdNotification *notification)
+         return notification->icon;
+ }
+ 
++int
++nd_notification_get_timeout (NdNotification *notification)
++{
++        g_return_val_if_fail (ND_IS_NOTIFICATION (notification), -1);
++
++        return notification->timeout;
++}
+ 
+ static GdkPixbuf *
+ scale_pixbuf (GdkPixbuf *pixbuf,
+-- 
+cgit v0.11.2
+

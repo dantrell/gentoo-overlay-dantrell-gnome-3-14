@@ -1,0 +1,123 @@
+From 659a0da0f4ceb9fe3dcf50096f96c6c267f3673f Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Fri, 17 Apr 2015 03:43:49 +0300
+Subject: fix resident notifications
+
+1. Fix resident notification not showing up after first time.
+It was never added back to queue for showing. Only notification
+content was updated.
+
+2. Don't destroy resident notification clicking on action button.
+We don't want destory and recreate notification when switching to
+next song.
+---
+ src/daemon.c          |  3 ++-
+ src/nd-bubble.c       |  6 +++++-
+ src/nd-notification.c | 18 ++++++++++++++++++
+ src/nd-notification.h |  4 ++++
+ src/nd-queue.c        |  3 +++
+ 5 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/src/daemon.c b/src/daemon.c
+index f630d07..2492e9b 100644
+--- a/src/daemon.c
++++ b/src/daemon.c
+@@ -224,8 +224,9 @@ handle_notify (NotifyDaemon          *daemon,
+                                 hints_iter,
+                                 timeout);
+ 
+-        if (id == 0) {
++        if (id == 0 || !nd_notification_get_is_queued (notification)) {
+                 nd_queue_add (daemon->priv->queue, notification);
++                nd_notification_set_is_queued (notification, TRUE);
+         }
+ 
+         g_dbus_method_invocation_return_value (invocation,
+diff --git a/src/nd-bubble.c b/src/nd-bubble.c
+index 75596a1..7678654 100644
+--- a/src/nd-bubble.c
++++ b/src/nd-bubble.c
+@@ -722,10 +722,14 @@ on_action_clicked (GtkButton      *button,
+                    NdBubble       *bubble)
+ {
+         const char *key = g_object_get_data (G_OBJECT (button), "_action_key");
++        gboolean resident = nd_notification_get_is_resident (bubble->priv->notification);
++        gboolean transient = nd_notification_get_is_transient (bubble->priv->notification);
+ 
+         nd_notification_action_invoked (bubble->priv->notification,
+                                         key);
+-        gtk_widget_destroy (GTK_WIDGET (bubble));
++
++        if (transient || !resident)
++                gtk_widget_destroy (GTK_WIDGET (bubble));
+ }
+ 
+ static void
+diff --git a/src/nd-notification.c b/src/nd-notification.c
+index 37e991d..f784b90 100644
+--- a/src/nd-notification.c
++++ b/src/nd-notification.c
+@@ -39,6 +39,7 @@ enum {
+ struct _NdNotification {
+         GObject       parent;
+ 
++        gboolean      is_queued;
+         gboolean      is_closed;
+ 
+         GTimeVal      update_time;
+@@ -217,6 +218,23 @@ nd_notification_get_update_time (NdNotification *notification,
+         tvp->tv_sec = notification->update_time.tv_sec;
+ }
+ 
++void
++nd_notification_set_is_queued (NdNotification *notification,
++                               gboolean        is_queued)
++{
++        g_return_if_fail (ND_IS_NOTIFICATION (notification));
++
++        notification->is_queued = is_queued;
++}
++
++gboolean
++nd_notification_get_is_queued (NdNotification *notification)
++{
++        g_return_val_if_fail (ND_IS_NOTIFICATION (notification), FALSE);
++
++        return notification->is_queued;
++}
++
+ gboolean
+ nd_notification_get_is_closed (NdNotification *notification)
+ {
+diff --git a/src/nd-notification.h b/src/nd-notification.h
+index 1505375..c67edaa 100644
+--- a/src/nd-notification.h
++++ b/src/nd-notification.h
+@@ -56,6 +56,10 @@ gboolean              nd_notification_update              (NdNotification *notif
+                                                            GVariantIter   *hints_iter,
+                                                            int             timeout);
+ 
++void                  nd_notification_set_is_queued       (NdNotification *notification,
++                                                           gboolean        is_queued);
++gboolean              nd_notification_get_is_queued       (NdNotification *notification);
++
+ gboolean              nd_notification_get_is_closed       (NdNotification *notification);
+ void                  nd_notification_get_update_time     (NdNotification *notification,
+                                                            GTimeVal       *timeval);
+diff --git a/src/nd-queue.c b/src/nd-queue.c
+index 150a336..f44862b 100644
+--- a/src/nd-queue.c
++++ b/src/nd-queue.c
+@@ -579,6 +579,9 @@ on_bubble_destroyed (NdBubble *bubble,
+ 
+         g_debug ("Bubble destroyed");
+         notification = nd_bubble_get_notification (bubble);
++
++        nd_notification_set_is_queued (notification, FALSE);
++
+         if (nd_notification_get_is_transient (notification)) {
+                 g_debug ("Bubble is transient");
+                 nd_notification_close (notification, ND_NOTIFICATION_CLOSED_EXPIRED);
+-- 
+cgit v0.11.2
+

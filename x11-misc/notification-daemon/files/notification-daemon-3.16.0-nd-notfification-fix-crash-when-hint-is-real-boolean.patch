@@ -1,0 +1,27 @@
+From 69bbecf9fde68cce13f8f25a89544d0f7757a9a5 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Tue, 14 Apr 2015 18:50:00 +0300
+Subject: nd-notfification: fix crash when hint is real boolean
+
+Commit 2286ebc37381f8e2d1f5260ebd29d890e2d024ef was missing check
+for BOOLEAN type.
+---
+ src/nd-notification.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/nd-notification.c b/src/nd-notification.c
+index da5c9de..51e656d 100644
+--- a/src/nd-notification.c
++++ b/src/nd-notification.c
+@@ -243,6 +243,8 @@ hint_to_boolean (NdNotification *notification,
+                 return TRUE;
+         } else if (g_variant_is_of_type (value, G_VARIANT_TYPE_BYTE)) {
+                 return (g_variant_get_byte (value) != 0);
++        } else if (g_variant_is_of_type (value, G_VARIANT_TYPE_BOOLEAN)) {
++                return g_variant_get_boolean (value);
+         } else {
+                 g_assert_not_reached ();
+         }
+-- 
+cgit v0.11.2
+

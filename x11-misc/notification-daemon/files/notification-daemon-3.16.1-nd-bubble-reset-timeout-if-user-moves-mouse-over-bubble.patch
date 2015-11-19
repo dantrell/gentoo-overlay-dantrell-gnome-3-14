@@ -1,0 +1,66 @@
+From 72430ca9062719f1125cc9b1ff7171194325e775 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alberts=20Muktup=C4=81vels?= <alberts.muktupavels@gmail.com>
+Date: Fri, 17 Apr 2015 01:40:18 +0300
+Subject: nd-bubble: reset timeout if user moves mouse over bubble
+
+https://bugzilla.gnome.org/show_bug.cgi?id=608071
+---
+ src/nd-bubble.c | 24 +++++++-----------------
+ 1 file changed, 7 insertions(+), 17 deletions(-)
+
+diff --git a/src/nd-bubble.c b/src/nd-bubble.c
+index 224e304..3b5ab2c 100644
+--- a/src/nd-bubble.c
++++ b/src/nd-bubble.c
+@@ -357,25 +357,13 @@ nd_bubble_get_preferred_width (GtkWidget *widget,
+ }
+ 
+ static gboolean
+-nd_bubble_enter_notify_event (GtkWidget        *widget,
+-                              GdkEventCrossing *event)
+-{
+-        NdBubble *bubble = ND_BUBBLE (widget);
+-        if (bubble->priv->timeout_id != 0) {
+-                g_source_remove (bubble->priv->timeout_id);
+-                bubble->priv->timeout_id = 0;
+-        }
+-
+-        return FALSE;
+-}
+-
+-static gboolean
+-nd_bubble_leave_notify_event (GtkWidget        *widget,
+-                              GdkEventCrossing *event)
++nd_bubble_motion_notify_event (GtkWidget        *widget,
++                               GdkEventCrossing *event)
+ {
+         NdBubble *bubble = ND_BUBBLE (widget);
+ 
+         add_timeout (bubble);
++
+         return FALSE;
+ }
+ 
+@@ -391,8 +379,7 @@ nd_bubble_class_init (NdBubbleClass *klass)
+         widget_class->configure_event = nd_bubble_configure_event;
+         widget_class->composited_changed = nd_bubble_composited_changed;
+         widget_class->button_release_event = nd_bubble_button_release_event;
+-        widget_class->enter_notify_event = nd_bubble_enter_notify_event;
+-        widget_class->leave_notify_event = nd_bubble_leave_notify_event;
++        widget_class->motion_notify_event = nd_bubble_motion_notify_event;
+         widget_class->realize = nd_bubble_realize;
+         widget_class->get_preferred_width = nd_bubble_get_preferred_width;
+ 
+@@ -897,6 +884,9 @@ nd_bubble_new_for_notification (NdNotification *notification)
+                                "resizable", FALSE,
+                                "type-hint", GDK_WINDOW_TYPE_HINT_NOTIFICATION,
+                                NULL);
++
++        gtk_widget_add_events (GTK_WIDGET (bubble), GDK_POINTER_MOTION_MASK);
++
+         bubble->priv->notification = g_object_ref (notification);
+         g_signal_connect (notification, "changed", G_CALLBACK (on_notification_changed), bubble);
+         update_bubble (bubble);
+-- 
+cgit v0.11.2
+

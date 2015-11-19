@@ -83,6 +83,11 @@ src_prepare() {
 		epatch "${FILESDIR}"/${PN}-3.12.1-restore-deprecated-code.patch
 	fi
 
+	# From GNOME:
+	# 	https://bugzilla.gnome.org/show_bug.cgi?id=731173
+	# 	https://git.gnome.org/browse/gnome-session/commit/?id=d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
+	epatch "${FILESDIR}"/${PN}-3.15.3-add-new-commandline-option-disable-acceleration-check.patch
+
 	epatch_user
 
 	eautoreconf
