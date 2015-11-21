@@ -76,6 +76,7 @@ gnome-extra/gnome-documents::gentoo
 gnome-extra/gnome-getting-started-docs::gentoo
 gnome-extra/gnome-power-manager::gentoo
 gnome-extra/gnome-shell-extensions::gentoo
+gnome-extra/gnome-shell-frippery::gentoo
 gnome-extra/gnome-system-monitor::gentoo
 gnome-extra/gnome-tweak-tool::gentoo
 gnome-extra/gnome-user-docs::gentoo
