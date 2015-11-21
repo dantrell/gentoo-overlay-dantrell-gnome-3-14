@@ -1,0 +1,38 @@
+From 2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c Mon Sep 17 00:00:00 2001
+From: Carlos Soriano <csoriano@gnome.org>
+Date: Mon, 14 Sep 2015 15:09:57 +0200
+Subject: gtkplacessidebar: protect for checking a null event
+
+We are using the current gtk event position to check if
+the user clicked in the eject button of a row.
+However, we are calling this in row-activated signal, which
+can happens when the gtk+ mainloop already removed the "current"
+event, and therefore we were trying to access a null event position
+which crashes the sidebar.
+
+To fix it check if we have as current event, and if not,
+we will not check for the position. But it's better than crashing,
+and shouldn't happen too much.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=754995
+---
+ gtk/gtkplacessidebar.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/gtk/gtkplacessidebar.c b/gtk/gtkplacessidebar.c
+index ad98c65..2d23f44 100644
+--- a/gtk/gtkplacessidebar.c
++++ b/gtk/gtkplacessidebar.c
+@@ -1423,7 +1423,8 @@ clicked_eject_button (GtkPlacesSidebar  *sidebar,
+   GdkEvent *event = gtk_get_current_event ();
+   GdkEventButton *button_event = (GdkEventButton *) event;
+ 
+-  if ((event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) &&
++  if (event != NULL &&
++      (event->type == GDK_BUTTON_PRESS || event->type == GDK_BUTTON_RELEASE) &&
+        over_eject_button (sidebar, button_event->x, button_event->y, path))
+     return TRUE;
+ 
+-- 
+cgit v0.11.2
+

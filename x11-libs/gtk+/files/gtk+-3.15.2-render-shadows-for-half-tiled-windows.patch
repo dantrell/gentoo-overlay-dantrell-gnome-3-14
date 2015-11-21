@@ -1,0 +1,21 @@
+diff '--exclude=.git' -urN a/gtk/gtkwindow.c b/gtk/gtkwindow.c
+--- a/gtk/gtkwindow.c	2015-07-21 10:22:36.000000000 -0400
++++ b/gtk/gtkwindow.c	2015-11-21 15:45:55.213968527 -0500
+@@ -6373,8 +6373,7 @@
+     return;
+ 
+   if (priv->maximized ||
+-      priv->fullscreen ||
+-      priv->tiled)
++      priv->fullscreen)
+     return;
+ 
+   state = gtk_widget_get_state_flags (widget);
+@@ -9558,7 +9557,6 @@
+       if (priv->client_decorated &&
+           priv->decorated &&
+           !priv->fullscreen &&
+-          !priv->tiled &&
+           !priv->maximized)
+         {
+           gtk_style_context_save (context);

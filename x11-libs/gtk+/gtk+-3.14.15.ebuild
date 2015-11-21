@@ -113,6 +113,14 @@ src_prepare() {
 	# https://bugzilla.gnome.org/show_bug.cgi?id=738835
 	epatch "${FILESDIR}"/${PN}-non-bash-support.patch
 
+	# From GNOME:
+	# 	https://git.gnome.org/browse/gtk+/commit/?id=34e6e1a599375da5665f4829faedf4c640f031a6
+	# 	https://git.gnome.org/browse/gtk+/commit/?id=2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c
+	# 	https://git.gnome.org/browse/gtk+/commit/?id=8753ef612940d5977bc8af2cca3ceb6cc669d1e4
+	epatch "${FILESDIR}"/${PN}-3.14.15-avoid-g-set-object.patch
+	epatch "${FILESDIR}"/${PN}-3.14.15-gtkplacessidebar-protect-for-checking-a-null-event.patch
+	epatch "${FILESDIR}"/${PN}-3.15.2-render-shadows-for-half-tiled-windows.patch
+
 	# -O3 and company cause random crashes in applications. Bug #133469
 	replace-flags -O3 -O2
 	strip-flags
