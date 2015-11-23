@@ -1,6 +1,17 @@
+diff '--exclude=.git' -urN a/src/nautilus-actions.h b/src/nautilus-actions.h
+--- a/src/nautilus-actions.h	2015-06-16 15:56:26.000000000 -0400
++++ b/src/nautilus-actions.h	2015-11-22 20:02:24.112126948 -0500
+@@ -54,6 +54,7 @@
+ #define NAUTILUS_ACTION_OPEN_WITH "Open With"
+ #define NAUTILUS_ACTION_OPEN_ALTERNATE "OpenAlternate"
+ #define NAUTILUS_ACTION_OPEN_IN_NEW_TAB "OpenInNewTab"
++#define NAUTILUS_ACTION_OPEN_IN_NEW_WINDOW "OpenInNewWindow"
+ #define NAUTILUS_ACTION_LOCATION_OPEN_ALTERNATE "LocationOpenAlternate"
+ #define NAUTILUS_ACTION_LOCATION_OPEN_IN_NEW_TAB "LocationOpenInNewTab"
+ #define NAUTILUS_ACTION_OTHER_APPLICATION1 "OtherApplication1"
 diff '--exclude=.git' -urN a/src/nautilus-directory-view-ui.xml b/src/nautilus-directory-view-ui.xml
 --- a/src/nautilus-directory-view-ui.xml	2015-06-16 15:56:26.000000000 -0400
-+++ b/src/nautilus-directory-view-ui.xml	2015-11-10 09:13:07.670186826 -0500
++++ b/src/nautilus-directory-view-ui.xml	2015-11-22 20:01:17.420483968 -0500
 @@ -17,6 +17,8 @@
      <menu action="New Documents">
        <placeholder name="New Documents Placeholder"/>
@@ -10,24 +21,38 @@ diff '--exclude=.git' -urN a/src/nautilus-directory-view-ui.xml b/src/nautilus-d
    </placeholder>
    <placeholder name="Global File Items Placeholder">
      <menuitem name="Empty Trash" action="Empty Trash"/>
-@@ -70,6 +72,7 @@
+@@ -69,7 +71,15 @@
+   <placeholder name="Open Placeholder">
      <menuitem name="Open Item Location" action="OpenItemLocation"/>
      <menuitem name="Open" action="Open"/>
++    <menu action="Scripts">
++      <placeholder name="Scripts Placeholder"/>
++      <separator name="After Scripts"/>
++      <menuitem name="Open Scripts Folder" action="Open Scripts Folder"/>
++    </menu>
++    <separator name="OpenIn-esque actions separator"/>
      <menuitem name="OpenInNewTab" action="OpenInNewTab"/>
++    <menuitem name="OpenInNewWindow" action="OpenInNewWindow"/>
 +    <placeholder name="Terminal Extension Actions"/>
      <separator name="applications separator"/>
      <placeholder name="Applications Placeholder"/>
      <menu action="Open With">
-@@ -86,6 +89,8 @@
-       <menuitem name="Open Scripts Folder" action="Open Scripts Folder"/>
-     </menu>
+@@ -80,12 +90,9 @@
+     <placeholder name="OtherApplicationPlaceholder">
+       <menuitem name="OtherApplication2" action="OtherApplication2"/>
+     </placeholder>
+-    <menu action="Scripts">
+-      <placeholder name="Scripts Placeholder"/>
+-      <separator name="After Scripts"/>
+-      <menuitem name="Open Scripts Folder" action="Open Scripts Folder"/>
+-    </menu>
    </placeholder>
 +  <separator name="Extension actions separator"/>
 +  <placeholder name="Extension Actions"/>
    <separator name="Clipboard separator"/>
    <placeholder name="File Clipboard Actions">
      <menuitem name="Cut" action="Cut"/>
-@@ -109,8 +114,6 @@
+@@ -109,8 +116,6 @@
    <separator name="Appearance separator"/>
    <placeholder name="Canvas Appearance Items">
    </placeholder>
@@ -38,7 +63,7 @@ diff '--exclude=.git' -urN a/src/nautilus-directory-view-ui.xml b/src/nautilus-d
      <menuitem name="Mount Volume" action="Mount Volume"/>
 diff '--exclude=.git' -urN a/src/nautilus-view.c b/src/nautilus-view.c
 --- a/src/nautilus-view.c	2015-06-16 15:56:26.000000000 -0400
-+++ b/src/nautilus-view.c	2015-11-10 09:11:28.818443684 -0500
++++ b/src/nautilus-view.c	2015-11-22 20:15:16.754126830 -0500
 @@ -114,6 +114,7 @@
  #define NAUTILUS_VIEW_MENU_PATH_APPLICATIONS_PLACEHOLDER    	  "/ActionMenu/Open Placeholder/Applications Placeholder"
  #define NAUTILUS_VIEW_MENU_PATH_SCRIPTS_PLACEHOLDER               "/ActionMenu/Open Placeholder/Scripts/Scripts Placeholder"
@@ -55,7 +80,37 @@ diff '--exclude=.git' -urN a/src/nautilus-view.c b/src/nautilus-view.c
  #define NAUTILUS_VIEW_POPUP_PATH_OPEN				  "/selection/Open Placeholder/Open"
  
  #define NAUTILUS_VIEW_POPUP_PATH_BACKGROUND			  "/background"
-@@ -4765,7 +4767,11 @@
+@@ -1197,6 +1199,29 @@
+ }
+ 
+ static void
++action_open_new_window_callback (GtkAction *action,
++			      gpointer callback_data)
++{
++	NautilusView *view;
++	GList *selection;
++	GtkWindow *window;
++
++	view = NAUTILUS_VIEW (callback_data);
++	selection = nautilus_view_get_selection (view);
++
++	window = nautilus_view_get_containing_window (view);
++
++	if (nautilus_view_confirm_multiple (window, g_list_length (selection), TRUE)) {
++		nautilus_view_activate_files (view,
++					      selection,
++					      NAUTILUS_WINDOW_OPEN_FLAG_NEW_WINDOW,
++					      FALSE);
++	}
++
++	nautilus_file_list_free (selection);
++}
++
++static void
+ app_chooser_dialog_response_cb (GtkDialog *dialog,
+ 				gint response_id,
+ 				gpointer user_data)
+@@ -4765,7 +4790,11 @@
  		
  		action = add_extension_action_for_files (view, item, files);
  		
@@ -68,7 +123,7 @@ diff '--exclude=.git' -urN a/src/nautilus-view.c b/src/nautilus-view.c
  		gtk_ui_manager_add_ui (ui_manager,
  				       view->details->extensions_menu_merge_id,
  				       path,
-@@ -4775,7 +4781,11 @@
+@@ -4775,7 +4804,11 @@
  				       FALSE);
  		g_free (path);
  
@@ -81,9 +136,55 @@ diff '--exclude=.git' -urN a/src/nautilus-view.c b/src/nautilus-view.c
  		gtk_ui_manager_add_ui (ui_manager,
  				       view->details->extensions_menu_merge_id,
  				       path,
+@@ -7139,6 +7172,10 @@
+   /* label, accelerator */       N_("Open in New _Tab"), "<control><shift>t",
+   /* tooltip */                  N_("Open each selected item in a new tab"),
+ 				 G_CALLBACK (action_open_new_tab_callback) },
++  /* name, stock id */         { NAUTILUS_ACTION_OPEN_IN_NEW_WINDOW, NULL,
++  /* label, accelerator */       N_("Open in New _Window"), "<control><shift>w",
++  /* tooltip */                  N_("Open each selected item in a new window"),
++				 G_CALLBACK (action_open_new_window_callback) },
+   /* name, stock id */         { NAUTILUS_ACTION_OTHER_APPLICATION1, NULL,
+   /* label, accelerator */       N_("Other _Application…"), NULL,
+   /* tooltip */                  N_("Choose another application with which to open the selected item"),
+@@ -8404,6 +8441,7 @@
+ 	gboolean show_separate_delete_command;
+ 	gboolean show_open_alternate;
+ 	gboolean show_open_in_new_tab;
++	gboolean show_open_in_new_window;
+ 	gboolean can_open;
+ 	gboolean show_app, show_run;
+ 	gboolean show_save_search;
+@@ -8600,6 +8638,26 @@
+ 								  selection_count), 
+ 							 selection_count);
+ 	}
++
++	g_object_set (action, "label", 
++		      label_with_underscore,
++		      NULL);
++	g_free (label_with_underscore);
++
++	show_open_in_new_window = show_open_alternate;
++	action = gtk_action_group_get_action (view->details->dir_action_group,
++					      NAUTILUS_ACTION_OPEN_IN_NEW_WINDOW);
++	gtk_action_set_sensitive (action, selection_count != 0);
++	gtk_action_set_visible (action, show_open_in_new_window);
++
++	if (selection_count == 0 || selection_count == 1) {
++		label_with_underscore = g_strdup (_("Open in New _Window"));
++	} else {
++		label_with_underscore = g_strdup_printf (ngettext("Open in %'d New _Window",
++								  "Open in %'d New _Windows",
++								  selection_count), 
++							 selection_count);
++	}
+ 
+ 	g_object_set (action, "label", 
+ 		      label_with_underscore,
 diff '--exclude=.git' -urN a/src/nautilus-window-menus.c b/src/nautilus-window-menus.c
 --- a/src/nautilus-window-menus.c	2015-06-16 15:56:26.000000000 -0400
-+++ b/src/nautilus-window-menus.c	2015-11-10 09:11:40.669413134 -0500
++++ b/src/nautilus-window-menus.c	2015-11-22 19:44:46.793346584 -0500
 @@ -61,6 +61,7 @@
  #include <string.h>
  
