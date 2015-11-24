@@ -1,0 +1,28 @@
+From 48362cd12c80b941b2371ceaab3decb74811ed7a Mon Sep 17 00:00:00 2001
+From: Stef Walter <stefw@redhat.com>
+Date: Sat, 25 Oct 2014 08:44:33 +0200
+Subject: pgp: Force use of the first gnupg found by configure.ac
+
+Some people are having problems using recent versions of gpg2.
+This allows configure.ac to identify a version during building
+and then stick to using that one.
+---
+ pgp/seahorse-pgp-backend.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/pgp/seahorse-pgp-backend.c b/pgp/seahorse-pgp-backend.c
+index ab9b8fb..4b267c3 100644
+--- a/pgp/seahorse-pgp-backend.c
++++ b/pgp/seahorse-pgp-backend.c
+@@ -310,6 +310,8 @@ seahorse_pgp_backend_initialize (void)
+ 	g_object_unref (self);
+ 
+ 	g_return_if_fail (pgp_backend != NULL);
++
++	gpgme_set_engine_info (GPGME_PROTOCOL_OpenPGP, GNUPG, NULL);
+ }
+ 
+ SeahorseGpgmeKeyring *
+-- 
+cgit v0.11.2
+

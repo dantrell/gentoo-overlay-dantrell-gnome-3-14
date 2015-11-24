@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="no"
 
-inherit gnome2
+inherit autotools eutils gnome2
 
 DESCRIPTION="A GNOME application for managing encryption keys"
 HOMEPAGE="https://wiki.gnome.org/Apps/Seahorse"
@@ -23,8 +23,7 @@ COMMON_DEPEND="
 
 	net-misc/openssh
 	>=app-crypt/gpgme-1
-	>=app-crypt/gnupg-1.4
-	<app-crypt/gnupg-2.1
+	>=app-crypt/gnupg-2.0.12
 
 	ldap? ( net-nds/openldap:= )
 	zeroconf? ( >=net-dns/avahi-0.6:= )
@@ -46,6 +45,13 @@ src_prepare() {
 		-e '/CFLAGS="$CFLAGS -O0/d' \
 		-i configure.ac configure || die "sed 1 failed"
 
+	# From GNOME:
+	# 	https://git.gnome.org/browse/seahorse/commit/?id=48362cd12c80b941b2371ceaab3decb74811ed7a
+	# 	https://git.gnome.org/browse/seahorse/commit/?id=dfabc8de30e87fd7b6dc6d12f34fa29858caed95
+	epatch "${FILESDIR}"/${PN}-3.15.90-pgp-force-use-of-the-first-gnupg-found-by-configure-ac.patch
+	epatch "${FILESDIR}"/${PN}-3.17.4-avoid-binding-seahorse-to-the-build-time-version-of-gpg.patch
+
+	eautoreconf
 	gnome2_src_prepare
 }
 
