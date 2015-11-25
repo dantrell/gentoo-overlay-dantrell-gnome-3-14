@@ -13,6 +13,7 @@ HOMEPAGE="https://blogs.gnome.org/metacity/"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="*"
+
 IUSE="test xinerama"
 
 # XXX: libgtop is automagic, hard-enabled instead

@@ -11,12 +11,13 @@ DESCRIPTION="Clutter is a library for creating graphical user interfaces"
 
 LICENSE="LGPL-2.1+ FDL-1.1+"
 SLOT="1.0"
+KEYWORDS="*"
+
 IUSE="aqua debug doc egl gtk +introspection test wayland +X"
 REQUIRED_USE="
 	|| ( aqua wayland X )
 	wayland? ( egl )
 "
-KEYWORDS="*"
 
 # NOTE: glx flavour uses libdrm + >=mesa-7.3
 # XXX: uprof needed for profiling

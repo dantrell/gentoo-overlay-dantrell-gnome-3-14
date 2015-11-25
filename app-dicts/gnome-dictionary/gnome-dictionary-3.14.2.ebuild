@@ -11,8 +11,9 @@ HOMEPAGE="https://live.gnome.org/GnomeUtils"
 
 LICENSE="GPL-2+ LGPL-2.1+ FDL-1.1+"
 SLOT="0/6" # subslot = suffix of libgdict-1.0.so
-IUSE="ipv6"
 KEYWORDS="*"
+
+IUSE="ipv6"
 
 COMMON_DEPEND="
 	>=dev-libs/glib-2.39:2

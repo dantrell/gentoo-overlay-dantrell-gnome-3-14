@@ -13,14 +13,14 @@ HOMEPAGE="https://wiki.gnome.org/Apps/Videos"
 
 LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
+KEYWORDS="*"
+
 IUSE="+introspection lirc nautilus +python test zeitgeist"
 # see bug #359379
 REQUIRED_USE="
 	python? ( introspection ${PYTHON_REQUIRED_USE} )
 	zeitgeist? ( introspection )
 "
-
-KEYWORDS="*"
 
 # TODO:
 # Cone (VLC) plugin needs someone with the right setup to test it

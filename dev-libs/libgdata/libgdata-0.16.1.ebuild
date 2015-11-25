@@ -12,8 +12,9 @@ HOMEPAGE="https://wiki.gnome.org/Projects/libgdata"
 
 LICENSE="LGPL-2.1+"
 SLOT="0/19" # subslot = libgdata soname version
-IUSE="gnome +introspection static-libs test vala"
 KEYWORDS="*"
+
+IUSE="gnome +introspection static-libs test vala"
 REQUIRED_IUSE="vala? ( introspection )"
 
 # gtk+ is needed for gdk
