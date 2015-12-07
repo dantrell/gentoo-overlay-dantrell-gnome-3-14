@@ -1,0 +1,46 @@
+From 96abbf38bc9d048ab8b0ad51a99f47cbb05c01ad Mon Sep 17 00:00:00 2001
+From: Emmanuele Bassi <ebassi@gnome.org>
+Date: Thu, 30 Apr 2015 12:40:39 +0100
+Subject: actor: Use the real opacity when clearing the stage
+
+The paint opacity for a top level is always overridden to be the full
+value, since it's a composited value and we want to paint our scene.
+
+When clearing the stage framebuffer, though, we want to use the actual
+opacity, if ClutterStage:use-alpha is set.
+
+(cherry picked from commit 8b8aa0b4927bc865b08b77b4e28237da0ff8597c)
+
+Signed-off-by: Emmanuele Bassi <ebassi@gnome.org>
+---
+ clutter/clutter-actor.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/clutter/clutter-actor.c b/clutter/clutter-actor.c
+index dd2ac5d..e626008 100644
+--- a/clutter/clutter-actor.c
++++ b/clutter/clutter-actor.c
+@@ -3595,13 +3595,19 @@ clutter_actor_paint_node (ClutterActor     *actor,
+ 
+       if (clutter_stage_get_use_alpha (CLUTTER_STAGE (actor)))
+         {
+-          bg_color.alpha = clutter_actor_get_paint_opacity_internal (actor)
++          bg_color.alpha = priv->opacity
+                          * priv->bg_color.alpha
+                          / 255;
+         }
+       else
+         bg_color.alpha = 255;
+ 
++      CLUTTER_NOTE (PAINT, "Stage clear color: (%d, %d, %d, %d)",
++                    bg_color.red,
++                    bg_color.green,
++                    bg_color.blue,
++                    bg_color.alpha);
++
+       clear_flags = COGL_BUFFER_BIT_DEPTH;
+       if (!clutter_stage_get_no_clear_hint (CLUTTER_STAGE (actor)))
+         clear_flags |= COGL_BUFFER_BIT_COLOR;
+-- 
+cgit v0.11.2
+

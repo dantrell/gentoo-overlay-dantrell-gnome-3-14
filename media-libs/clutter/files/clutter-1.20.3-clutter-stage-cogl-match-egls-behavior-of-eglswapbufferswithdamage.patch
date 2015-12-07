@@ -1,0 +1,45 @@
+From c1987a5c06d912e8ff7d2541fc266f93c1d65477 Mon Sep 17 00:00:00 2001
+From: "Jasper St. Pierre" <jstpierre@mecheye.net>
+Date: Tue, 28 Apr 2015 16:05:55 -0700
+Subject: clutter-stage-cogl: Match EGL's behavior of eglSwapBuffersWithDamage
+
+-1 is explicitly an invalid value to pass to eglSwapBuffersWithDamage,
+and the specification admits as much:
+
+                                                         If
+    eglSwapBuffersWithDamageEXT is called and <n_rects>, is less
+    than zero or <n_rects> is greater than zero but <rects> is
+    NULL, EGL_BAD_PARAMETER is generated.
+
+Fix up our usage of SwapBuffersWithDamage to match the behavior in the
+EGL specification.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745512
+
+(cherry picked from commit 21ce9bc08b72f0904c6b682341481798d05f7d8c)
+
+Signed-off-by: Emmanuele Bassi <ebassi@gnome.org>
+---
+ clutter/cogl/clutter-stage-cogl.c | 6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/clutter/cogl/clutter-stage-cogl.c b/clutter/cogl/clutter-stage-cogl.c
+index 7f418a9..be61d4a 100644
+--- a/clutter/cogl/clutter-stage-cogl.c
++++ b/clutter/cogl/clutter-stage-cogl.c
+@@ -623,11 +623,7 @@ clutter_stage_cogl_redraw (ClutterStageWindow *stage_window)
+     }
+   else
+     {
+-      damage[0] = 0;
+-      damage[1] = 0;
+-      damage[2] = geom.width;
+-      damage[3] = geom.height;
+-      ndamage = -1;
++      ndamage = 0;
+     }
+ 
+   /* push on the screen */
+-- 
+cgit v0.11.2
+
