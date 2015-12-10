@@ -18,7 +18,6 @@ KEYWORDS="*"
 IUSE="cue eds elibc_glibc exif ffmpeg firefox-bookmarks flac gif gsf
 gstreamer gtk iptc +iso +jpeg +miner-fs mp3 nautilus networkmanager
 pdf playlist rss test thunderbird +tiff upnp-av upower +vorbis +xml xmp xps"
-
 REQUIRED_USE="
 	?? ( gstreamer ffmpeg )
 	cue? ( gstreamer )
