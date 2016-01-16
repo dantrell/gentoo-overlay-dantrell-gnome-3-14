@@ -20,8 +20,8 @@ COMMON_DEPEND="
 	>=app-text/evince-3.13.3[introspection]
 	dev-libs/gjs
 	>=dev-libs/glib-2.39.3:2
-	>=dev-libs/gobject-introspection-1.31.6
-	>=dev-libs/libgdata-0.13.3:=[gnome,introspection]
+	>=dev-libs/gobject-introspection-1.31.6:=
+	>=dev-libs/libgdata-0.13.3:=[crypt,gnome-online-accounts,introspection]
 	gnome-base/gnome-desktop:3=
 	>=media-libs/clutter-1.10:1.0
 	>=media-libs/clutter-gtk-1.3.2:1.0[introspection]

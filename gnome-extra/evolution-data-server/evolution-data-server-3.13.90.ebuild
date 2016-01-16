@@ -43,7 +43,7 @@ RDEPEND="
 		>=x11-libs/gtk+-3.2:3
 	)
 	gnome-online-accounts? ( >=net-libs/gnome-online-accounts-3.8 )
-	introspection? ( >=dev-libs/gobject-introspection-0.9.12 )
+	introspection? ( >=dev-libs/gobject-introspection-0.9.12:= )
 	kerberos? ( virtual/krb5:= )
 	ldap? ( >=net-nds/openldap-2:= )
 	weather? ( >=dev-libs/libgweather-3.8:2= )

@@ -1,6 +1,6 @@
-diff -urN gnome-settings-daemon-3.14.1/config.h.in gnome-settings-daemon-3.14.1-patched/config.h.in
---- gnome-settings-daemon-3.14.1/config.h.in	2014-10-14 09:15:03.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/config.h.in	2014-10-19 23:05:11.247994102 -0400
+diff '--exclude=.git' -urN a/config.h.in b/config.h.in
+--- a/config.h.in	2015-04-30 09:01:29.000000000 -0400
++++ b/config.h.in	2016-01-16 00:48:20.902667372 -0500
 @@ -1,5 +1,8 @@
  /* config.h.in.  Generated from configure.ac by autoheader.  */
  
@@ -10,9 +10,9 @@ diff -urN gnome-settings-daemon-3.14.1/config.h.in gnome-settings-daemon-3.14.1-
  /* always defined to indicate that i18n is enabled */
  #undef ENABLE_NLS
  
-diff -urN gnome-settings-daemon-3.14.1/configure gnome-settings-daemon-3.14.1-patched/configure
---- gnome-settings-daemon-3.14.1/configure	2014-10-14 09:15:02.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/configure	2014-10-19 23:09:14.895006098 -0400
+diff '--exclude=.git' -urN a/configure b/configure
+--- a/configure	2015-04-30 09:01:24.000000000 -0400
++++ b/configure	2016-01-16 00:48:20.908667335 -0500
 @@ -716,6 +716,8 @@
  GLIB_COMPILE_SCHEMAS
  gsettingsschemadir
@@ -38,7 +38,7 @@ diff -urN gnome-settings-daemon-3.14.1/configure gnome-settings-daemon-3.14.1-pa
    --disable-schemas-compile
                            Disable regeneration of gschemas.compiled on install
    --disable-gudev         Disable GUdev support (not optional on Linux
-@@ -17715,6 +17719,28 @@
+@@ -17695,6 +17699,28 @@
  
  
  
@@ -67,7 +67,7 @@ diff -urN gnome-settings-daemon-3.14.1/configure gnome-settings-daemon-3.14.1-pa
  
  
  
-@@ -21154,6 +21180,10 @@
+@@ -21117,6 +21143,10 @@
    ac_config_commands="$ac_config_commands po/stamp-it"
  
  
@@ -78,7 +78,7 @@ diff -urN gnome-settings-daemon-3.14.1/configure gnome-settings-daemon-3.14.1-pa
  if test -z "${HAVE_GUDEV_TRUE}" && test -z "${HAVE_GUDEV_FALSE}"; then
    as_fn_error $? "conditional \"HAVE_GUDEV\" was never defined.
  Usually this means the macro was only invoked conditionally." "$LINENO" 5
-@@ -23769,6 +23799,7 @@
+@@ -23732,6 +23762,7 @@
          cflags:                   ${CFLAGS}
          Maintainer mode:          ${USE_MAINTAINER_MODE}
  
@@ -86,9 +86,9 @@ diff -urN gnome-settings-daemon-3.14.1/configure gnome-settings-daemon-3.14.1-pa
          LCMS DICT support:        ${have_new_lcms}
          NetworkManager support:   ${enable_network_manager}
          Libnotify support:        ${have_libnotify}
-diff -urN gnome-settings-daemon-3.14.1/configure.ac gnome-settings-daemon-3.14.1-patched/configure.ac
---- gnome-settings-daemon-3.14.1/configure.ac	2014-10-14 09:02:42.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/configure.ac	2014-10-19 23:10:51.271010843 -0400
+diff '--exclude=.git' -urN a/configure.ac b/configure.ac
+--- a/configure.ac	2015-04-30 09:01:10.000000000 -0400
++++ b/configure.ac	2016-01-16 00:48:20.908667335 -0500
 @@ -90,6 +90,15 @@
  AC_PATH_PROG(GLIB_GENMARSHAL, glib-genmarshal)
  AC_PATH_PROG([GLIB_MKENUMS],[glib-mkenums])
@@ -113,9 +113,9 @@ diff -urN gnome-settings-daemon-3.14.1/configure.ac gnome-settings-daemon-3.14.1
          LCMS DICT support:        ${have_new_lcms}
          NetworkManager support:   ${enable_network_manager}
          Libnotify support:        ${have_libnotify}
-diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.am gnome-settings-daemon-3.14.1-patched/plugins/common/Makefile.am
---- gnome-settings-daemon-3.14.1/plugins/common/Makefile.am	2014-06-03 11:07:24.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/plugins/common/Makefile.am	2014-10-19 22:53:07.524958470 -0400
+diff '--exclude=.git' -urN a/plugins/common/Makefile.am b/plugins/common/Makefile.am
+--- a/plugins/common/Makefile.am	2015-04-30 07:56:21.000000000 -0400
++++ b/plugins/common/Makefile.am	2016-01-16 00:48:20.908667335 -0500
 @@ -9,6 +9,8 @@
  	gsd-keygrab.h		\
  	gsd-input-helper.c	\
@@ -125,10 +125,10 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.am gnome-settings
  	gsd-shell-helper.c	\
  	gsd-shell-helper.h
  
-diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.in gnome-settings-daemon-3.14.1-patched/plugins/common/Makefile.in
---- gnome-settings-daemon-3.14.1/plugins/common/Makefile.in	2014-10-14 09:15:04.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/plugins/common/Makefile.in	2014-10-19 22:56:57.648969800 -0400
-@@ -101,6 +101,7 @@
+diff '--exclude=.git' -urN a/plugins/common/Makefile.in b/plugins/common/Makefile.in
+--- a/plugins/common/Makefile.in	2015-04-30 09:01:24.000000000 -0400
++++ b/plugins/common/Makefile.in	2016-01-16 00:48:20.908667335 -0500
+@@ -110,6 +110,7 @@
  	$(am__DEPENDENCIES_1)
  am_libcommon_la_OBJECTS = libcommon_la-gsd-device-mapper.lo \
  	libcommon_la-gsd-keygrab.lo libcommon_la-gsd-input-helper.lo \
@@ -136,7 +136,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.in gnome-settings
  	libcommon_la-gsd-shell-helper.lo
  libcommon_la_OBJECTS = $(am_libcommon_la_OBJECTS)
  AM_V_lt = $(am__v_lt_@AM_V@)
-@@ -455,6 +456,8 @@
+@@ -465,6 +466,8 @@
  	gsd-keygrab.h		\
  	gsd-input-helper.c	\
  	gsd-input-helper.h	\
@@ -145,7 +145,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.in gnome-settings
  	gsd-shell-helper.c	\
  	gsd-shell-helper.h
  
-@@ -615,6 +618,7 @@
+@@ -624,6 +627,7 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcommon_la-gsd-device-mapper.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcommon_la-gsd-input-helper.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcommon_la-gsd-keygrab.Plo@am__quote@
@@ -153,7 +153,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.in gnome-settings
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcommon_la-gsd-shell-helper.Plo@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_egg_key_parsing-test-egg-key-parsing.Po@am__quote@
  
-@@ -660,6 +664,13 @@
+@@ -669,6 +673,13 @@
  @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
  @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcommon_la_CPPFLAGS) $(CPPFLAGS) $(libcommon_la_CFLAGS) $(CFLAGS) -c -o libcommon_la-gsd-input-helper.lo `test -f 'gsd-input-helper.c' || echo '$(srcdir)/'`gsd-input-helper.c
  
@@ -167,9 +167,9 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/Makefile.in gnome-settings
  libcommon_la-gsd-shell-helper.lo: gsd-shell-helper.c
  @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcommon_la_CPPFLAGS) $(CPPFLAGS) $(libcommon_la_CFLAGS) $(CFLAGS) -MT libcommon_la-gsd-shell-helper.lo -MD -MP -MF $(DEPDIR)/libcommon_la-gsd-shell-helper.Tpo -c -o libcommon_la-gsd-shell-helper.lo `test -f 'gsd-shell-helper.c' || echo '$(srcdir)/'`gsd-shell-helper.c
  @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcommon_la-gsd-shell-helper.Tpo $(DEPDIR)/libcommon_la-gsd-shell-helper.Plo
-diff -urN gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.c gnome-settings-daemon-3.14.1-patched/plugins/common/gsd-power-helper.c
---- gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.c	1969-12-31 19:00:00.000000000 -0500
-+++ gnome-settings-daemon-3.14.1-patched/plugins/common/gsd-power-helper.c	2014-07-13 19:23:29.495877000 -0400
+diff '--exclude=.git' -urN a/plugins/common/gsd-power-helper.c b/plugins/common/gsd-power-helper.c
+--- a/plugins/common/gsd-power-helper.c	1969-12-31 19:00:00.000000000 -0500
++++ b/plugins/common/gsd-power-helper.c	2016-01-16 00:48:20.909667329 -0500
 @@ -0,0 +1,139 @@
 +/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
 + *
@@ -310,9 +310,9 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.c gnome-s
 +	upower_hibernate (upower_proxy);
 +}
 +#endif /* ENABLE_DEPRECATED */
-diff -urN gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.h gnome-settings-daemon-3.14.1-patched/plugins/common/gsd-power-helper.h
---- gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.h	1969-12-31 19:00:00.000000000 -0500
-+++ gnome-settings-daemon-3.14.1-patched/plugins/common/gsd-power-helper.h	2014-07-13 19:23:29.495877000 -0400
+diff '--exclude=.git' -urN a/plugins/common/gsd-power-helper.h b/plugins/common/gsd-power-helper.h
+--- a/plugins/common/gsd-power-helper.h	1969-12-31 19:00:00.000000000 -0500
++++ b/plugins/common/gsd-power-helper.h	2016-01-16 00:48:20.909667329 -0500
 @@ -0,0 +1,35 @@
 +/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
 + *
@@ -349,9 +349,9 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/common/gsd-power-helper.h gnome-s
 +G_END_DECLS
 +
 +#endif /* __GSD_POWER_HELPER_H */
-diff -urN gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager.c gnome-settings-daemon-3.14.1-patched/plugins/media-keys/gsd-media-keys-manager.c
---- gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager.c	2014-10-10 12:25:12.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/plugins/media-keys/gsd-media-keys-manager.c	2014-10-19 23:21:15.473041575 -0400
+diff '--exclude=.git' -urN a/plugins/media-keys/gsd-media-keys-manager.c b/plugins/media-keys/gsd-media-keys-manager.c
+--- a/plugins/media-keys/gsd-media-keys-manager.c	2015-04-30 07:56:21.000000000 -0400
++++ b/plugins/media-keys/gsd-media-keys-manager.c	2016-01-16 00:48:20.909667329 -0500
 @@ -56,6 +56,9 @@
  #include "shell-key-grabber.h"
  #include "gsd-screenshot-utils.h"
@@ -422,7 +422,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager
                  break;
          case GSD_POWER_ACTION_BLANK:
          case GSD_POWER_ACTION_LOGOUT:
-@@ -2445,6 +2476,10 @@
+@@ -2451,6 +2482,10 @@
          g_clear_object (&priv->mpris_controller);
          g_clear_object (&priv->screencast_proxy);
  
@@ -433,7 +433,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager
          if (priv->cancellable != NULL) {
                  g_cancellable_cancel (priv->cancellable);
                  g_clear_object (&priv->cancellable);
-@@ -2628,6 +2663,24 @@
+@@ -2638,6 +2673,24 @@
          }
  }
  
@@ -458,7 +458,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager
  static void
  power_screen_ready_cb (GObject             *source_object,
                         GAsyncResult        *res,
-@@ -2745,6 +2798,19 @@
+@@ -2755,6 +2808,19 @@
                     manager->priv->bus_cancellable,
                     (GAsyncReadyCallback) on_bus_gotten,
                     manager);
@@ -478,10 +478,10 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/media-keys/gsd-media-keys-manager
  }
  
  GsdMediaKeysManager *
-diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-settings-daemon-3.14.1-patched/plugins/power/gsd-power-manager.c
---- gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c	2014-09-22 12:02:19.000000000 -0400
-+++ gnome-settings-daemon-3.14.1-patched/plugins/power/gsd-power-manager.c	2014-10-19 23:32:08.444073723 -0400
-@@ -48,6 +48,9 @@
+diff '--exclude=.git' -urN a/plugins/power/gsd-power-manager.c b/plugins/power/gsd-power-manager.c
+--- a/plugins/power/gsd-power-manager.c	2015-04-30 07:56:21.000000000 -0400
++++ b/plugins/power/gsd-power-manager.c	2016-01-16 00:56:14.998755868 -0500
+@@ -49,6 +49,9 @@
  #include "gnome-settings-bus.h"
  #include "gsd-enums.h"
  #include "gsd-power-manager.h"
@@ -491,7 +491,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
  
  #define UPOWER_DBUS_NAME                        "org.freedesktop.UPower"
  #define UPOWER_DBUS_PATH                        "/org/freedesktop/UPower"
-@@ -165,6 +168,11 @@
+@@ -167,6 +170,11 @@
          guint                    inhibit_lid_switch_timer_id;
          gboolean                 is_virtual_machine;
  
@@ -503,7 +503,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
          /* Idles */
          GnomeIdleMonitor        *idle_monitor;
          guint                    idle_dim_id;
-@@ -950,24 +958,63 @@
+@@ -1000,24 +1008,63 @@
  }
  
  static void
@@ -567,7 +567,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
                  break;
          case GSD_POWER_ACTION_BLANK:
                  backlight_disable (manager);
-@@ -1156,29 +1203,6 @@
+@@ -1206,29 +1253,6 @@
  }
  
  static void
@@ -597,7 +597,23 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
  do_lid_closed_action (GsdPowerManager *manager)
  {
          /* play a sound, using sounds from the naming spec */
-@@ -1836,6 +1860,24 @@
+@@ -1252,7 +1276,15 @@
+                         /* We put the screensaver on * as we're not suspending,
+                          * but the lid is closed */
+                         lock_screensaver (manager);
++#ifdef ENABLE_DEPRECATED
++                } else {
++                        lock_screensaver (manager);
++
++                        gsd_power_suspend (manager->priv->upower_proxy);
++                }
++#else
+                 }
++#endif /* ENABLE_DEPRECATED */
+         }
+ }
+ 
+@@ -1890,6 +1922,24 @@
                  handle_wake_up_screen (GSD_POWER_MANAGER (user_data));
  }
  
@@ -622,7 +638,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
  static void
  power_keyboard_proxy_ready_cb (GObject             *source_object,
                                 GAsyncResult        *res,
-@@ -2366,6 +2408,18 @@
+@@ -2420,6 +2470,18 @@
          if (manager->priv->lid_is_present)
                  manager->priv->lid_is_closed = up_client_get_lid_is_closed (manager->priv->up_client);
  
@@ -641,7 +657,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
          /* Set up the logind proxy */
          manager->priv->logind_proxy =
                  g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SYSTEM,
-@@ -2380,6 +2434,7 @@
+@@ -2434,6 +2496,7 @@
                  g_debug ("No systemd (logind) support, disabling plugin");
                  return FALSE;
          }
@@ -649,7 +665,7 @@ diff -urN gnome-settings-daemon-3.14.1/plugins/power/gsd-power-manager.c gnome-s
  
          /* Check for XTEST support */
          if (supports_xtest () == FALSE) {
-@@ -2449,6 +2504,9 @@
+@@ -2506,6 +2569,9 @@
          }
          g_clear_object (&manager->priv->device_composite);
  
