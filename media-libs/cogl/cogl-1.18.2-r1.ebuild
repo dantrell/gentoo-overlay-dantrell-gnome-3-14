@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
-CLUTTER_LA_PUNT="yes"
+GCONF_DEBUG="yes"
 
-# Inherit gnome2 after clutter to download sources from gnome.org
-inherit clutter gnome2 multilib virtualx
+inherit gnome2 multilib virtualx
 
 DESCRIPTION="A library for using 3D graphics hardware to draw pretty pictures"
 HOMEPAGE="http://www.cogl3d.org/"
@@ -13,10 +12,12 @@ LICENSE="MIT BSD"
 SLOT="1.0/20" # subslot = .so version
 KEYWORDS="*"
 
-# doc and profile disable for now due bugs #484750 and #483332
+# doc and profile disable for now due to bugs #484750 and #483332
 IUSE="examples gles2 gstreamer +introspection +kms +opengl +pango test wayland" # doc profile
-REQUIRED_USE="wayland? ( gles2 )
-	|| ( gles2 opengl )"
+REQUIRED_USE="
+	wayland? ( gles2 )
+	|| ( gles2 opengl )
+"
 
 COMMON_DEPEND="
 	>=dev-libs/glib-2.32:2
@@ -33,8 +34,7 @@ COMMON_DEPEND="
 	gstreamer? (
 		media-libs/gstreamer:1.0
 		media-libs/gst-plugins-base:1.0 )
-
-	introspection? ( >=dev-libs/gobject-introspection-1.34.2 )
+	introspection? ( >=dev-libs/gobject-introspection-1.34.2:= )
 	kms? (
 		media-libs/mesa[gbm]
 		x11-libs/libdrm:= )
@@ -45,7 +45,8 @@ COMMON_DEPEND="
 "
 # before clutter-1.7, cogl was part of clutter
 RDEPEND="${COMMON_DEPEND}
-	!<media-libs/clutter-1.7"
+	!<media-libs/clutter-1.7
+"
 DEPEND="${COMMON_DEPEND}
 	>=dev-util/gtk-doc-am-1.13
 	sys-devel/gettext
@@ -118,10 +119,12 @@ src_test() {
 }
 
 src_install() {
-	DOCS="NEWS README"
-	EXAMPLES="examples/{*.c,*.jpg}"
+	if use examples; then
+		insinto /usr/share/doc/${PF}/examples
+		doins examples/{*.c,*.jpg}
+	fi
 
-	clutter_src_install
+	gnome2_src_install
 
 	# Remove silly examples-data directory
 	rm -rvf "${ED}/usr/share/cogl/examples-data/" || die
