@@ -16,6 +16,8 @@ KEYWORDS="*"
 
 IUSE="+hardened"
 
+RESTRICT="mirror"
+
 # gnome-pty-helper was spit out with 0.27.90
 RDEPEND="!<x11-libs/vte-0.27.90"
 DEPEND=""

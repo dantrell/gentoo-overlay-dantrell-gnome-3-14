@@ -16,6 +16,9 @@ KEYWORDS="*"
 
 IUSE="debug +introspection samba ssl test"
 
+# They hang for some unknown reason, bug #537836, also bug #326957 is pending
+RESTRICT="test"
+
 RDEPEND="
 	>=dev-libs/glib-2.34.3:2[${MULTILIB_USEDEP}]
 	>=dev-libs/libxml2-2.9.1-r4:2[${MULTILIB_USEDEP}]
@@ -38,9 +41,6 @@ DEPEND="${RDEPEND}
 #		dev-lang/php[apache2,xmlrpc]
 #		net-misc/curl
 #		net-libs/glib-networking[ssl])"
-
-# They hang for some unknown reason, bug #537836, also bug #326957 is pending
-RESTRICT="test"
 
 RDEPEND="${RDEPEND}
 	abi_x86_32? (

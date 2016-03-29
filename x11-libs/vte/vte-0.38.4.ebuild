@@ -15,6 +15,8 @@ KEYWORDS="*"
 
 IUSE="debug glade +introspection vala"
 
+RESTRICT="mirror"
+
 PDEPEND=">=x11-libs/gnome-pty-helper-${PV}"
 RDEPEND="
 	>=dev-libs/glib-2.40:2

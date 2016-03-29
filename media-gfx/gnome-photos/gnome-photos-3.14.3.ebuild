@@ -14,6 +14,9 @@ KEYWORDS="*"
 
 IUSE=""
 
+# Requires dogtail
+RESTRICT="test"
+
 RDEPEND="
 	>=app-misc/tracker-1:=
 	>=dev-libs/glib-2.39.3:2
@@ -40,5 +43,3 @@ DEPEND="${RDEPEND}
 	virtual/pkgconfig
 "
 
-# Requires dogtail
-RESTRICT="test"

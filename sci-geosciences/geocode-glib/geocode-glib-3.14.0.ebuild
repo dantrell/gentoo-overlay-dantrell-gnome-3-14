@@ -17,6 +17,8 @@ KEYWORDS="*"
 
 IUSE="+introspection test"
 
+RESTRICT="test" # Need network #424719
+
 RDEPEND="
 	>=dev-libs/glib-2.34:2
 	>=dev-libs/json-glib-0.99.2[introspection?]
@@ -35,8 +37,6 @@ DEPEND="${RDEPEND}
 # eautoreconf requires:
 #	dev-libs/gobject-introspection-common
 #	gnome-base/gnome-common
-
-RESTRICT="test" # Need network #424719
 
 src_test() {
 	export GVFS_DISABLE_FUSE=1
