@@ -22,7 +22,6 @@ dev-libs/gjs::gentoo
 dev-libs/glib::gentoo
 dev-libs/gobject-introspection-common::gentoo
 dev-libs/gobject-introspection::gentoo
-dev-libs/libgdata::gentoo
 dev-libs/libgweather::gentoo
 dev-libs/libpeas::gentoo
 dev-python/pyatspi::gentoo
