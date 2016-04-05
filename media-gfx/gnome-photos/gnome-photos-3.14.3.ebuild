@@ -23,7 +23,7 @@ RDEPEND="
 	dev-libs/libxml2
 	gnome-base/gnome-desktop:3=
 	>=gnome-base/librsvg-2.26.0
-	>=dev-libs/libgdata-0.15.2
+	>=dev-libs/libgdata-0.15.2:0=[gnome-online-accounts]
 	media-libs/babl
 	>=media-libs/gegl-0.2:0
 	>=media-libs/grilo-0.2.6:0.2
