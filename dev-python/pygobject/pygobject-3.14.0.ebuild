@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{2_7,3_3,3_4} )
+PYTHON_COMPAT=( python2_7 python3_{3,4,5} )
 
 inherit gnome2 python-r1 virtualx
 
@@ -20,14 +20,13 @@ REQUIRED_USE="
 	test? ( cairo )
 "
 
-COMMON_DEPEND="
+COMMON_DEPEND="${PYTHON_DEPS}
 	>=dev-libs/glib-2.38:2
-	>=dev-libs/gobject-introspection-1.39
+	>=dev-libs/gobject-introspection-1.39:=
 	virtual/libffi:=
 	cairo? (
 		>=dev-python/pycairo-1.10.0[${PYTHON_USEDEP}]
 		x11-libs/cairo )
-	${PYTHON_DEPS}
 "
 DEPEND="${COMMON_DEPEND}
 	virtual/pkgconfig
@@ -39,7 +38,8 @@ DEPEND="${COMMON_DEPEND}
 		x11-libs/cairo[glib]
 		x11-libs/gdk-pixbuf:2[introspection]
 		x11-libs/gtk+:3[introspection]
-		x11-libs/pango[introspection] )
+		x11-libs/pango[introspection]
+		python_targets_python2_7? ( dev-python/pyflakes[$(python_gen_usedep python2_7)] ) )
 "
 # gnome-base/gnome-common required by eautoreconf
 
@@ -61,10 +61,19 @@ src_configure() {
 	# Hard-enable libffi support since both gobject-introspection and
 	# glib-2.29.x rdepend on it anyway
 	# docs disabled by upstream default since they are very out of date
-	python_foreach_impl run_in_build_dir \
+	configuring() {
 		gnome2_src_configure \
 			$(use_enable cairo) \
 			$(use_enable threads thread)
+
+		# Pyflakes tests work only in python2, bug #516744
+		if use test && [[ ${EPYTHON} != python2.7 ]]; then
+			sed -e 's/if type pyflakes/if false/' \
+				-i Makefile || die "sed failed"
+		fi
+	}
+
+	python_foreach_impl run_in_build_dir configuring
 }
 
 src_compile() {
@@ -75,6 +84,7 @@ src_test() {
 	unset DBUS_SESSION_BUS_ADDRESS
 	export GIO_USE_VFS="local" # prevents odd issues with deleting ${T}/.gvfs
 	export GIO_USE_VOLUME_MONITOR="unix" # prevent udisks-related failures in chroots, bug #449484
+	export SKIP_PEP8="yes"
 
 	testing() {
 		export XDG_CACHE_HOME="${T}/${EPYTHON}"

@@ -8,7 +8,7 @@ VALA_USE_DEPEND="vapigen"
 inherit gnome2 vala
 
 DESCRIPTION="Unicode character map viewer and library"
-HOMEPAGE="https://live.gnome.org/Gucharmap"
+HOMEPAGE="https://wiki.gnome.org/Apps/Gucharmap"
 
 LICENSE="GPL-3"
 SLOT="2.90"
@@ -21,15 +21,14 @@ COMMON_DEPEND="
 	>=dev-libs/glib-2.32:2
 	>=x11-libs/pango-1.2.1[introspection?]
 	>=x11-libs/gtk+-3.4.0:3[introspection?]
-
-	introspection? ( >=dev-libs/gobject-introspection-0.9.0 )
+	introspection? ( >=dev-libs/gobject-introspection-0.9.0:= )
 "
 RDEPEND="${COMMON_DEPEND}
 	!<gnome-extra/gucharmap-3:0
 "
 DEPEND="${RDEPEND}
 	app-text/yelp-tools
-	dev-util/appdata-tools
+	dev-libs/appstream-glib
 	dev-util/desktop-file-utils
 	>=dev-util/gtk-doc-am-1
 	>=dev-util/intltool-0.40

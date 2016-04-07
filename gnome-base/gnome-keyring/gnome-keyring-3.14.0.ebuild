@@ -14,9 +14,10 @@ LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="+caps debug pam selinux +ssh-agent test"
+IUSE="+caps pam selinux +ssh-agent test"
 
-RDEPEND="
+# Replace gkd gpg-agent with pinentry[gnome-keyring] one, bug #547456
+COMMON_DEPEND="
 	>=app-crypt/gcr-3.5.3:=[gtk]
 	>=dev-libs/glib-2.38:2
 	app-misc/ca-certificates
@@ -24,8 +25,14 @@ RDEPEND="
 	>=sys-apps/dbus-1.1.1
 	caps? ( sys-libs/libcap-ng )
 	pam? ( virtual/pam )
+
+	>=app-crypt/gnupg-2.0.28
 "
-DEPEND="${RDEPEND}
+RDEPEND="${COMMON_DEPEND}
+	app-crypt/pinentry[gnome-keyring]
+"
+DEPEND="${COMMON_DEPEND}
+	>=app-eselect/eselect-pinentry-0.5
 	app-text/docbook-xml-dtd:4.3
 	dev-libs/libxslt
 	>=dev-util/intltool-0.35
@@ -39,7 +46,7 @@ pkg_setup() {
 }
 
 src_prepare() {
-	# Disable stupid CFLAGS
+	# Disable stupid CFLAGS with debug enabled
 	sed -e 's/CFLAGS="$CFLAGS -g"//' \
 		-e 's/CFLAGS="$CFLAGS -O0"//' \
 		-i configure.ac configure || die
@@ -48,6 +55,7 @@ src_prepare() {
 }
 
 src_configure() {
+	# --disable-gpg-agent, bug #547456
 	gnome2_src_configure \
 		$(use_with caps libcap-ng) \
 		$(use_enable pam) \
@@ -55,7 +63,7 @@ src_configure() {
 		$(use_enable selinux) \
 		$(use_enable ssh-agent) \
 		--enable-doc \
-		--enable-gpg-agent
+		--disable-gpg-agent
 }
 
 src_test() {
@@ -71,4 +79,9 @@ pkg_postinst() {
 	# Never install as suid root, this breaks dbus activation, see bug #513870
 	use caps && fcaps -m 755 cap_ipc_lock usr/bin/gnome-keyring-daemon
 	gnome2_pkg_postinst
+
+	if ! [[ $(eselect pinentry show | grep "pinentry-gnome3") ]] ; then
+		ewarn "Please select pinentry-gnome3 as default pinentry provider:"
+		ewarn " # eselect pinentry set pinentry-gnome3"
+	fi
 }

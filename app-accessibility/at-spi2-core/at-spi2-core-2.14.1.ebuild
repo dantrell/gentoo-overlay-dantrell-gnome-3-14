@@ -7,36 +7,30 @@ GNOME2_LA_PUNT="yes"
 inherit eutils gnome2 multilib-minimal
 
 DESCRIPTION="D-Bus accessibility specifications and registration daemon"
-HOMEPAGE="https://live.gnome.org/Accessibility"
+HOMEPAGE="https://wiki.gnome.org/Accessibility"
 
 LICENSE="LGPL-2+"
 SLOT="2"
 KEYWORDS="*"
 
-IUSE="+X +introspection +nls"
+IUSE="X +introspection"
 
 # x11-libs/libSM is needed until upstream #719808 is solved either
 # making the dep unneeded or fixing their configure
 # Only libX11 is optional right now
-COMMON_DEPEND="
+RDEPEND="
 	>=dev-libs/glib-2.36:2[${MULTILIB_USEDEP}]
 	>=sys-apps/dbus-1[${MULTILIB_USEDEP}]
 	x11-libs/libSM[${MULTILIB_USEDEP}]
 	x11-libs/libXi[${MULTILIB_USEDEP}]
 	x11-libs/libXtst[${MULTILIB_USEDEP}]
+	introspection? ( >=dev-libs/gobject-introspection-0.9.6:= )
 	X? ( x11-libs/libX11[${MULTILIB_USEDEP}] )
-	introspection? ( >=dev-libs/gobject-introspection-0.9.6 )
-	nls? ( sys-devel/gettext )
 "
-RDEPEND="${COMMON_DEPEND}
-	abi_x86_32? (
-		!<=app-emulation/emul-linux-x86-gtklibs-20140508-r3
-		!app-emulation/emul-linux-x86-gtklibs[-abi_x86_32(-)]
-	)
-"
-DEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
 	>=dev-util/gtk-doc-am-1.9
 	>=dev-util/intltool-0.40
+	sys-devel/gettext
 	virtual/pkgconfig[${MULTILIB_USEDEP}]
 "
 
@@ -53,8 +47,7 @@ multilib_src_configure() {
 	gnome2_src_configure \
 		--disable-xevie \
 		$(multilib_native_use_enable introspection) \
-		$(use_enable X x11) \
-		$(use_enable nls)
+		$(use_enable X x11)
 
 	# work-around gtk-doc out-of-source brokedness
 	if multilib_is_native_abi; then

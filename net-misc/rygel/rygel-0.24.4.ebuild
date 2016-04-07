@@ -1,8 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
-GNOME2_LA_PUNT="yes"
 GCONF_DEBUG="no"
+GNOME2_LA_PUNT="yes"
 
 inherit gnome2 virtualx
 
@@ -35,7 +35,7 @@ RDEPEND="
 	introspection? ( >=dev-libs/gobject-introspection-1.33.4:= )
 	sqlite? (
 		>=dev-db/sqlite-3.5:3
-		dev-libs/libunistring
+		dev-libs/libunistring:=
 	)
 	tracker? ( >=app-misc/tracker-0.16:= )
 	transcode? (

@@ -9,7 +9,6 @@ inherit autotools eutils gnome2 pax-utils versionator virtualx
 DESCRIPTION="GNOME webbrowser based on Webkit"
 HOMEPAGE="https://wiki.gnome.org/Apps/Web"
 
-# TODO: coverage
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="*"
@@ -17,17 +16,17 @@ KEYWORDS="*"
 IUSE="+jit +nss test"
 
 COMMON_DEPEND="
-	>=app-crypt/gcr-3.5.5
+	>=app-crypt/gcr-3.5.5:=
 	>=app-crypt/libsecret-0.14
 	>=app-text/iso-codes-0.35
-	>=dev-libs/glib-2.38:2
+	>=dev-libs/glib-2.38:2[dbus]
 	>=dev-libs/libxml2-2.6.12:2
 	>=dev-libs/libxslt-1.1.7
 	>=gnome-base/gsettings-desktop-schemas-0.0.1
 	>=net-dns/avahi-0.6.22[dbus]
 	>=net-libs/webkit-gtk-2.5.90:4[jit?]
 	>=net-libs/libsoup-2.48:2.4
-	>=x11-libs/gtk+-3.13:3
+	>=x11-libs/gtk+-3.13:3=
 	>=x11-libs/libnotify-0.5.1:=
 	gnome-base/gnome-desktop:3=
 
@@ -35,21 +34,19 @@ COMMON_DEPEND="
 	x11-libs/libwnck:3
 	x11-libs/libX11
 
-	x11-themes/gnome-icon-theme
-	x11-themes/gnome-icon-theme-symbolic
-
 	nss? ( dev-libs/nss )
 "
 # epiphany-extensions support was removed in 3.7; let's not pretend it still works
 RDEPEND="${COMMON_DEPEND}
+	x11-themes/adwaita-icon-theme
 	!www-client/epiphany-extensions
 "
 # paxctl needed for bug #407085
 # eautoreconf requires gnome-common-3.5.5
 DEPEND="${COMMON_DEPEND}
+	app-text/yelp-tools
 	>=gnome-base/gnome-common-3.6
 	>=dev-util/intltool-0.50
-	app-text/yelp-tools
 	dev-util/itstool
 	sys-apps/paxctl
 	sys-devel/gettext
@@ -83,7 +80,6 @@ src_compile() {
 }
 
 src_test() {
-	# FIXME: this should be handled at eclass level
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/data" || die
 
 	unset DISPLAY

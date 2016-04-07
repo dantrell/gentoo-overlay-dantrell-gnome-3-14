@@ -48,3 +48,9 @@ pkg_pretend() {
 		ewarn "You will have to install and manage a window manager by yourself"
 	fi
 }
+
+pkg_postinst() {
+	# Remember people where to find our project information
+	elog "Please remember to look at https://wiki.gentoo.org/wiki/Project:GNOME"
+	elog "for information about the project and documentation."
+}

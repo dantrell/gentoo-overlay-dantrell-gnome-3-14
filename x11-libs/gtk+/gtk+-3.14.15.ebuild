@@ -10,7 +10,7 @@ DESCRIPTION="Gimp ToolKit +"
 HOMEPAGE="http://www.gtk.org/"
 
 LICENSE="LGPL-2+"
-SLOT="3"
+SLOT="3/14" # From WebKit: http://trac.webkit.org/changeset/195811
 KEYWORDS="*"
 
 IUSE="aqua broadway cloudprint colord cups examples +introspection test vim-syntax wayland X xinerama"
@@ -62,7 +62,7 @@ DEPEND="${COMMON_DEPEND}
 	dev-libs/gobject-introspection-common
 	>=dev-util/gdbus-codegen-2.38.2
 	>=dev-util/gtk-doc-am-1.20
-	sys-devel/gettext
+	>=sys-devel/gettext-0.18.3[${MULTILIB_USEDEP}]
 	virtual/pkgconfig[${MULTILIB_USEDEP}]
 	X? (
 		x11-proto/xextproto[${MULTILIB_USEDEP}]
@@ -85,10 +85,6 @@ RDEPEND="${COMMON_DEPEND}
 	!<x11-libs/vte-0.31.0:2.90
 	>=x11-themes/adwaita-icon-theme-3.14
 	X? ( !<x11-base/xorg-server-1.11.4 )
-	abi_x86_32? (
-		!<=app-emulation/emul-linux-x86-gtklibs-20140508-r3
-		!app-emulation/emul-linux-x86-gtklibs[-abi_x86_32(-)]
-	)
 "
 # librsvg for svg icons (PDEPEND to avoid circular dep), bug #547710
 PDEPEND="
@@ -179,7 +175,6 @@ multilib_src_configure() {
 }
 
 multilib_src_test() {
-	# FIXME: this should be handled at eclass level
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/gtk" || die
 
 	unset DBUS_SESSION_BUS_ADDRESS
@@ -242,7 +237,7 @@ pkg_postinst() {
 pkg_postrm() {
 	gnome2_pkg_postrm
 
-	if [[ -z ${REPLACED_BY_VERSIONS} ]]; then
+	if [[ -z ${REPLACED_BY_VERSION} ]]; then
 		multilib_pkg_postrm() {
 			rm -f "${EROOT}"usr/$(get_libdir)/gtk-3.0/3.0.0/immodules.cache
 		}

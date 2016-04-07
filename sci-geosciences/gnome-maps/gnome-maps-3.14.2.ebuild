@@ -17,7 +17,7 @@ IUSE=""
 RDEPEND="
 	>=app-misc/geoclue-1.99.3:2.0
 	>=dev-libs/gjs-1.39
-	>=dev-libs/gobject-introspection-0.10.1
+	>=dev-libs/gobject-introspection-0.10.1:=
 	>=dev-libs/glib-2.39.3:2
 	media-libs/clutter-gtk:1.0[introspection]
 	media-libs/clutter:1.0[introspection]
@@ -28,7 +28,6 @@ RDEPEND="
 	x11-libs/gdk-pixbuf:2[introspection]
 	>=x11-libs/gtk+-3.10:3[introspection]
 "
-
 DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.40
 	virtual/pkgconfig

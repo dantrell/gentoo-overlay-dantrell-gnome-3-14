@@ -25,12 +25,12 @@ RDEPEND="
 	x11-libs/pango[introspection]
 "
 DEPEND="${RDEPEND}
+	$(vala_depend)
 	app-text/yelp-tools
-	dev-util/appdata-tools
+	dev-libs/appstream-glib
 	>=dev-util/intltool-0.50
 	sys-devel/gettext
 	virtual/pkgconfig
-	$(vala_depend)
 "
 
 src_prepare() {

@@ -1,7 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="5"
-GCONF_DEBUG="yes"
+GNOME2_LA_PUNT="yes"
+GCONF_DEBUG="no"
 
 inherit autotools eutils gnome2
 
@@ -29,12 +30,11 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	>=dev-util/gtk-doc-am-1.13
 	>=dev-util/intltool-0.41.0
+	dev-util/itstool
+	gnome-base/gnome-common
 	>=sys-devel/gettext-0.17
 	virtual/pkgconfig
-	gnome-base/gnome-common
 "
-# If eautoreconf:
-#	gnome-base/gnome-common
 
 src_prepare() {
 	# Fix compatibility with Gentoo's sys-apps/man

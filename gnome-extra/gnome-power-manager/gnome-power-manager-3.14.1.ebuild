@@ -26,8 +26,6 @@ RDEPEND="${COMMON_DEPEND}
 DEPEND="${COMMON_DEPEND}
 	app-text/docbook-sgml-dtd:4.1
 	app-text/docbook-sgml-utils
-	>=app-text/gnome-doc-utils-0.3.2
-	app-text/scrollkeeper
 	>=dev-util/intltool-0.50
 	sys-devel/gettext
 	x11-proto/randrproto

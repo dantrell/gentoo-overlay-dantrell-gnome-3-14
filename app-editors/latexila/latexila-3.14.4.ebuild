@@ -15,7 +15,7 @@ KEYWORDS="*"
 
 IUSE="+latexmk rubber"
 
-COMMON_DEPEND="
+COMMON_DEPEND="$(vala_depend)
 	app-text/enchant
 	>=app-text/gtkspell-3.0.4:3
 	>=dev-libs/glib-2.40:2[dbus]
@@ -26,7 +26,6 @@ COMMON_DEPEND="
 	x11-libs/gdk-pixbuf:2
 	x11-libs/libX11
 	x11-libs/pango
-	$(vala_depend)
 "
 RDEPEND="${COMMON_DEPEND}
 	virtual/latex-base

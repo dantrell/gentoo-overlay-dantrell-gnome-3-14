@@ -23,7 +23,7 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	$(vala_depend)
 	app-text/yelp-tools
-	dev-util/appdata-tools
+	dev-libs/appstream-glib
 	>=dev-util/intltool-0.50
 	sys-devel/gettext
 	virtual/pkgconfig
@@ -35,10 +35,6 @@ DOC_CONTENTS="For being able to play against computer you will
 src_prepare() {
 	vala_src_prepare
 	gnome-games_src_prepare
-}
-
-src_configure() {
-	gnome-games_src_configure APPDATA_VALIDATE=$(type -P true)
 }
 
 src_install() {

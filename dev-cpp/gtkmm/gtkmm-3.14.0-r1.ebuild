@@ -15,7 +15,7 @@ KEYWORDS="*"
 IUSE="aqua doc examples test wayland +X"
 REQUIRED_USE="|| ( aqua wayland X )"
 
-COMMON_DEPEND="
+RDEPEND="
 	>=dev-cpp/glibmm-2.41.2:2[${MULTILIB_USEDEP}]
 	>=x11-libs/gtk+-3.14:3[aqua?,wayland?,X?,${MULTILIB_USEDEP}]
 	>=x11-libs/gdk-pixbuf-2.28:2[${MULTILIB_USEDEP}]
@@ -24,12 +24,7 @@ COMMON_DEPEND="
 	>=dev-cpp/pangomm-2.34.0:1.4[${MULTILIB_USEDEP}]
 	>=dev-libs/libsigc++-2.3.2:2[${MULTILIB_USEDEP}]
 "
-RDEPEND="${COMMON_DEPEND}
-	abi_x86_32? (
-		!<=app-emulation/emul-linux-x86-gtkmmlibs-20140508
-		!app-emulation/emul-linux-x86-gtkmmlibs[-abi_x86_32(-)] )
-"
-DEPEND="${COMMON_DEPEND}
+DEPEND="${RDEPEND}
 	virtual/pkgconfig
 	doc? (
 		media-gfx/graphviz

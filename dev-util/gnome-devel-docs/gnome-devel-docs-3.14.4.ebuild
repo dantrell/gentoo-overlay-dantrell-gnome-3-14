@@ -22,10 +22,7 @@ DEPEND="
 	app-text/docbook-xml-dtd:4.1.2
 	app-text/docbook-xml-dtd:4.2
 	dev-libs/libxslt
+	dev-util/itstool
 	sys-devel/gettext
 	virtual/pkgconfig
 "
-
-src_configure() {
-	gnome2_src_configure ITSTOOL=$(type -P true)
-}

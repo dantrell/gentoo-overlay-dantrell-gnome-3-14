@@ -12,7 +12,7 @@ LICENSE="LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="libnotify test +webkit"
+IUSE="libnotify test webkit"
 
 RDEPEND="
 	>=dev-libs/glib-2.8:2
@@ -25,6 +25,7 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.40
+	dev-util/itstool
 	>=sys-devel/gettext-0.14
 	virtual/pkgconfig
 	test? ( app-text/yelp-tools )
@@ -38,11 +39,12 @@ src_configure() {
 	gnome2_src_configure \
 		$(use_enable libnotify) \
 		$(use_enable webkit webkitgtk) \
-		PERL=$(type -P false) \
-		ITSTOOL=$(type -P true)
+		PERL=$(type -P false)
 }
 
 src_install() {
 	gnome2_src_install
+
+	# Not really needed and prevent us from needing perl
 	rm "${ED}/usr/bin/gdialog" || die "rm gdialog failed!"
 }

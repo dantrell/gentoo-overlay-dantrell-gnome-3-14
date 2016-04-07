@@ -15,7 +15,6 @@ app-text/evince::gentoo
 app-text/yelp-tools::gentoo
 dev-cpp/glibmm::gentoo
 dev-cpp/gtkmm::gentoo
-dev-cpp/pangomm::gentoo
 dev-libs/atk::gentoo
 dev-libs/gdl::gentoo
 dev-libs/gjs::gentoo

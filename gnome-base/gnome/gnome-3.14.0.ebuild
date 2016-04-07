@@ -30,8 +30,8 @@ RDEPEND="
 	x11-themes/sound-theme-freedesktop
 
 	accessibility? (
-		>=app-accessibility/at-spi2-atk-2.14.1
-		>=app-accessibility/at-spi2-core-2.14.0
+		>=app-accessibility/at-spi2-atk-2.14
+		>=app-accessibility/at-spi2-core-2.14
 		>=app-accessibility/caribou-0.4.15
 		>=app-accessibility/orca-${PV}
 		>=gnome-extra/mousetweaks-3.12.0 )
@@ -41,4 +41,10 @@ RDEPEND="
 
 DEPEND=""
 
-PDEPEND=">=gnome-base/gvfs-1.22.1[udisks]"
+PDEPEND=">=gnome-base/gvfs-1.22[udisks]"
+
+pkg_postinst() {
+	# Remember people where to find our project information
+	elog "Please remember to look at https://wiki.gentoo.org/wiki/Project:GNOME"
+	elog "for information about the project and documentation."
+}

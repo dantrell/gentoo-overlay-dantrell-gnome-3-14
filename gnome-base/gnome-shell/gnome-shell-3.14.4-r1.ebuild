@@ -217,6 +217,12 @@ pkg_postinst() {
 		elog "media-libs/mesa."
 	fi
 
+	# https://bugs.gentoo.org/show_bug.cgi?id=563084
+	if has_version "x11-drivers/nvidia-drivers[-kms]"; then
+		ewarn "You will need to enable kms support in x11-drivers/nvidia-drivers,"
+		ewarn "otherwise Gnome will fail to start"
+	fi
+
 	if use deprecated; then
 		ewarn "You are enabling 'deprecated' USE flag to skip systemd requirement,"
 		ewarn "this can lead to unexpected problems and is not supported neither by"

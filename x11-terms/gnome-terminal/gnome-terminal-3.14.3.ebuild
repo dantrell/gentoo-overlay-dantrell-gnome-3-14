@@ -4,7 +4,7 @@ EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes"
 
-inherit eutils gnome2 readme.gentoo
+inherit autotools eutils gnome2 readme.gentoo
 
 DESCRIPTION="The Gnome Terminal"
 HOMEPAGE="https://wiki.gnome.org/Apps/Terminal/"
@@ -32,10 +32,10 @@ RDEPEND="
 # xmllint required for glib-compile-resources, see bug #549304
 DEPEND="${RDEPEND}
 	app-text/yelp-tools
+	dev-libs/appstream-glib
 	dev-libs/libxml2
-	dev-util/appdata-tools
+	dev-util/desktop-file-utils
 	dev-util/gdbus-codegen
-	dev-util/gtk-builder-convert
 	dev-util/itstool
 	>=dev-util/intltool-0.50
 	sys-devel/gettext
@@ -47,7 +47,6 @@ DOC_CONTENTS="To get previous working directory inherited in new opened
 	. /etc/profile.d/vte.sh"
 
 src_prepare() {
-	gnome2_src_prepare
 	if use deprecated; then
 		# From Fedora:
 		# 	http://pkgs.fedoraproject.org/cgit/gnome-terminal.git/tree/restore-transparency.patch?h=f20-gnome-3-12
@@ -59,10 +58,15 @@ src_prepare() {
 	fi
 
 	if ! use vanilla; then
-		# Funtoo,
+		# From Funtoo:
 		# 	https://bugs.funtoo.org/browse/FL-1652
 		epatch "${FILESDIR}"/${PN}-3.14.3-disable-function-keys.patch
 	fi
+
+	epatch_user
+
+	eautoreconf
+	gnome2_src_prepare
 }
 
 src_configure() {

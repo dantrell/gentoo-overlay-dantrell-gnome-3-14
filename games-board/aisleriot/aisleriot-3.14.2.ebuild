@@ -30,7 +30,6 @@ COMMON_DEPEND="
 "
 DEPEND="${COMMON_DEPEND}
 	app-arch/gzip
-	dev-libs/appstream-glib
 	dev-libs/libxml2
 	>=dev-util/intltool-0.40.4
 	dev-util/itstool

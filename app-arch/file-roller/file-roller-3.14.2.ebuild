@@ -7,7 +7,7 @@ GNOME2_LA_PUNT="yes"
 inherit eutils gnome2 readme.gentoo
 
 DESCRIPTION="Archive manager for GNOME"
-HOMEPAGE="http://fileroller.sourceforge.net/ https://wiki.gnome.org/Apps/FileRoller"
+HOMEPAGE="https://wiki.gnome.org/Apps/FileRoller"
 
 LICENSE="GPL-2+ CC-BY-SA-3.0"
 SLOT="0"
@@ -34,6 +34,7 @@ RDEPEND="
 DEPEND="${RDEPEND}
 	dev-util/desktop-file-utils
 	>=dev-util/intltool-0.40.0
+	dev-util/itstool
 	sys-devel/gettext
 	virtual/pkgconfig
 "
@@ -65,8 +66,7 @@ src_prepare() {
 	epatch "${FILESDIR}"/${PN}-2.10.3-use_bin_tar.patch
 
 	# File providing Gentoo package names for various archivers
-	cp -f "${FILESDIR}/3.6.0-packages.match" data/packages.match || die
-
+	cp -f "${FILESDIR}"/3.6.0-packages.match data/packages.match || die
 	gnome2_src_prepare
 }
 
@@ -80,8 +80,7 @@ src_configure() {
 		--enable-magic \
 		--enable-libarchive \
 		$(use_enable nautilus nautilus-actions) \
-		$(use_enable packagekit) \
-		ITSTOOL=$(type -P true)
+		$(use_enable packagekit)
 }
 
 src_install() {

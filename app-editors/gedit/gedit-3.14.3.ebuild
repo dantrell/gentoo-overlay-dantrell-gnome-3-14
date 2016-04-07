@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes" # plugins are dlopened
-PYTHON_COMPAT=( python3_{3,4} )
+PYTHON_COMPAT=( python3_{3,4,5} )
 VALA_MIN_API_VERSION="0.26"
 VALA_USE_DEPEND="vapigen"
 
@@ -19,7 +19,10 @@ KEYWORDS="*"
 IUSE="+introspection +python spell vala"
 # python-single-r1 would request disabling PYTHON_TARGETS on libpeas
 # we need to fix that
-REQUIRED_USE="python? ( ^^ ( $(python_gen_useflags '*') ) )"
+REQUIRED_USE="
+	python? ( introspection )
+	python? ( ^^ ( $(python_gen_useflags '*') ) )
+"
 
 # X libs are not needed for OSX (aqua)
 COMMON_DEPEND="
@@ -36,11 +39,9 @@ COMMON_DEPEND="
 
 	net-libs/libsoup:2.4
 
-	introspection? ( >=dev-libs/gobject-introspection-0.9.3 )
+	introspection? ( >=dev-libs/gobject-introspection-0.9.3:= )
 	python? (
 		${PYTHON_DEPS}
-		>=dev-libs/gobject-introspection-0.9.3
-		>=x11-libs/gtk+-3:3[introspection]
 		dev-python/pycairo[${PYTHON_USEDEP}]
 		>=dev-python/pygobject-3:3[cairo,${PYTHON_USEDEP}]
 		dev-libs/libpeas[${PYTHON_USEDEP}] )
@@ -54,10 +55,11 @@ RDEPEND="${COMMON_DEPEND}
 DEPEND="${COMMON_DEPEND}
 	${vala_depend}
 	app-text/docbook-xml-dtd:4.1.2
-	>=app-text/scrollkeeper-0.3.11
+	app-text/yelp-tools
 	dev-libs/libxml2:2
 	>=dev-util/gtk-doc-am-1
 	>=dev-util/intltool-0.50.1
+	dev-util/itstool
 	>=sys-devel/gettext-0.18
 	virtual/pkgconfig
 "
@@ -82,8 +84,7 @@ src_configure() {
 		$(use_enable introspection) \
 		$(use_enable spell) \
 		$(use_enable python) \
-		$(use_enable vala) \
-		ITSTOOL=$(type -P true)
+		$(use_enable vala)
 }
 
 src_compile() {
@@ -91,7 +92,6 @@ src_compile() {
 }
 
 src_test() {
-	# FIXME: this should be handled at eclass level
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/data" || die
 
 	unset DBUS_SESSION_BUS_ADDRESS

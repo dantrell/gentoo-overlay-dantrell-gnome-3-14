@@ -2,6 +2,7 @@
 
 EAPI="5"
 GCONF_DEBUG="yes"
+GNOME2_LA_PUNT="yes"
 
 inherit gnome2
 
@@ -31,7 +32,7 @@ RDEPEND="
 	>=x11-libs/gtk+-3.11.1:3
 	x11-libs/pango
 
-	introspection? ( >=dev-libs/gobject-introspection-0.6.2 )
+	introspection? ( >=dev-libs/gobject-introspection-0.6.2:= )
 	kerberos? (
 		app-crypt/gcr:0=
 		app-crypt/mit-krb5 )

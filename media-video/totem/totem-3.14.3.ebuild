@@ -22,43 +22,35 @@ REQUIRED_USE="
 	zeitgeist? ( introspection )
 "
 
-# TODO:
-# Cone (VLC) plugin needs someone with the right setup to test it
-#
 # FIXME:
-# Automagic tracker-0.9.0
 # Runtime dependency on gnome-session-2.91
 RDEPEND="
-	>=dev-libs/glib-2.35:2
-	>=x11-libs/gdk-pixbuf-2.23.0:2
-	>=x11-libs/gtk+-3.11.5:3[introspection?]
-	>=dev-libs/totem-pl-parser-3.10.1:0=[introspection?]
-	>=dev-libs/libpeas-1.1.0[gtk]
-	x11-libs/cairo
+	>=dev-libs/glib-2.35:2[dbus]
+	>=dev-libs/libpeas-1.1[gtk]
 	>=dev-libs/libxml2-2.6:2
+	>=dev-libs/totem-pl-parser-3.10.1:0=[introspection?]
 	>=media-libs/clutter-1.17.3:1.0[gtk]
 	>=media-libs/clutter-gst-1.5.5:2.0
 	>=media-libs/clutter-gtk-1.5.5:1.0
-	x11-libs/mx:1.0
+	x11-libs/cairo
+	>=x11-libs/gdk-pixbuf-2.23.0:2
+	>=x11-libs/gtk+-3.11.5:3[introspection?]
 
 	>=media-libs/grilo-0.2.11:0.2[playlist]
 	media-plugins/grilo-plugins:0.2
 	>=media-libs/gstreamer-1.3.1:1.0
 	>=media-libs/gst-plugins-base-1.4.2:1.0[X,introspection?,pango]
 	media-libs/gst-plugins-good:1.0
-	media-plugins/gst-plugins-taglib:1.0
 	media-plugins/gst-plugins-meta:1.0
+	media-plugins/gst-plugins-taglib:1.0
 
-	x11-libs/libICE
-	x11-libs/libSM
 	x11-libs/libX11
-	>=x11-libs/libXxf86vm-1.0.1
 
-	gnome-base/gnome-desktop:3
+	gnome-base/gnome-desktop:3=
 	gnome-base/gsettings-desktop-schemas
 	x11-themes/gnome-icon-theme-symbolic
 
-	introspection? ( >=dev-libs/gobject-introspection-0.6.7 )
+	introspection? ( >=dev-libs/gobject-introspection-0.6.7:= )
 	lirc? ( app-misc/lirc )
 	nautilus? ( >=gnome-base/nautilus-2.91.3 )
 	python? (
@@ -72,15 +64,14 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}
 	app-text/docbook-xml-dtd:4.5
-	app-text/scrollkeeper
 	app-text/yelp-tools
 	dev-libs/appstream-glib
 	>=dev-util/gtk-doc-am-1.14
 	>=dev-util/intltool-0.40
 	sys-devel/gettext
+	virtual/pkgconfig
 	x11-proto/xextproto
 	x11-proto/xproto
-	virtual/pkgconfig
 
 	dev-libs/gobject-introspection-common
 	gnome-base/gnome-common

@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="no"
 
-inherit gnome2
+inherit gnome2 virtualx
 
 DESCRIPTION="Access, organize and share your photos on GNOME"
 HOMEPAGE="https://wiki.gnome.org/Apps/Photos"
@@ -12,10 +12,7 @@ LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE=""
-
-# Requires dogtail
-RESTRICT="test"
+IUSE="test"
 
 RDEPEND="
 	>=app-misc/tracker-1:=
@@ -41,5 +38,16 @@ DEPEND="${RDEPEND}
 	dev-util/desktop-file-utils
 	>=dev-util/intltool-0.50.1
 	virtual/pkgconfig
+	test? ( dev-util/dogtail )
 "
+# eautoreconf
+#	app-text/yelp-tools
 
+src_configure() {
+	gnome2_src_configure \
+		$(use_enable test dogtail)
+}
+
+src_test() {
+	Xemake check
+}

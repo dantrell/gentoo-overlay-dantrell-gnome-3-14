@@ -9,7 +9,6 @@ inherit autotools eutils gnome2 pam readme.gentoo systemd user
 DESCRIPTION="GNOME Display Manager for managing graphical display servers and user logins"
 HOMEPAGE="https://wiki.gnome.org/Projects/GDM"
 SRC_URI="${SRC_URI}
-
 	branding? ( http://www.mail-archive.com/tango-artists@lists.freedesktop.org/msg00043/tango-gentoo-v1.1.tar.gz )
 "
 
@@ -29,7 +28,7 @@ REQUIRED_USE="wayland? ( systemd )"
 # We need either systemd or >=openrc-0.12 to restart gdm properly, bug #463784
 COMMON_DEPEND="
 	app-text/iso-codes
-	>=dev-libs/glib-2.36:2
+	>=dev-libs/glib-2.36:2[dbus]
 	>=x11-libs/gtk+-2.91.1:3
 	>=gnome-base/dconf-0.20
 	>=gnome-base/gnome-settings-daemon-3.1.4
@@ -60,7 +59,7 @@ COMMON_DEPEND="
 	sys-auth/pambase[systemd?]
 
 	audit? ( sys-process/audit )
-	introspection? ( >=dev-libs/gobject-introspection-0.9.12 )
+	introspection? ( >=dev-libs/gobject-introspection-0.9.12:= )
 	plymouth? ( sys-boot/plymouth )
 	selinux? ( sys-libs/libselinux )
 	tcpd? ( >=sys-apps/tcp-wrappers-7.6 )
@@ -90,6 +89,7 @@ DEPEND="${COMMON_DEPEND}
 	app-text/docbook-xml-dtd:4.1.2
 	dev-util/gdbus-codegen
 	>=dev-util/intltool-0.40.0
+	dev-util/itstool
 	virtual/pkgconfig
 	x11-proto/inputproto
 	x11-proto/randrproto
@@ -139,8 +139,9 @@ src_prepare() {
 	# Show logo when branding is enabled
 	use branding && epatch "${FILESDIR}/${PN}-3.8.4-logo.patch"
 
-	eautoreconf
+	epatch_user
 
+	eautoreconf
 	gnome2_src_prepare
 }
 
@@ -176,7 +177,6 @@ src_configure() {
 		$(use_with tcpd tcp-wrappers) \
 		$(use_enable wayland wayland-support) \
 		$(use_with xinerama) \
-		ITSTOOL=$(type -P true) \
 		${myconf}
 }
 

@@ -22,11 +22,7 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}
 	app-text/yelp-tools
-	dev-util/appdata-tools
+	dev-libs/appstream-glib
 	>=dev-util/intltool-0.50
 	virtual/pkgconfig
 "
-
-src_configure() {
-	gnome-games_src_configure APPDATA_VALIDATE=$(type -P true)
-}

@@ -14,15 +14,18 @@ KEYWORDS="*"
 
 IUSE=""
 
-RDEPEND="
+COMMON_DEPEND="
 	dev-libs/gjs
 	>=dev-libs/glib-2.41:2
 	>=dev-libs/gobject-introspection-0.9.6
 	net-libs/telepathy-glib[introspection]
 	>=x11-libs/gtk+-3.13.4:3[introspection]
 "
-DEPEND="${RDEPEND}
-	dev-util/appdata-tools
+RDEPEND="${COMMON_DEPEND}
+	>=net-irc/telepathy-idle-0.2
+"
+DEPEND="${COMMON_DEPEND}
+	dev-libs/appstream-glib
 	>=dev-util/intltool-0.50
 	virtual/pkgconfig
 "

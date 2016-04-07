@@ -4,7 +4,7 @@ EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes"
 
-inherit eutils flag-o-matic readme.gentoo gnome2
+inherit eutils flag-o-matic readme.gentoo-r1 gnome2
 
 DESCRIPTION="Integrated mail, addressbook and calendaring functionality"
 HOMEPAGE="https://wiki.gnome.org/Apps/Evolution"
@@ -18,7 +18,7 @@ IUSE="+bogofilter crypt highlight ldap map spamassassin spell ssl +weather"
 
 # We need a graphical pinentry frontend to be able to ask for the GPG
 # password from inside evolution, bug 160302
-PINENTRY_DEPEND="|| ( app-crypt/pinentry[gtk] app-crypt/pinentry[qt4] )"
+PINENTRY_DEPEND="|| ( app-crypt/pinentry[gnome-keyring] app-crypt/pinentry[gtk] app-crypt/pinentry[qt4] )"
 
 # glade-3 support is for maintainers only per configure.ac
 # pst is not mature enough and changes API/ABI frequently
@@ -29,7 +29,7 @@ COMMON_DEPEND="
 	>=app-crypt/gcr-3.4
 	>=app-text/enchant-1.1.7
 	>=dev-libs/dbus-glib-0.6
-	>=dev-libs/glib-2.40:2
+	>=dev-libs/glib-2.40:2[dbus]
 	>=dev-libs/libgdata-0.10:=
 	>=dev-libs/libxml2-2.7.3:2
 	>=gnome-base/gnome-desktop-2.91.3:3=
@@ -37,25 +37,24 @@ COMMON_DEPEND="
 	>=gnome-extra/evolution-data-server-${PV}:=[gtk,weather?]
 	>=media-libs/libcanberra-0.25[gtk3]
 	>=net-libs/libsoup-2.42:2.4
-	>=net-libs/webkit-gtk-2.2.0:3
+	>=net-libs/webkit-gtk-2.2:3
 	>=x11-libs/cairo-1.9.15:=[glib]
 	>=x11-libs/gdk-pixbuf-2.24:2
-	>=x11-libs/gtk+-3.10.0:3
+	>=x11-libs/gtk+-3.10:3
 	>=x11-libs/libnotify-0.7:=
 	>=x11-misc/shared-mime-info-0.22
 
-	app-text/iso-codes
+	>=app-text/iso-codes-0.49
 	dev-libs/atk
 	gnome-base/dconf
+	dev-libs/libical:=
 	x11-libs/libSM
 	x11-libs/libICE
-	x11-themes/gnome-icon-theme
 
 	crypt? (
-		x11-libs/libcryptui:=
-		|| (
-			( >=app-crypt/gnupg-2.0.1-r2 ${PINENTRY_DEPEND} )
-			=app-crypt/gnupg-1.4* ) )
+		>=app-crypt/gnupg-1.4
+		${PINENTRY_DEPEND}
+		x11-libs/libcryptui )
 	map? (
 		>=media-libs/libchamplain-0.12:0.12[gtk]
 		>=media-libs/clutter-1.0.0:1.0
@@ -73,6 +72,7 @@ DEPEND="${COMMON_DEPEND}
 	app-text/docbook-xml-dtd:4.1.2
 	dev-util/gtk-doc-am
 	>=dev-util/intltool-0.40.0
+	dev-util/itstool
 	virtual/pkgconfig
 "
 # eautoreconf needs:
@@ -100,13 +100,11 @@ file from /usr/share/applications if you use a different browser)."
 src_prepare() {
 	# Fix relink issues in src_install
 	ELTCONF="--reverse-deps"
-
 	gnome2_src_prepare
 }
 
 src_configure() {
 	# Use NSS/NSPR only if 'ssl' is enabled.
-	local myconf
 	gnome2_src_configure \
 		--without-glade-catalog \
 		--disable-autoar \
@@ -127,8 +125,7 @@ src_configure() {
 			--without-nspr-includes
 			--without-nss-libs
 			--without-nss-includes") \
-		$(use_enable weather) \
-		${myconf}
+		$(use_enable weather)
 }
 
 src_install() {

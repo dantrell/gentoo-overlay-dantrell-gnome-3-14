@@ -7,13 +7,13 @@ GNOME2_LA_PUNT="yes"
 inherit autotools bash-completion-r1 eutils gnome2
 
 DESCRIPTION="Virtual filesystem implementation for gio"
-HOMEPAGE="https://git.gnome.org/browse/gvfs"
+HOMEPAGE="https://wiki.gnome.org/Projects/gvfs"
 
 LICENSE="LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="afp archive bluray cdda fuse gnome-online-accounts gphoto2 gtk +http ios libsecret mtp samba systemd test +udev udisks zeroconf"
+IUSE="afp archive bluray cdda fuse gnome-keyring gnome-online-accounts gphoto2 gtk +http ios mtp samba systemd test +udev udisks zeroconf"
 REQUIRED_USE="
 	cdda? ( udev )
 	mtp? ( udev )
@@ -35,6 +35,7 @@ RDEPEND="
 	archive? ( app-arch/libarchive:= )
 	bluray? ( media-libs/libbluray )
 	fuse? ( >=sys-fs/fuse-2.8.0 )
+	gnome-keyring? ( app-crypt/libsecret )
 	gnome-online-accounts? ( >=net-libs/gnome-online-accounts-3.7.1 )
 	gphoto2? ( >=media-libs/libgphoto2-2.4.7:= )
 	gtk? ( >=x11-libs/gtk+-3.0:3 )
@@ -42,12 +43,11 @@ RDEPEND="
 	ios? (
 		>=app-pda/libimobiledevice-1.1.5:=
 		>=app-pda/libplist-1:= )
-	libsecret? ( app-crypt/libsecret )
 	mtp? ( >=media-libs/libmtp-1.1.6 )
 	samba? ( || ( >=net-fs/samba-3.4.6[smbclient] >=net-fs/samba-4[client] ) )
 	systemd? ( sys-apps/systemd:0= )
 	udev? (
-		cdda? ( || ( dev-libs/libcdio-paranoia <dev-libs/libcdio-0.90[-minimal] ) )
+		cdda? ( dev-libs/libcdio-paranoia )
 		virtual/libgudev:=
 		virtual/libudev:= )
 	udisks? ( >=sys-fs/udisks-1.97:2 )
@@ -106,6 +106,7 @@ src_configure() {
 		$(use_enable bluray) \
 		$(use_enable cdda) \
 		$(use_enable fuse) \
+		$(use_enable gnome-keyring keyring) \
 		$(use_enable gnome-online-accounts goa) \
 		$(use_enable gphoto2) \
 		$(use_enable gtk) \
@@ -114,7 +115,6 @@ src_configure() {
 		$(use_enable udev) \
 		$(use_enable udev gudev) \
 		$(use_enable http) \
-		$(use_enable libsecret keyring) \
 		$(use_enable samba) \
 		$(use_enable systemd libsystemd-login) \
 		$(use_enable udisks udisks2) \

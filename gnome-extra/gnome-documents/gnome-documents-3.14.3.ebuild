@@ -42,9 +42,6 @@ RDEPEND="${COMMON_DEPEND}
 DEPEND="${COMMON_DEPEND}
 	dev-libs/libxslt
 	>=dev-util/intltool-0.50.1
+	dev-util/itstool
 	virtual/pkgconfig
 "
-
-src_configure() {
-	gnome2_src_configure ITSTOOL="$(type -P true)"
-}

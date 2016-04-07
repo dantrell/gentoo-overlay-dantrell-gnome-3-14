@@ -30,8 +30,10 @@ COMMON_DEPEND="
 	zeroconf? ( >=net-dns/avahi-0.6:= )
 "
 DEPEND="${COMMON_DEPEND}
+	app-text/yelp-tools
 	dev-util/gdbus-codegen
 	>=dev-util/intltool-0.35
+	dev-util/itstool
 	sys-devel/gettext
 	virtual/pkgconfig
 "
@@ -67,6 +69,5 @@ src_configure() {
 		$(use_enable debug) \
 		$(use_enable ldap) \
 		$(use_enable zeroconf sharing) \
-		ITSTOOL=$(type -P true) \
 		VALAC=$(type -P true)
 }

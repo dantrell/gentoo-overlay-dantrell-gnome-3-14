@@ -29,6 +29,7 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.35.0
+	dev-util/itstool
 	sys-devel/gettext
 	virtual/pkgconfig
 "
@@ -44,6 +45,5 @@ src_prepare() {
 
 src_configure() {
 	gnome2_src_configure \
-		ITSTOOL="$(type -P true)" \
 		--disable-update-mimedb
 }

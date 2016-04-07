@@ -16,7 +16,7 @@ SLOT="0/100"
 KEYWORDS="*"
 
 IUSE="cue eds elibc_glibc exif ffmpeg firefox-bookmarks flac gif gsf
-gstreamer gtk iptc +iso +jpeg +miner-fs mp3 nautilus networkmanager
+gstreamer gtk iptc +iso +jpeg libav +miner-fs mp3 nautilus networkmanager
 pdf playlist rss test thunderbird +tiff upnp-av upower +vorbis +xml xmp xps"
 REQUIRED_USE="
 	?? ( gstreamer ffmpeg )
@@ -32,11 +32,11 @@ RDEPEND="
 	>=app-i18n/enca-1.9
 	>=dev-db/sqlite-3.7.16:=
 	>=dev-libs/glib-2.40:2
-	>=dev-libs/gobject-introspection-0.9.5
+	>=dev-libs/gobject-introspection-0.9.5:=
 	>=dev-libs/icu-4.8.1.1:=
 	|| (
-		>=media-gfx/imagemagick-5.2.1[png,jpeg=]
-		media-gfx/graphicsmagick[imagemagick,png,jpeg=] )
+		>=media-gfx/imagemagick-5.2.1[png,jpeg?]
+		media-gfx/graphicsmagick[imagemagick,png,jpeg?] )
 	>=media-libs/libpng-1.2:0=
 	>=media-libs/libmediaart-0.5:1.0
 	>=x11-libs/pango-1:=
@@ -50,12 +50,15 @@ RDEPEND="
 		<gnome-extra/evolution-data-server-3.5.3 )
 	elibc_glibc? ( >=sys-libs/glibc-2.12 )
 	exif? ( >=media-libs/libexif-0.6 )
-	ffmpeg? ( >=virtual/ffmpeg-9 )
+	ffmpeg? (
+		libav? ( media-video/libav:= )
+		!libav? ( media-video/ffmpeg:0= )
+	)
 	firefox-bookmarks? ( || (
 		>=www-client/firefox-4.0
 		>=www-client/firefox-bin-4.0 ) )
 	flac? ( >=media-libs/flac-1.2.1 )
-	gif? ( media-libs/giflib )
+	gif? ( media-libs/giflib:= )
 	gsf? ( >=gnome-extra/libgsf-1.14.24 )
 	gstreamer? (
 		media-libs/gstreamer:1.0
