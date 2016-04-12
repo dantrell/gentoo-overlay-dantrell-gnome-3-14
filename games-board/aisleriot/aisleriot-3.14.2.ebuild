@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="yes"
 
-inherit eutils gnome-games
+inherit gnome-games
 
 DESCRIPTION="A collection of solitaire card games for GNOME"
 HOMEPAGE="https://wiki.gnome.org/action/show/Apps/Aisleriot"
@@ -16,7 +16,8 @@ IUSE="extra gnome +sound valgrind"
 
 COMMON_DEPEND="
 	>=dev-libs/glib-2.32:2
-	>=dev-scheme/guile-2.0.5[deprecated,regex]
+	>=dev-scheme/guile-2.0.0[deprecated,regex]
+	<dev-scheme/guile-2.1.0
 	>=gnome-base/librsvg-2.32:2
 	>=x11-libs/cairo-1.10
 	>=x11-libs/gtk+-3.4:3
