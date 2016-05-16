@@ -4,7 +4,6 @@ EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes"
 PYTHON_COMPAT=( python2_7 )
-VALA_MIN_API_VERSION="0.18"
 
 inherit autotools eutils gnome2 linux-info multilib python-any-r1 vala versionator virtualx
 
@@ -229,9 +228,8 @@ src_configure() {
 }
 
 src_test() {
-	export G_MESSAGES_DEBUG=all # upstream bug #699401#c1
-	unset DBUS_SESSION_BUS_ADDRESS
-	Xemake check
+	# G_MESSAGES_DEBUG, upstream bug #699401#c1
+	Xemake check TESTS_ENVIRONMENT="dbus-run-session" G_MESSAGES_DEBUG="all"
 }
 
 src_install() {
