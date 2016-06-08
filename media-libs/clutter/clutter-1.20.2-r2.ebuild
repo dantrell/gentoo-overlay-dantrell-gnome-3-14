@@ -36,7 +36,7 @@ RDEPEND="
 
 	egl? (
 		>=dev-libs/libinput-0.8
-		media-libs/cogl[gles2,kms]
+		media-libs/cogl:1.0=[gles2,kms]
 		>=virtual/libgudev-136
 		x11-libs/libxkbcommon
 	)
@@ -64,15 +64,14 @@ DEPEND="${RDEPEND}
 		dev-libs/libxslt )
 	test? ( x11-libs/gdk-pixbuf )
 "
-# Tests fail with both swrast and llvmpipe
-# They pass under r600g or i965, so the bug is in mesa
-#RESTRICT="test"
 
 src_prepare() {
 	# From GNOME:
+	# 	https://git.gnome.org/browse/clutter/commit/?id=be8602fbb491c30c1e2febb92553375b2f4ce584
 	# 	https://git.gnome.org/browse/clutter/commit/?id=c1987a5c06d912e8ff7d2541fc266f93c1d65477
 	# 	https://git.gnome.org/browse/clutter/commit/?id=96abbf38bc9d048ab8b0ad51a99f47cbb05c01ad
 	# 	https://git.gnome.org/browse/clutter/commit/?id=ede13b11d72a310e535f9a6f0b7e3f774f5529dc
+	epatch "${FILESDIR}"/${PN}-1.20.2-reorganize-backends.patch
 	epatch "${FILESDIR}"/${PN}-1.20.3-clutter-stage-cogl-match-egls-behavior-of-eglswapbufferswithdamage.patch
 	epatch "${FILESDIR}"/${PN}-1.20.3-actor-use-the-real-opacity-when-clearing-the-stage.patch
 	epatch "${FILESDIR}"/${PN}-1.21.3-evdev-use-libinputs-new-merged-scroll-events.patch

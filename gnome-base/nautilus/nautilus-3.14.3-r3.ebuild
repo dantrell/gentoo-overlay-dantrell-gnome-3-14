@@ -4,7 +4,7 @@ EAPI="5"
 GCONF_DEBUG="no"
 GNOME2_LA_PUNT="yes" # Needed with USE 'sendto'
 
-inherit eutils gnome2 readme.gentoo virtualx
+inherit eutils gnome2 readme.gentoo versionator virtualx
 
 DESCRIPTION="A file manager for the GNOME desktop"
 HOMEPAGE="https://wiki.gnome.org/Apps/Nautilus"
@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="*"
 
 # profiling?
-IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker xmp +vanilla"
+IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker vanilla xmp"
 
 # FIXME: tests fails under Xvfb, but pass when building manually
 # "FAIL: check failed in nautilus-file.c, line 8307"
@@ -65,7 +65,9 @@ PDEPEND="
 		>=x11-themes/gnome-icon-theme-1.1.91
 		x11-themes/gnome-icon-theme-symbolic )
 	tracker? ( >=gnome-extra/nautilus-tracker-tags-0.12 )
-	previewer? ( >=gnome-extra/sushi-0.1.9 )
+	previewer? (
+		>=gnome-extra/sushi-0.1.9
+		>=media-video/totem-$(get_version_component_range 1-2) )
 	sendto? ( >=gnome-extra/nautilus-sendto-3.0.1 )
 	>=gnome-base/gvfs-1.14[gtk]
 "
@@ -79,8 +81,8 @@ src_prepare() {
 	fi
 
 	if ! use vanilla; then
-		epatch "${FILESDIR}"/${P}-reorder-context-menu.patch
-		epatch "${FILESDIR}"/${P}-support-click-to-rename.patch
+		epatch "${FILESDIR}"/${PN}-3.14.3-reorder-context-menu.patch
+		epatch "${FILESDIR}"/${PN}-3.14.3-support-slow-double-click-to-rename.patch
 	fi
 
 	# Restore the nautilus-2.x Delete shortcut (Ctrl+Delete will still work);
@@ -91,9 +93,13 @@ src_prepare() {
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=a0cbf72827b87a28fba47988957001a8b4fbddf5
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=45413c18167cddaefefc092b63ec75d8fadc6f50
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=bfe878e4313e21b4c539d95a88d243065d30fc2c
-	epatch "${FILESDIR}"/${P}-window-menus-unref-extension-created-action.patch
-	epatch "${FILESDIR}"/${P}-application-actions-use-valid-window-list.patch
-	epatch "${FILESDIR}"/${PN}-9999-ignore-no-desktop-if-not-first-launch.patch
+	# 	https://git.gnome.org/browse/nautilus/commit/?id=079d349206c2dd182df82e4b26e3e23c9b7a75c4
+	# 	https://git.gnome.org/browse/nautilus/commit/?id=e96f73cf1589c023ade74e4aeb16a0c422790161
+	epatch "${FILESDIR}"/${PN}-3.14.3-window-menus-unref-extension-created-action.patch
+	epatch "${FILESDIR}"/${PN}-3.14.3-application-actions-use-valid-window-list.patch
+	epatch "${FILESDIR}"/${PN}-3.17.3-ignore-no-desktop-if-not-first-launch.patch
+	epatch "${FILESDIR}"/${PN}-3.18.5-thumbnails-avoid-crash-with-jp2-images.patch
+	epatch "${FILESDIR}"/${PN}-3.20.2-do-not-reset-double-click-status-on-pointer-movement.patch
 
 	# Remove -D*DEPRECATED flags. Don't leave this for eclass! (bug #448822)
 	sed -e 's/DISABLE_DEPRECATED_CFLAGS=.*/DISABLE_DEPRECATED_CFLAGS=/' \
