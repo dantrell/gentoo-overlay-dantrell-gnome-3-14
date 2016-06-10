@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="*"
 
 # profiling?
-IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker vanilla xmp"
+IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker vanilla-menu vanilla-rename xmp"
 
 # FIXME: tests fails under Xvfb, but pass when building manually
 # "FAIL: check failed in nautilus-file.c, line 8307"
@@ -80,8 +80,11 @@ src_prepare() {
 			close the previewer, press space again."
 	fi
 
-	if ! use vanilla; then
+	if ! use vanilla-menu; then
 		epatch "${FILESDIR}"/${PN}-3.14.3-reorder-context-menu.patch
+	fi
+
+	if ! use vanilla-rename; then
 		epatch "${FILESDIR}"/${PN}-3.14.3-support-slow-double-click-to-rename.patch
 	fi
 

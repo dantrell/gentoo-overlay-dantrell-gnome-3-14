@@ -14,7 +14,7 @@ LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="+bluetooth +deprecated +deprecated-background +networkmanager +nls systemd vanilla"
+IUSE="+bluetooth +deprecated +deprecated-background +networkmanager +nls systemd vanilla-motd vanilla-screen"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}"
 
 # libXfixes-5.0 needed for pointer barriers
@@ -124,10 +124,6 @@ DEPEND="${COMMON_DEPEND}
 # https://bugs.gentoo.org/show_bug.cgi?id=360413
 
 src_prepare() {
-	# From GNOME:
-	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=965aedb0bb15c0246c67384e2dab13fa027df917
-	epatch "${FILESDIR}"/${PN}-3.19.3-background-reload-animation-on-timezone-changes.patch
-
 	if use deprecated; then
 		# From Funtoo:
 		# 	https://bugs.funtoo.org/browse/FL-1329
@@ -139,11 +135,18 @@ src_prepare() {
 		epatch "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
 	fi
 
-	if ! use vanilla; then
-		epatch "${FILESDIR}"/${PN}-3.14.4-improve-screen-blanking.patch
+	if ! use vanilla-motd; then
 		epatch "${FILESDIR}"/${PN}-3.14.4-improve-motd-handling.patch
 	fi
 
+	if ! use vanilla-screen; then
+		epatch "${FILESDIR}"/${PN}-3.14.4-improve-screen-blanking.patch
+	fi
+
+	# From GNOME:
+	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=965aedb0bb15c0246c67384e2dab13fa027df917
+	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=6660342d2f41d4d22a23fa0653f8e1f36b6bf7dc
+	epatch "${FILESDIR}"/${PN}-3.19.3-background-reload-animation-on-timezone-changes.patch
 	epatch "${FILESDIR}"/${PN}-3.14.4-authprompt-fix-hang-if-user-types-password-really-fast.patch
 
 	# Change favorites defaults, bug #479918
