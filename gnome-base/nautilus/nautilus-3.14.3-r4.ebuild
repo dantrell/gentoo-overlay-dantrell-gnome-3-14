@@ -97,11 +97,13 @@ src_prepare() {
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=45413c18167cddaefefc092b63ec75d8fadc6f50
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=bfe878e4313e21b4c539d95a88d243065d30fc2c
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=079d349206c2dd182df82e4b26e3e23c9b7a75c4
+	# 	https://git.gnome.org/browse/nautilus/commit/?id=618f6a6d1965b35e302b2623cbd7e4e81e752ded
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=e96f73cf1589c023ade74e4aeb16a0c422790161
 	epatch "${FILESDIR}"/${PN}-3.14.3-window-menus-unref-extension-created-action.patch
 	epatch "${FILESDIR}"/${PN}-3.14.3-application-actions-use-valid-window-list.patch
 	epatch "${FILESDIR}"/${PN}-3.17.3-ignore-no-desktop-if-not-first-launch.patch
 	epatch "${FILESDIR}"/${PN}-3.18.5-thumbnails-avoid-crash-with-jp2-images.patch
+	epatch "${FILESDIR}"/${PN}-3.19.91-files-view-hide-hidden-files-when-renamed.patch
 	epatch "${FILESDIR}"/${PN}-3.20.2-do-not-reset-double-click-status-on-pointer-movement.patch
 
 	# Remove -D*DEPRECATED flags. Don't leave this for eclass! (bug #448822)
