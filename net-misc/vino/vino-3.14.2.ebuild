@@ -39,7 +39,7 @@ RDEPEND="
 	crypt? ( >=dev-libs/libgcrypt-1.1.90:0= )
 	gnome-keyring? ( app-crypt/libsecret )
 	jpeg? ( virtual/jpeg:0= )
-	networkmanager? ( >=net-misc/networkmanager-0.7 )
+	networkmanager? ( >=net-misc/networkmanager-0.7:= )
 	ssl? ( >=net-libs/gnutls-2.2.0:= )
 	telepathy? ( >=net-libs/telepathy-glib-0.18 )
 	zeroconf? ( >=net-dns/avahi-0.6:=[dbus] )
