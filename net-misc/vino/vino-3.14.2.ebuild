@@ -3,7 +3,7 @@
 EAPI="5"
 GCONF_DEBUG="yes"
 
-inherit gnome2
+inherit autotools eutils gnome2
 
 DESCRIPTION="An integrated VNC server for GNOME"
 HOMEPAGE="https://wiki.gnome.org/Projects/Vino"
@@ -12,7 +12,7 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="crypt gnome-keyring ipv6 jpeg networkmanager ssl +telepathy zeroconf +zlib"
+IUSE="crypt gnome-keyring ipv6 jpeg ssl +telepathy zeroconf +zlib"
 # bug #394611; tight encoding requires zlib encoding
 REQUIRED_USE="jpeg? ( zlib )"
 
@@ -39,7 +39,6 @@ RDEPEND="
 	crypt? ( >=dev-libs/libgcrypt-1.1.90:0= )
 	gnome-keyring? ( app-crypt/libsecret )
 	jpeg? ( virtual/jpeg:0= )
-	networkmanager? ( >=net-misc/networkmanager-0.7:= )
 	ssl? ( >=net-libs/gnutls-2.2.0:= )
 	telepathy? ( >=net-libs/telepathy-glib-0.18 )
 	zeroconf? ( >=net-dns/avahi-0.6:=[dbus] )
@@ -53,13 +52,31 @@ DEPEND="${RDEPEND}
 "
 # libsecret is always required at build time per bug 322763
 
+src_prepare() {
+	# From GNOME:
+	# 	https://git.gnome.org/browse/vino/commit/?id=ccf0986fc8ec5c1770505435c28c6438847263ed
+	# 	https://git.gnome.org/browse/vino/commit/?id=4d53f758db39da152b7156587fa6ef66acefe1d0
+	# 	https://git.gnome.org/browse/vino/commit/?id=9fa956adc7af65be0828f68237e716bdc1edfad1
+	epatch "${FILESDIR}"/${PN}-3.15.4-remove-obsolete-gsettings-conversion-file.patch
+	epatch "${FILESDIR}"/${PN}-3.15.90-vino-upnp-use-gnetworkmonitor.patch
+	epatch "${FILESDIR}"/${PN}-3.15.91-avoid-a-critical-eggsmclient-warning-on-startup.patch
+
+	# Improve handling of name resolution failure (from 'master')
+	epatch "${FILESDIR}"/${PN}-3.16.0-name-resolution.patch
+
+	# Avoid a crash when showing the preferences (from 'master')
+	epatch "${FILESDIR}"/${PN}-3.16.0-fix-crash.patch
+
+	eautoreconf
+	gnome2_src_prepare
+}
+
 src_configure() {
 	gnome2_src_configure \
 		$(use_enable ipv6) \
 		$(use_with crypt gcrypt) \
 		$(use_with gnome-keyring secret) \
 		$(use_with jpeg) \
-		$(use_with networkmanager network-manager) \
 		$(use_with ssl gnutls) \
 		$(use_with telepathy) \
 		$(use_with zeroconf avahi) \

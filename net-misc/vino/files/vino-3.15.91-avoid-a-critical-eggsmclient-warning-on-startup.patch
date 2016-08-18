@@ -1,0 +1,29 @@
+From 9fa956adc7af65be0828f68237e716bdc1edfad1 Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Tue, 24 Feb 2015 15:02:41 +0000
+Subject: Avoid a critical EggSMClient warning on startup
+
+https://bugzilla.gnome.org/show_bug.cgi?id=662074
+---
+ server/vino-main.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/server/vino-main.c b/server/vino-main.c
+index 1f2b2b1..dd95de7 100644
+--- a/server/vino-main.c
++++ b/server/vino-main.c
+@@ -252,6 +252,11 @@ main (int argc, char **argv)
+       { NULL }
+     };
+ 
++    /* Call this before parsing options, as that triggers creation of an SM
++     * client. Creating the client in a disabled state, and then switching to
++     * the real state later, avoids a critical warning on startup. */
++    egg_sm_client_set_mode (EGG_SM_CLIENT_MODE_DISABLED);
++
+     context = g_option_context_new (_("- VNC Server for GNOME"));
+     g_option_context_add_group (context, gtk_get_option_group (TRUE));
+     g_option_context_add_group (context, egg_sm_client_get_option_group ());
+-- 
+cgit v0.12
+

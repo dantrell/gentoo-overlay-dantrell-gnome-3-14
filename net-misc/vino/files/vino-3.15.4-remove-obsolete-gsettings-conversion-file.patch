@@ -1,0 +1,53 @@
+From ccf0986fc8ec5c1770505435c28c6438847263ed Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Tue, 6 Jan 2015 14:22:46 +0000
+Subject: Remove obsolete GSettings conversion file
+
+Avoid a crash in gsettings-data-convert.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742458
+---
+ Makefile.am                   |  3 ---
+ common/org.gnome.Vino.convert | 16 ----------------
+ 2 files changed, 19 deletions(-)
+ delete mode 100644 common/org.gnome.Vino.convert
+
+diff --git a/Makefile.am b/Makefile.am
+index a9dcb35..4103d83 100644
+--- a/Makefile.am
++++ b/Makefile.am
+@@ -249,9 +249,6 @@ gsettings_SCHEMAS = common/org.gnome.Vino.gschema.xml
+ 
+ @GSETTINGS_RULES@
+ 
+-convertdir = $(datadir)/GConf/gsettings
+-dist_convert_DATA = common/org.gnome.Vino.convert
+-
+ if MAINTAINER_MODE
+ dist-hook: dist-changelog
+ else
+diff --git a/common/org.gnome.Vino.convert b/common/org.gnome.Vino.convert
+deleted file mode 100644
+index 776a0e8..0000000
+--- a/common/org.gnome.Vino.convert
++++ /dev/null
+@@ -1,16 +0,0 @@
+-[org.gnome.Vino]
+-enabled = /desktop/gnome/remote_access/enabled
+-prompt-enabled = /desktop/gnome/remote_access/prompt_enabled
+-view-only = /desktop/gnome/remote_access/view_only
+-network-interface = /desktop/gnome/remote_access/network_interface
+-use-alternative-port = /desktop/gnome/remote_access/use_alternative_port
+-alternative-port = /desktop/gnome/remote_access/alternative_port
+-require-encryption = /desktop/gnome/remote_access/require_encryption
+-authentication-methods = /desktop/gnome/remote_access/authentication_methods
+-vnc-password = /desktop/gnome/remote_access/vnc_password
+-mailto = /desktop/gnome/remote_access/mailto
+-lock-screen-on-disconnect = /desktop/gnome/remote_access/lock_screen_on_disconnect
+-icon-visibility = /desktop/gnome/remote_access/icon_visibility
+-disable-background = /desktop/gnome/remote_access/disable_background
+-use-upnp = /desktop/gnome/remote_access/use_upnp
+-disable-xdamage = /desktop/gnome/remote_access/disable_xdamage
+-- 
+cgit v0.12
+
