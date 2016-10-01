@@ -45,7 +45,6 @@ games-puzzle/hitori::gentoo
 games-puzzle/lightsoff::gentoo
 games-puzzle/quadrapassel::gentoo
 games-puzzle/swell-foop::gentoo
-gnome-base/dconf::gentoo
 gnome-base/gdm::gentoo
 gnome-base/gnome-control-center::gentoo
 gnome-base/gnome-core-apps::gentoo
