@@ -1,0 +1,29 @@
+diff '--exclude=.git' -urN a/themes/Adwaita/Makefile.am b/themes/Adwaita/Makefile.am
+--- a/themes/Adwaita/Makefile.am	2014-11-26 11:24:19.000000000 -0500
++++ b/themes/Adwaita/Makefile.am	2016-10-12 14:36:28.269738328 -0400
+@@ -1,8 +1,4 @@
+-SUBDIRS = metacity-1 gtk-3.0
+-
+-if GTK2_ENGINE
+-SUBDIRS += gtk-2.0
+-endif
++SUBDIRS = gtk-2.0 gtk-3.0 metacity-1
+ 
+ THEME_NAME=Adwaita
+ THEME_IN_FILES=index.theme.in
+diff '--exclude=.git' -urN a/themes/Adwaita/gtk-2.0/Makefile.am b/themes/Adwaita/gtk-2.0/Makefile.am
+--- a/themes/Adwaita/gtk-2.0/Makefile.am	2014-11-26 11:25:03.000000000 -0500
++++ b/themes/Adwaita/gtk-2.0/Makefile.am	2016-10-12 14:36:40.310664986 -0400
+@@ -1,3 +1,4 @@
++if GTK2_ENGINE
+ enginedir = $(libdir)/gtk-2.0/$(GTK2_VERSION)/engines
+ engine_LTLIBRARIES = libadwaita.la
+ 
+@@ -5,6 +6,7 @@
+ libadwaita_la_SOURCES = adwaita_engine.c
+ libadwaita_la_LDFLAGS = -module -avoid-version -no-undefined
+ libadwaita_la_LIBADD =  $(GTK2_ENGINE_LIBS)
++endif
+ 
+ themedir = $(datadir)/themes/Adwaita/gtk-2.0
+ theme_DATA = gtkrc
