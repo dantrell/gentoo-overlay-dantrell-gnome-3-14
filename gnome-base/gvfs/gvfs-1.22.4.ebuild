@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit autotools bash-completion-r1 eutils gnome2
+inherit autotools bash-completion-r1 gnome2
 
 DESCRIPTION="Virtual filesystem implementation for gio"
 HOMEPAGE="https://wiki.gnome.org/Projects/gvfs"
@@ -36,7 +35,7 @@ RDEPEND="
 	bluray? ( media-libs/libbluray )
 	fuse? ( >=sys-fs/fuse-2.8.0 )
 	gnome-keyring? ( app-crypt/libsecret )
-	gnome-online-accounts? ( >=net-libs/gnome-online-accounts-3.7.1 )
+	gnome-online-accounts? ( >=net-libs/gnome-online-accounts-3.7.1:= )
 	gphoto2? ( >=media-libs/libgphoto2-2.4.7:= )
 	gtk? ( >=x11-libs/gtk+-3.0:3 )
 	http? ( >=net-libs/libsoup-2.42:2.4 )
@@ -71,20 +70,23 @@ DEPEND="${RDEPEND}
 # test dependencies needed per https://bugzilla.gnome.org/700162
 
 src_prepare() {
-	DOCS="AUTHORS ChangeLog NEWS MAINTAINERS README TODO" # ChangeLog.pre-1.2 README.commits
+	# Fix parallel installation, bug #543812 (from 'master')
+	eapply "${FILESDIR}/${PN}-1.22.4-fix-parallel.patch"
+
+	# From GNOME:
+	# 	https://git.gnome.org/browse/gvfs/commit/?id=7bee91695bbe5d9228392e6da496186f02df5c39
+	# 	https://git.gnome.org/browse/gvfs/commit/?id=77daad9b0ddaebc032627af6d347afc22a0e0641
+	# 	https://git.gnome.org/browse/gvfs/commit/?id=48877cbca19d13f4bdb9aae4bf366e78831cedc4
+	eapply "${FILESDIR}"/${PN}-1.22.5-gvfs-open-add-hack-to-close-up-dbus-daemon-race.patch
+	eapply "${FILESDIR}"/${PN}-1.22.5-gvfs-open-do-not-use-g-steal-pointer.patch
+	eapply "${FILESDIR}"/${PN}-1.24.4-gvfs-open-also-replace-dashes-when-computing-object-path.patch
 
 	if ! use udev; then
 		sed -e 's/gvfsd-burn/ /' \
 			-e 's/burn.mount.in/ /' \
 			-e 's/burn.mount/ /' \
 			-i daemon/Makefile.am || die
-
-		# Uncomment when eautoreconf stops being needed always
-		#eautoreconf
 	fi
-
-	# Fix parallel installation, bug #543812 (from 'master')
-	epatch "${FILESDIR}/${PN}-1.22.4-fix-parallel.patch"
 
 	eautoreconf
 	gnome2_src_prepare

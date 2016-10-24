@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 
 inherit gnome2
 
@@ -44,7 +43,6 @@ DEPEND="${RDEPEND}
 "
 RDEPEND="${COMMON_DEPEND}
 	>=gnome-base/nautilus-3.1.90
-	x11-themes/gnome-icon-theme-symbolic
 "
 
 src_configure() {

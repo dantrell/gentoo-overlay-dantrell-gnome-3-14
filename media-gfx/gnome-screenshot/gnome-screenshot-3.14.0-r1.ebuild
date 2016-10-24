@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 
-inherit gnome2 readme.gentoo
+inherit gnome2 readme.gentoo-r1
 
 DESCRIPTION="Screenshot utility for GNOME"
 HOMEPAGE="https://git.gnome.org/browse/gnome-screenshot"
@@ -41,7 +40,8 @@ DOC_CONTENTS="${P} saves screenshots in ~/Pictures/ and defaults to
 
 src_prepare() {
 	# filename-builder: use dash for time format separator (from 'master')
-	epatch "${FILESDIR}"/${PN}-3.14.0-use-dash.patch
+	eapply "${FILESDIR}"/${PN}-3.14.0-use-dash.patch
+
 	gnome2_src_prepare
 }
 

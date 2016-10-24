@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 
-inherit autotools eutils gnome2
+inherit autotools gnome2
 
 DESCRIPTION="An integrated VNC server for GNOME"
 HOMEPAGE="https://wiki.gnome.org/Projects/Vino"
@@ -12,7 +11,7 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="crypt gnome-keyring ipv6 jpeg ssl +telepathy zeroconf +zlib"
+IUSE="crypt debug gnome-keyring ipv6 jpeg ssl +telepathy zeroconf +zlib"
 # bug #394611; tight encoding requires zlib encoding
 REQUIRED_USE="jpeg? ( zlib )"
 
@@ -57,15 +56,15 @@ src_prepare() {
 	# 	https://git.gnome.org/browse/vino/commit/?id=ccf0986fc8ec5c1770505435c28c6438847263ed
 	# 	https://git.gnome.org/browse/vino/commit/?id=4d53f758db39da152b7156587fa6ef66acefe1d0
 	# 	https://git.gnome.org/browse/vino/commit/?id=9fa956adc7af65be0828f68237e716bdc1edfad1
-	epatch "${FILESDIR}"/${PN}-3.15.4-remove-obsolete-gsettings-conversion-file.patch
-	epatch "${FILESDIR}"/${PN}-3.15.90-vino-upnp-use-gnetworkmonitor.patch
-	epatch "${FILESDIR}"/${PN}-3.15.91-avoid-a-critical-eggsmclient-warning-on-startup.patch
+	eapply "${FILESDIR}"/${PN}-3.15.4-remove-obsolete-gsettings-conversion-file.patch
+	eapply "${FILESDIR}"/${PN}-3.15.90-vino-upnp-use-gnetworkmonitor.patch
+	eapply "${FILESDIR}"/${PN}-3.15.91-avoid-a-critical-eggsmclient-warning-on-startup.patch
 
 	# Improve handling of name resolution failure (from 'master')
-	epatch "${FILESDIR}"/${PN}-3.16.0-name-resolution.patch
+	eapply "${FILESDIR}"/${PN}-3.16.0-name-resolution.patch
 
 	# Avoid a crash when showing the preferences (from 'master')
-	epatch "${FILESDIR}"/${PN}-3.16.0-fix-crash.patch
+	eapply "${FILESDIR}"/${PN}-3.16.0-fix-crash.patch
 
 	eautoreconf
 	gnome2_src_prepare
@@ -75,6 +74,7 @@ src_configure() {
 	gnome2_src_configure \
 		$(use_enable ipv6) \
 		$(use_with crypt gcrypt) \
+		$(usex debug --enable-debug=yes ' ') \
 		$(use_with gnome-keyring secret) \
 		$(use_with jpeg) \
 		$(use_with ssl gnutls) \

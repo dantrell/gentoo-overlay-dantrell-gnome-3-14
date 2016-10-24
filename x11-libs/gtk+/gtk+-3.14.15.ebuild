@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit autotools eutils flag-o-matic gnome2 multilib virtualx multilib-minimal
+inherit autotools flag-o-matic gnome2 multilib virtualx multilib-minimal
 
 DESCRIPTION="Gimp ToolKit +"
 HOMEPAGE="http://www.gtk.org/"
@@ -23,7 +22,8 @@ REQUIRED_USE="
 # https://bugzilla.gnome.org/show_bug.cgi?id=768662#c1
 RESTRICT="test"
 
-# FIXME: introspection data is built against system installation of gtk+:3
+# FIXME: introspection data is built against system installation of gtk+:3,
+# bug #????
 # NOTE: cairo[svg] dep is due to bug 291283 (not patched to avoid eautoreconf)
 COMMON_DEPEND="
 	>=dev-libs/atk-2.12[introspection?,${MULTILIB_USEDEP}]
@@ -111,15 +111,15 @@ strip_builddir() {
 
 src_prepare() {
 	# https://bugzilla.gnome.org/show_bug.cgi?id=738835
-	epatch "${FILESDIR}"/${PN}-non-bash-support.patch
+	eapply "${FILESDIR}"/${PN}-non-bash-support.patch
 
 	# From GNOME:
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=34e6e1a599375da5665f4829faedf4c640f031a6
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=8753ef612940d5977bc8af2cca3ceb6cc669d1e4
-	epatch "${FILESDIR}"/${PN}-3.14.15-avoid-g-set-object.patch
-	epatch "${FILESDIR}"/${PN}-3.14.15-gtkplacessidebar-protect-for-checking-a-null-event.patch
-	epatch "${FILESDIR}"/${PN}-3.15.2-render-shadows-for-half-tiled-windows.patch
+	eapply "${FILESDIR}"/${PN}-3.14.15-avoid-g-set-object.patch
+	eapply "${FILESDIR}"/${PN}-3.14.15-gtkplacessidebar-protect-for-checking-a-null-event.patch
+	eapply "${FILESDIR}"/${PN}-3.15.2-render-shadows-for-half-tiled-windows.patch
 
 	# -O3 and company cause random crashes in applications. Bug #133469
 	replace-flags -O3 -O2
@@ -137,10 +137,9 @@ src_prepare() {
 		strip_builddir SRC_SUBDIRS examples Makefile.{am,in}
 	fi
 
-	epatch_user
-
-	eautoreconf
+	# call eapply_user (implicitly) before eautoreconf
 	gnome2_src_prepare
+	eautoreconf
 }
 
 multilib_src_configure() {
@@ -180,30 +179,17 @@ multilib_src_configure() {
 
 multilib_src_test() {
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/gtk" || die
-
-	unset DBUS_SESSION_BUS_ADDRESS
-	unset DISPLAY #527682
-	GSETTINGS_SCHEMA_DIR="${S}/gtk" Xemake check
+	GSETTINGS_SCHEMA_DIR="${S}/gtk" virtx emake check
 }
 
 multilib_src_install() {
 	gnome2_src_install
-
-	# add -framework Carbon to the .pc files, bug #????
-	# FIXME: Is this still needed?
-#	if use aqua ; then
-#		for i in gtk+-3.0.pc gtk+-quartz-3.0.pc gtk+-unix-print-3.0.pc; do
-#			sed -e "s:Libs\: :Libs\: -framework Carbon :" \
-#				-i "${ED%/}"/usr/$(get_libdir)/pkgconfig/$i || die "sed failed"
-#		done
-#	fi
 }
 
 multilib_src_install_all() {
 	insinto /etc/gtk-3.0
 	doins "${FILESDIR}"/settings.ini
-
-	dodoc AUTHORS ChangeLog* HACKING NEWS* README*
+	einstalldocs
 }
 
 pkg_preinst() {

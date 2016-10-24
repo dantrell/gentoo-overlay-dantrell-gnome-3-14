@@ -1,12 +1,11 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 GNOME2_LA_PUNT="yes" # plugins are dlopened
-PYTHON_COMPAT=( python2_7 )
+PYTHON_COMPAT=( python{2_7,3_4,3_5} )
 PYTHON_REQ_USE="threads"
 
-inherit autotools eutils gnome2 multilib python-single-r1
+inherit autotools gnome2 multilib python-single-r1
 
 DESCRIPTION="Media player for GNOME"
 HOMEPAGE="https://wiki.gnome.org/Apps/Videos"
@@ -15,7 +14,7 @@ LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="+introspection lirc nautilus +python test zeitgeist"
+IUSE="debug +introspection lirc nautilus +python test zeitgeist"
 # see bug #359379
 REQUIRED_USE="
 	python? ( introspection ${PYTHON_REQUIRED_USE} )
@@ -48,7 +47,7 @@ RDEPEND="
 
 	gnome-base/gnome-desktop:3=
 	gnome-base/gsettings-desktop-schemas
-	x11-themes/gnome-icon-theme-symbolic
+	x11-themes/adwaita-icon-theme
 
 	introspection? ( >=dev-libs/gobject-introspection-0.6.7:= )
 	lirc? ( app-misc/lirc )
@@ -88,6 +87,12 @@ pkg_setup() {
 }
 
 src_prepare() {
+	# From GNOME:
+	# 	https://git.gnome.org/browse/totem/patch/?id=c36121418b09b36634965b6dc08f046b50cb8cf0
+	# 	https://git.gnome.org/browse/totem/patch/?id=c76e276b415c458e38966d3ec58cd750452c9b15
+	eapply "${FILESDIR}"/${PN}-3.15.90-data-remove-outdated-bug-report-helper-script.patch
+	eapply "${FILESDIR}"/${PN}-3.15.92-opensubtitles-fix-downloading-subtitles-with-newer-python.patch
+
 	# Prevent pylint usage by tests, bug #482538
 	sed -i -e 's/ check-pylint//' src/plugins/Makefile.plugins || die
 

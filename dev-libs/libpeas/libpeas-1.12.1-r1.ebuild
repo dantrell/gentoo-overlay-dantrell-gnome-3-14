@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
@@ -31,8 +30,11 @@ DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.40
 	virtual/pkgconfig
 "
+# eautoreconf needs gobject-introspection-common, gnome-common
 
 src_configure() {
+	# Wtf, --disable-gcov, --enable-gcov=no, --enable-gcov, all enable gcov
+	# What do we do about gdb, valgrind, gcov, etc?
 	# --disable-seed because it's dead, bug #541890
 	local myconf=(
 		$(use_enable glade glade-catalog)
@@ -44,8 +46,6 @@ src_configure() {
 		# possibly overriden below
 		--disable-python{2,3}
 	)
-	# Wtf, --disable-gcov, --enable-gcov=no, --enable-gcov, all enable gcov
-	# What do we do about gdb, valgrind, gcov, etc?
 
 	python_configure() {
 		local v
@@ -69,5 +69,5 @@ src_test() {
 	# >>> from gi.repository import Gtk
 	# >>> Gtk.IconTheme.get_default().has_icon("gtk-about")
 	# This should return True, it returns False for Xvfb
-	Xemake check
+	virtx emake check
 }

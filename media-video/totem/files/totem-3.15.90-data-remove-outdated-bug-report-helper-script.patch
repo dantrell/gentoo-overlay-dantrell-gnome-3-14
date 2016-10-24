@@ -1,0 +1,69 @@
+From c36121418b09b36634965b6dc08f046b50cb8cf0 Mon Sep 17 00:00:00 2001
+From: Bastien Nocera <hadess@hadess.net>
+Date: Tue, 17 Feb 2015 12:36:27 +0100
+Subject: data: Remove outdated bug report helper script
+
+It uses Python2, and GStreamer 0.10. Both are obsolete.
+---
+ data/Makefile.am                      |  5 -----
+ data/org.gnome.Totem.desktop.in.in.in |  1 -
+ data/totem-bugreport.py               | 21 ---------------------
+ 3 files changed, 27 deletions(-)
+ delete mode 100644 data/totem-bugreport.py
+
+diff --git a/data/Makefile.am b/data/Makefile.am
+index aa10e60..a22a1f2 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -3,11 +3,6 @@ SUBDIRS = icons appdata
+ EXTRA_DIST =
+ CLEANFILES =
+ 
+-# Bug reporting information script
+-bugreportdir = $(libexecdir)/totem
+-bugreport_SCRIPTS = totem-bugreport.py
+-EXTRA_DIST += $(bugreport_SCRIPTS)
+-
+ # Man pages
+ man_MANS = totem.1 totem-video-thumbnailer.1
+ totem-video-thumbnailer.1: totem-video-thumbnailer.pod
+diff --git a/data/org.gnome.Totem.desktop.in.in.in b/data/org.gnome.Totem.desktop.in.in.in
+index dfb2258..b7afc5a 100644
+--- a/data/org.gnome.Totem.desktop.in.in.in
++++ b/data/org.gnome.Totem.desktop.in.in.in
+@@ -14,5 +14,4 @@ X-GNOME-Bugzilla-Product=totem
+ X-GNOME-Bugzilla-Component=general
+ X-GNOME-Bugzilla-Version=@VERSION@
+ X-GNOME-Bugzilla-OtherBinaries=totem-video-thumbnailer;totem-audio-preview;
+-X-GNOME-Bugzilla-ExtraInfoScript=@FULL_LIBEXECDIR@/totem/totem-bugreport.py
+ StartupNotify=true
+diff --git a/data/totem-bugreport.py b/data/totem-bugreport.py
+deleted file mode 100644
+index d324884..0000000
+--- a/data/totem-bugreport.py
++++ /dev/null
+@@ -1,21 +0,0 @@
+-#!/usr/bin/python
+-import os
+-from datetime import datetime
+-from gi.repository import Gtk
+-
+-# Get the GStreamer version
+-if os.system ('gst-typefind-0.10 --version') == 0:
+-	# List the formats of the last files played
+-	last_visited = 0
+-	recent_manager = Gtk.RecentManager.get_default ()
+-	for recent in recent_manager.get_items ():
+-		if recent.has_group ("Totem"):
+-			if recent.get_visited () > last_visited:
+-				last_visited = recent.get_visited ()
+-				last = recent.get_uri_display ()
+-
+-	if last != None:
+-		file_handle = os.popen ('gst-typefind-0.10 "%s"' % (last))
+-		parts = file_handle.read ().split (' ')
+-		date = datetime.fromtimestamp (last_visited)
+-		print 'Listened to a "%s" file on %s' % (parts.pop ().strip (), date.isoformat ())
+-- 
+cgit v0.12
+

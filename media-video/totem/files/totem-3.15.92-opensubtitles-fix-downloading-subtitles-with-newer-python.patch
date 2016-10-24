@@ -1,0 +1,27 @@
+From c76e276b415c458e38966d3ec58cd750452c9b15 Mon Sep 17 00:00:00 2001
+From: Bastien Nocera <hadess@hadess.net>
+Date: Sun, 8 Mar 2015 23:01:04 +0100
+Subject: opensubtitles: Fix downloading subtitles with newer Python
+
+Fix error:
+UnboundLocalError: local variable 'result' referenced before assignment
+by initialising result to None.
+---
+ src/plugins/opensubtitles/opensubtitles.py | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/plugins/opensubtitles/opensubtitles.py b/src/plugins/opensubtitles/opensubtitles.py
+index d23171f..b9cfac4 100644
+--- a/src/plugins/opensubtitles/opensubtitles.py
++++ b/src/plugins/opensubtitles/opensubtitles.py
+@@ -344,6 +344,7 @@ class OpenSubtitlesModel (object):
+         (log_in_success, log_in_message) = self._log_in ()
+ 
+         if log_in_success:
++            result = None
+             try:
+                 result = self._server.DownloadSubtitles (self._token,
+                                                          [subtitle_id])
+-- 
+cgit v0.12
+

@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 
 inherit gnome2 versionator
 
@@ -37,6 +36,10 @@ DEPEND="${COMMON_DEPEND}
 "
 
 src_prepare() {
+	# From GNOME:
+	# 	https://git.gnome.org/browse/adwaita-icon-theme/commit/?id=f07e61189a779a825bfa531849454d307c70c1b9
+	eapply "${FILESDIR}"/${PN}-3.17.3-fix-intltool-locale-directory-location.patch
+
 	if use branding; then
 		for i in 16 22 24 32 48; do
 			cp "${WORKDIR}"/tango-gentoo-v1.1/${i}x${i}/gentoo.png \

@@ -1,11 +1,10 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 VALA_USE_DEPEND="vapigen"
 PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
-inherit autotools eutils gnome2 python-any-r1 vala virtualx
+inherit autotools gnome2 python-any-r1 vala virtualx
 
 DESCRIPTION="Libraries for cryptographic UIs and accessing PKCS#11 modules"
 HOMEPAGE="https://git.gnome.org/browse/gcr"
@@ -52,7 +51,7 @@ pkg_setup() {
 
 src_prepare() {
 	# Fix race building gdbus-codegen header and source (from '3.14')
-	epatch "${FILESDIR}"/${P}-race-building.patch
+	eapply "${FILESDIR}"/${P}-race-building.patch
 
 	# Disable stupid flag changes
 	sed -e 's/CFLAGS="$CFLAGS -g"//' \
@@ -65,7 +64,6 @@ src_prepare() {
 }
 
 src_configure() {
-	DOCS="AUTHORS ChangeLog HACKING NEWS README"
 	gnome2_src_configure \
 		$(use_with gtk) \
 		$(use_enable introspection) \
@@ -76,6 +74,5 @@ src_configure() {
 }
 
 src_test() {
-	unset DBUS_SESSION_BUS_ADDRESS
-	Xemake check
+	virtx emake check
 }

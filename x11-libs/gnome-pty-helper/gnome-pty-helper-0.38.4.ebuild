@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 GNOME_ORG_MODULE="vte"
 
 inherit gnome2
@@ -19,7 +18,9 @@ IUSE="+hardened"
 RESTRICT="mirror"
 
 # gnome-pty-helper was spit out with 0.27.90
-RDEPEND="!<x11-libs/vte-0.27.90"
+RDEPEND="
+	!<x11-libs/vte-0.27.90
+"
 DEPEND=""
 
 S="${WORKDIR}/vte-${PV}/gnome-pty-helper"

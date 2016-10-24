@@ -1,0 +1,32 @@
+From 005075f6a28c18f5196ba60ff07b888776af6dfc Mon Sep 17 00:00:00 2001
+From: Jonas Danielsson <jonas@threetimestwo.org>
+Date: Thu, 8 Jan 2015 03:15:26 -0500
+Subject: Only expose _NL_ADDRESS_POSTAL_FMT on __GNUC__
+
+---
+ geocode-glib/geocode-glib.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/geocode-glib/geocode-glib.c b/geocode-glib/geocode-glib.c
+index 595b9a6..a0673c3 100644
+--- a/geocode-glib/geocode-glib.c
++++ b/geocode-glib/geocode-glib.c
+@@ -190,6 +190,7 @@ _geocode_object_get_lang (void)
+ 	return geocode_object_get_lang_for_locale (setlocale (LC_MESSAGES, NULL));
+ }
+ 
++#ifdef __GNUC__
+ static gpointer
+ is_number_after_street (gpointer data)
+ {
+@@ -217,6 +218,7 @@ is_number_after_street (gpointer data)
+  out:
+ 	return GINT_TO_POINTER (retval);
+ }
++#endif
+ 
+ gboolean
+ _geocode_object_is_number_after_street (void)
+-- 
+cgit v0.12
+

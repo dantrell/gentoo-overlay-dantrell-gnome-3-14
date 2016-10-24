@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 
-inherit autotools eutils gnome2
+inherit autotools gnome2
 
 DESCRIPTION="A GNOME application for managing encryption keys"
 HOMEPAGE="https://wiki.gnome.org/Apps/Seahorse"
@@ -51,8 +50,8 @@ src_prepare() {
 	# From GNOME:
 	# 	https://git.gnome.org/browse/seahorse/commit/?id=48362cd12c80b941b2371ceaab3decb74811ed7a
 	# 	https://git.gnome.org/browse/seahorse/commit/?id=dfabc8de30e87fd7b6dc6d12f34fa29858caed95
-	epatch "${FILESDIR}"/${PN}-3.15.90-pgp-force-use-of-the-first-gnupg-found-by-configure-ac.patch
-	epatch "${FILESDIR}"/${PN}-3.17.4-avoid-binding-seahorse-to-the-build-time-version-of-gpg.patch
+	eapply "${FILESDIR}"/${PN}-3.15.90-pgp-force-use-of-the-first-gnupg-found-by-configure-ac.patch
+	eapply "${FILESDIR}"/${PN}-3.17.4-avoid-binding-seahorse-to-the-build-time-version-of-gpg.patch
 
 	eautoreconf
 	gnome2_src_prepare

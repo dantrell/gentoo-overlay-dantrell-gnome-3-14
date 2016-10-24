@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit eutils gnome2 virtualx
+inherit gnome2 virtualx
 
 DESCRIPTION="Clutter is a library for creating graphical user interfaces"
 HOMEPAGE="https://wiki.gnome.org/Projects/Clutter"
@@ -20,9 +19,8 @@ REQUIRED_USE="
 "
 
 # NOTE: glx flavour uses libdrm + >=mesa-7.3
-# XXX: uprof needed for profiling
 # >=libX11-1.3.1 needed for X Generic Event support
-# do not depend on tslib, it does not build and is disable by default upstream
+# do not depend on tslib, it does not build and is disabled by default upstream
 RDEPEND="
 	>=dev-libs/glib-2.37.3:2
 	>=dev-libs/atk-2.5.3[introspection?]
@@ -36,7 +34,7 @@ RDEPEND="
 
 	egl? (
 		>=dev-libs/libinput-0.8
-		media-libs/cogl:1.0=[gles2,kms]
+		media-libs/cogl[gles2,kms]
 		>=virtual/libgudev-136
 		x11-libs/libxkbcommon
 	)
@@ -71,10 +69,10 @@ src_prepare() {
 	# 	https://git.gnome.org/browse/clutter/commit/?id=c1987a5c06d912e8ff7d2541fc266f93c1d65477
 	# 	https://git.gnome.org/browse/clutter/commit/?id=96abbf38bc9d048ab8b0ad51a99f47cbb05c01ad
 	# 	https://git.gnome.org/browse/clutter/commit/?id=ede13b11d72a310e535f9a6f0b7e3f774f5529dc
-	epatch "${FILESDIR}"/${PN}-1.20.2-reorganize-backends.patch
-	epatch "${FILESDIR}"/${PN}-1.20.3-clutter-stage-cogl-match-egls-behavior-of-eglswapbufferswithdamage.patch
-	epatch "${FILESDIR}"/${PN}-1.20.3-actor-use-the-real-opacity-when-clearing-the-stage.patch
-	epatch "${FILESDIR}"/${PN}-1.21.3-evdev-use-libinputs-new-merged-scroll-events.patch
+	eapply "${FILESDIR}"/${PN}-1.20.2-reorganize-backends.patch
+	eapply "${FILESDIR}"/${PN}-1.20.3-clutter-stage-cogl-match-egls-behavior-of-eglswapbufferswithdamage.patch
+	eapply "${FILESDIR}"/${PN}-1.20.3-actor-use-the-real-opacity-when-clearing-the-stage.patch
+	eapply "${FILESDIR}"/${PN}-1.21.3-evdev-use-libinputs-new-merged-scroll-events.patch
 
 	# We only need conformance tests, the rest are useless for us
 	sed -e 's/^\(SUBDIRS =\).*/\1 accessibility conform/g' \
@@ -112,5 +110,5 @@ src_configure() {
 }
 
 src_test() {
-	Xemake check -C tests/conform
+	virtx emake check -C tests/conform
 }

@@ -1,6 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
+EAPI="6"
 
 DESCRIPTION="Sub-meta package for the applications of GNOME 3"
 HOMEPAGE="https://www.gnome.org/"
@@ -36,7 +36,7 @@ RDEPEND="
 	>=gnome-extra/gnome-tweak-tool-${PV}
 	>=gnome-extra/gnome-weather-${PV}
 	>=gnome-extra/gucharmap-${PV}:2.90
-	>=gnome-extra/nautilus-sendto-3.8.2
+	>=gnome-extra/nautilus-sendto-3.8.4
 	>=gnome-extra/sushi-3.12.0
 	>=media-gfx/gnome-font-viewer-${PV}
 	>=media-gfx/gnome-screenshot-${PV}
@@ -78,9 +78,9 @@ RDEPEND="
 		>=games-puzzle/lightsoff-${PV}
 		>=games-puzzle/quadrapassel-${PV}
 		>=games-puzzle/swell-foop-${PV} )
-	geary? ( >=mail-client/geary-0.10.0 )
+	geary? ( >=mail-client/geary-0.11.2 )
 	share? ( >=gnome-extra/gnome-user-share-${PV} )
-	shotwell? ( >=media-gfx/shotwell-0.20 )
+	shotwell? ( >=media-gfx/shotwell-0.22 )
 	tracker? (
 		>=app-misc/tracker-1.2
 		>=gnome-extra/gnome-documents-${PV}

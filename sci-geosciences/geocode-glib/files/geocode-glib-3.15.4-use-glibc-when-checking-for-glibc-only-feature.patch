@@ -1,0 +1,61 @@
+From f0f85d8d01c64c61dfef3d00af5b9e629e336213 Mon Sep 17 00:00:00 2001
+From: Jonas Danielsson <jonas@threetimestwo.org>
+Date: Thu, 15 Jan 2015 04:23:54 -0500
+Subject: Use __GLIBC__ when checking for GLIBC only feature
+
+The __GNUC__ macro is used to checking for gcc compatible compilers.
+We should instead use __GLIBC__ to check for GLIBC only features.
+
+This also adds the guard to the test, since it uses LC_ADDRESS.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742957
+---
+ geocode-glib/geocode-glib.c | 4 ++--
+ geocode-glib/test-gcglib.c  | 2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/geocode-glib/geocode-glib.c b/geocode-glib/geocode-glib.c
+index a0673c3..0ac4eb5 100644
+--- a/geocode-glib/geocode-glib.c
++++ b/geocode-glib/geocode-glib.c
+@@ -190,7 +190,7 @@ _geocode_object_get_lang (void)
+ 	return geocode_object_get_lang_for_locale (setlocale (LC_MESSAGES, NULL));
+ }
+ 
+-#ifdef __GNUC__
++#ifdef __GLIBC__
+ static gpointer
+ is_number_after_street (gpointer data)
+ {
+@@ -223,7 +223,7 @@ is_number_after_street (gpointer data)
+ gboolean
+ _geocode_object_is_number_after_street (void)
+ {
+-#ifndef __GNUC__
++#ifndef __GLIBC__
+ 	return FALSE;
+ #else
+ 	static GOnce once = G_ONCE_INIT;
+diff --git a/geocode-glib/test-gcglib.c b/geocode-glib/test-gcglib.c
+index 0f6c5a1..0cf2d6d 100644
+--- a/geocode-glib/test-gcglib.c
++++ b/geocode-glib/test-gcglib.c
+@@ -378,6 +378,7 @@ test_distance (void)
+ static void
+ test_locale_format (void)
+ {
++#ifdef __GLIBC__
+ 	GeocodeForward *object;
+ 	GError *error = NULL;
+ 	GList *res;
+@@ -405,6 +406,7 @@ test_locale_format (void)
+ 
+ 	setlocale (LC_ADDRESS, old_locale);
+ 	g_free (old_locale);
++#endif
+ }
+ 
+ static void
+-- 
+cgit v0.12
+

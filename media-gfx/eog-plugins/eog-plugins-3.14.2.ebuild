@@ -13,10 +13,11 @@ LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="+exif +flickr map +picasa +python"
+IUSE="+exif +flickr map picasa +python"
 REQUIRED_USE="
 	map? ( exif )
-	python? ( ^^ ( $(python_gen_useflags '*') ) )"
+	python? ( ^^ ( $(python_gen_useflags '*') ) )
+"
 
 RDEPEND="
 	>=dev-libs/glib-2.32:2

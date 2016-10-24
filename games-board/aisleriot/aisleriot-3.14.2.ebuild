@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 
-inherit gnome-games
+inherit autotools gnome2
 
 DESCRIPTION="A collection of solitaire card games for GNOME"
 HOMEPAGE="https://wiki.gnome.org/action/show/Apps/Aisleriot"
@@ -39,8 +38,6 @@ DEPEND="${COMMON_DEPEND}
 	virtual/pkgconfig
 	gnome? ( app-text/docbook-xml-dtd:4.3 )
 "
-
-DOCS="AUTHORS ChangeLog NEWS TODO"
 
 src_configure() {
 	local myconf=()

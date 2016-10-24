@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 
-inherit gnome-games vala readme.gentoo
+inherit gnome2 vala readme.gentoo-r1
 
 DESCRIPTION="Play the classic two-player boardgame of chess"
 HOMEPAGE="https://wiki.gnome.org/Apps/Chess"
@@ -16,7 +15,7 @@ IUSE=""
 
 RDEPEND="
 	>=dev-libs/glib-2.40:2
-	>=gnome-base/librsvg-2.32
+	>=gnome-base/librsvg-2.32:2
 	>=x11-libs/gtk+-3.13.2:3
 "
 DEPEND="${RDEPEND}
@@ -32,16 +31,16 @@ DOC_CONTENTS="For being able to play against computer you will
 	need to install a chess engine like, for example, games-board/gnuchess"
 
 src_prepare() {
+	gnome2_src_prepare
 	vala_src_prepare
-	gnome-games_src_prepare
 }
 
 src_install() {
-	gnome-games_src_install
+	gnome2_src_install
 	readme.gentoo_create_doc
 }
 
 pkg_postinst() {
-	gnome-games_pkg_postinst
+	gnome2_pkg_postinst
 	readme.gentoo_print_elog
 }

@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit autotools eutils gnome2 pax-utils versionator virtualx
+inherit autotools gnome2 pax-utils virtualx
 
 DESCRIPTION="GNOME webbrowser based on Webkit"
 HOMEPAGE="https://wiki.gnome.org/Apps/Web"
@@ -24,9 +23,9 @@ COMMON_DEPEND="
 	>=dev-libs/libxslt-1.1.7
 	>=gnome-base/gsettings-desktop-schemas-0.0.1
 	>=net-dns/avahi-0.6.22[dbus]
-	>=net-libs/webkit-gtk-2.5.90:4[jit?]
+	>=net-libs/webkit-gtk-2.5.90:4=[jit?]
 	>=net-libs/libsoup-2.48:2.4
-	>=x11-libs/gtk+-3.13:3=
+	>=x11-libs/gtk+-3.13:3
 	>=x11-libs/libnotify-0.5.1:=
 	gnome-base/gnome-desktop:3=
 
@@ -53,12 +52,17 @@ DEPEND="${COMMON_DEPEND}
 	virtual/pkgconfig
 "
 
+PATCHES=(
+	# https://bugzilla.gnome.org/show_bug.cgi?id=751591
+	"${FILESDIR}"/${PN}-3.14.0-unittest-1.patch
+
+	# https://bugzilla.gnome.org/show_bug.cgi?id=751593
+	"${FILESDIR}"/${PN}-3.14.0-unittest-2.patch
+)
+
 src_prepare() {
 	# Fix missing symbol in webextension.so, bug #728972
-	epatch "${FILESDIR}"/${PN}-3.14.0-missing-symbol.patch
-
-	# Fix unittests
-	epatch "${FILESDIR}"/${PN}-3.14.0-unittest-*.patch
+	eapply "${FILESDIR}"/${PN}-3.14.0-missing-symbol.patch
 
 	eautoreconf
 	gnome2_src_prepare
@@ -73,21 +77,12 @@ src_configure() {
 		$(use_enable test tests)
 }
 
-src_compile() {
-	# needed to avoid "Command line `dbus-launch ...' exited with non-zero exit status 1"
-	unset DISPLAY
-	gnome2_src_compile
-}
-
 src_test() {
 	"${EROOT}${GLIB_COMPILE_SCHEMAS}" --allow-any-name "${S}/data" || die
-
-	unset DISPLAY
-	GSETTINGS_SCHEMA_DIR="${S}/data" Xemake check
+	GSETTINGS_SCHEMA_DIR="${S}/data" virtx emake check
 }
 
 src_install() {
-	DOCS="AUTHORS ChangeLog* HACKING MAINTAINERS NEWS README TODO"
 	gnome2_src_install
 	use jit && pax-mark m "${ED}usr/bin/epiphany"
 }

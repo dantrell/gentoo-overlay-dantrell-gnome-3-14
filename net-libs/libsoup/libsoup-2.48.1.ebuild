@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 PYTHON_COMPAT=( python{2_7,3_3,3_4,3_5} )
 
@@ -14,7 +13,7 @@ LICENSE="LGPL-2+"
 SLOT="2.4"
 KEYWORDS="*"
 
-IUSE="+introspection samba ssl test"
+IUSE="debug +introspection samba ssl test"
 
 # They hang for some unknown reason, bug #537836, also bug #326957 is pending
 RESTRICT="test"
@@ -49,9 +48,9 @@ src_prepare() {
 			|| die "sed failed"
 	fi
 
-	# FIXME: does not behave as expected
-	sed -e 's|\(g_test_add.*\)|/*\1*/|' \
-		-i tests/socket-test.c || die
+	# fix sorting when LC_ALL/LC_COLLATE is set, bug #560258
+	# fixed upstream in 2.52
+	sed -e 's/LANG=C sort/LC_ALL=C sort/' -i libsoup/Makefile.{am,in} || die "sed failed"
 
 	gnome2_src_prepare
 }
@@ -72,6 +71,7 @@ multilib_src_configure() {
 		--disable-tls-check \
 		--without-gnome \
 		--without-apache-httpd \
+		$(usex debug --enable-debug=yes ' ') \
 		$(multilib_native_use_enable introspection) \
 		$(use_with samba ntlm-auth '${EPREFIX}'/usr/bin/ntlm_auth)
 

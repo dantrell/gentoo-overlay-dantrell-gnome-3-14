@@ -1,13 +1,12 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 PYTHON_COMPAT=( python2_7 )
 PYTHON_REQ_USE="xml"
 
 inherit gnome2 python-single-r1 toolchain-funcs versionator
 
-DESCRIPTION="Introspection infrastructure for generating gobject library bindings for various languages"
+DESCRIPTION="Introspection system for GObject-based libraries"
 HOMEPAGE="https://wiki.gnome.org/Projects/GObjectIntrospection"
 
 LICENSE="LGPL-2+ GPL-2+"
@@ -46,7 +45,8 @@ pkg_setup() {
 
 src_prepare() {
 	# scanner: don't pass certain debug level flags to cpp (from 'master')
-	epatch "${FILESDIR}"/${PN}-1.42.0-cpp-flags.patch
+	eapply "${FILESDIR}"/${PN}-1.42.0-cpp-flags.patch
+
 	gnome2_src_prepare
 }
 
@@ -68,7 +68,6 @@ src_configure() {
 }
 
 src_install() {
-	DOCS="AUTHORS CONTRIBUTORS ChangeLog NEWS README TODO"
 	gnome2_src_install
 
 	# Prevent collision with gobject-introspection-common

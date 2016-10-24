@@ -1,0 +1,134 @@
+From eb7f87af516f864c89ed83d8236862f3f38f87e4 Mon Sep 17 00:00:00 2001
+From: Marcus Lundblad <ml@update.uu.se>
+Date: Sun, 9 Mar 2014 19:20:54 +0100
+Subject: Derive street address format from locale
+
+Determine street address format using nl_langinfo.
+This is only possible on the GNU C library atm.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=725591
+---
+ geocode-glib/geocode-forward.c      |  6 +++++-
+ geocode-glib/geocode-glib-private.h |  1 +
+ geocode-glib/geocode-glib.c         | 42 +++++++++++++++++++++++++++++++++++++
+ geocode-glib/geocode-reverse.c      |  9 ++++++--
+ po/POTFILES.in                      |  2 +-
+ 5 files changed, 56 insertions(+), 4 deletions(-)
+
+diff --git a/geocode-glib/geocode-forward.c b/geocode-glib/geocode-forward.c
+index 2391150..630231a 100644
+--- a/geocode-glib/geocode-forward.c
++++ b/geocode-glib/geocode-forward.c
+@@ -820,8 +820,12 @@ _geocode_create_place_from_attributes (GHashTable *ht)
+         building = g_hash_table_lookup (ht, "house_number");
+         if (street != NULL && building != NULL) {
+             char *address;
++            gboolean number_after;
+ 
+-            address = g_strjoin (" ", street, building, NULL);
++            number_after = _geocode_object_is_number_after_street ();
++            address = g_strdup_printf ("%s %s",
++                                       number_after ? street : building,
++                                       number_after ? building : street);
+             geocode_place_set_street_address (place, address);
+             g_free (address);
+         }
+diff --git a/geocode-glib/geocode-glib-private.h b/geocode-glib/geocode-glib-private.h
+index e6af17a..c32c49f 100644
+--- a/geocode-glib/geocode-glib-private.h
++++ b/geocode-glib/geocode-glib-private.h
+@@ -55,6 +55,7 @@ gboolean _geocode_glib_cache_save (SoupMessage *query,
+ gboolean _geocode_glib_cache_load (SoupMessage *query,
+                                    char       **contents);
+ GHashTable *_geocode_glib_dup_hash_table (GHashTable *ht);
++gboolean _geocode_object_is_number_after_street (void);
+ SoupSession *_geocode_glib_build_soup_session (void);
+ 
+ G_END_DECLS 
+diff --git a/geocode-glib/geocode-glib.c b/geocode-glib/geocode-glib.c
+index 6f8ed4c..595b9a6 100644
+--- a/geocode-glib/geocode-glib.c
++++ b/geocode-glib/geocode-glib.c
+@@ -25,6 +25,7 @@
+ #include <locale.h>
+ #include <gio/gio.h>
+ #include <libsoup/soup.h>
++#include <langinfo.h>
+ #include <geocode-glib/geocode-glib-private.h>
+ 
+ /**
+@@ -188,3 +189,44 @@ _geocode_object_get_lang (void)
+ {
+ 	return geocode_object_get_lang_for_locale (setlocale (LC_MESSAGES, NULL));
+ }
++
++static gpointer
++is_number_after_street (gpointer data)
++{
++	gboolean retval;
++	gchar *addr_format;
++	gchar *s;
++	gchar *h;
++
++	addr_format = nl_langinfo (_NL_ADDRESS_POSTAL_FMT);
++	if (addr_format == NULL) {
++		retval = FALSE;
++		goto out;
++	}
++
++	/* %s denotes street or block and %h denotes house number.
++	 * See: http://lh.2xlibre.net/values/postal_fmt */
++	s = g_strstr_len (addr_format, -1, "%s");
++	h = g_strstr_len (addr_format, -1, "%h");
++
++	if (s != NULL && h != NULL)
++		retval = (h > s);
++	else
++		retval = FALSE;
++
++ out:
++	return GINT_TO_POINTER (retval);
++}
++
++gboolean
++_geocode_object_is_number_after_street (void)
++{
++#ifndef __GNUC__
++	return FALSE;
++#else
++	static GOnce once = G_ONCE_INIT;
++
++	g_once (&once, is_number_after_street, NULL);
++	return GPOINTER_TO_INT (once.retval);
++#endif
++}
+diff --git a/geocode-glib/geocode-reverse.c b/geocode-glib/geocode-reverse.c
+index aa70077..c05e286 100644
+--- a/geocode-glib/geocode-reverse.c
++++ b/geocode-glib/geocode-reverse.c
+@@ -153,8 +153,13 @@ _geocode_read_nominatim_attributes (JsonReader *reader,
+                                 else
+                                         house_number = value;
+                         } else if (house_number != NULL && g_strcmp0 (members[i], "road") == 0) {
+-                                /* Translators comment: number + street (e.g 221 Baker Street) */
+-                                char *name = g_strdup_printf (_("%s %s"), house_number, value);
++                                gboolean number_after;
++                                char *name;
++
++                                number_after = _geocode_object_is_number_after_street ();
++                                name = g_strdup_printf ("%s %s",
++                                                        number_after ? value : house_number,
++                                                        number_after ? house_number : value);
+                                 g_hash_table_insert (ht, g_strdup ("name"), name);
+                         }
+                 } else if (g_strcmp0 (members[i], "boundingbox") == 0) {
+diff --git a/po/POTFILES.in b/po/POTFILES.in
+index b710a5c..8b13789 100644
+--- a/po/POTFILES.in
++++ b/po/POTFILES.in
+@@ -1 +1 @@
+-geocode-glib/geocode-reverse.c
++
+-- 
+cgit v0.12
+

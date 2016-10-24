@@ -1,0 +1,159 @@
+From f54ba1a2a21c8034c8db417c874cb357f6b67b78 Mon Sep 17 00:00:00 2001
+From: Philip Withnall <philip.withnall@collabora.co.uk>
+Date: Sun, 1 Mar 2015 23:36:58 +0100
+Subject: build: Use intltool to translate GSettings schema file
+
+---
+ configure.ac                          |  2 +-
+ data/Makefile.am                      |  4 +---
+ data/org.gnome.bijiben.gschema.xml    | 38 +++++++++++++++++++++++++++++++++++
+ data/org.gnome.bijiben.gschema.xml.in | 38 -----------------------------------
+ po/POTFILES.in                        |  2 +-
+ 5 files changed, 41 insertions(+), 43 deletions(-)
+ create mode 100755 data/org.gnome.bijiben.gschema.xml
+ delete mode 100755 data/org.gnome.bijiben.gschema.xml.in
+
+diff --git a/configure.ac b/configure.ac
+index 9a12336..0a0977c 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -27,7 +27,7 @@ GETTEXT_PACKAGE=bijiben
+ AC_SUBST(GETTEXT_PACKAGE)
+ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE", [GETTEXT package name])
+ AM_GLIB_GNU_GETTEXT
+-IT_PROG_INTLTOOL([0.35.0])
++IT_PROG_INTLTOOL([0.50.1])
+ 
+ 
+ 
+diff --git a/data/Makefile.am b/data/Makefile.am
+index 6dfd4dd..7738810 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -50,13 +50,12 @@ cssdir = $(pkgdatadir)
+ css_DATA = $(css_files)
+ 
+ gsettings_SCHEMAS = org.gnome.bijiben.gschema.xml
+-@INTLTOOL_XML_NOMERGE_RULE@
+ @GSETTINGS_RULES@
+ 
+ EXTRA_DIST =                            \
+ 	$(desktop_in_files)     	\
+ 	$(css_files)			\
+-	org.gnome.bijiben.gschema.xml.in \
++	$(gsettings_SCHEMAS) \
+ 	shell-search-provider-dbus-interfaces.xml \
+ 	$(service_in_files)		\
+ 	$(searchprovider_DATA) \
+@@ -65,7 +64,6 @@ EXTRA_DIST =                            \
+ 
+ DISTCLEANFILES =                        \
+ 	$(desktop_files)                \
+-	$(gsettings_SCHEMAS)		\
+ 	$(service_DATA)   \
+ 	$(xml_files) \
+ 	$(app_data_files)
+diff --git a/data/org.gnome.bijiben.gschema.xml b/data/org.gnome.bijiben.gschema.xml
+new file mode 100755
+index 0000000..d78b30e
+--- /dev/null
++++ b/data/org.gnome.bijiben.gschema.xml
+@@ -0,0 +1,38 @@
++<schemalist>
++  <schema path="/org/gnome/bijiben/" id="org.gnome.bijiben">
++    <key type="s" name="font">
++      <default>'Cantarell 14'</default>
++      <summary>Custom Font</summary>
++      <description>The font name set here will be used as the font when displaying notes.</description>
++    </key>
++    <key type="b" name="use-system-font">
++      <default>true</default>
++      <summary>Whether to use the system monospace font</summary>
++    </key>
++    <key type="s" name="color">
++      <default>'rgb(239,242,209)'</default>
++      <summary>New notes color.</summary>
++      <description>The color name set here will be used as the color when creating new notes.</description>
++    </key>
++    <key type="s" name="default-location">
++      <default>'local'</default>
++      <summary>Primary notes provider to use for new notes.</summary>
++      <description>The primary notebook is the place where new notes are created.</description>
++    </key>
++    <key name="window-maximized" type="b">
++      <default>false</default>
++      <summary>Window maximized</summary>
++      <description>Window maximized state.</description>
++    </key>
++    <key name="window-size" type="ai">
++       <default>[810, 600]</default>
++       <summary>Window size</summary>
++       <description>Window size (width and height).</description>
++    </key>
++    <key name="window-position" type="ai">
++      <default>[]</default>
++      <summary>Window position</summary>
++      <description>Window position (x and y).</description>
++    </key>
++  </schema>
++</schemalist>
+diff --git a/data/org.gnome.bijiben.gschema.xml.in b/data/org.gnome.bijiben.gschema.xml.in
+deleted file mode 100755
+index e097222..0000000
+--- a/data/org.gnome.bijiben.gschema.xml.in
++++ /dev/null
+@@ -1,38 +0,0 @@
+-<schemalist>
+-  <schema path="/org/gnome/bijiben/" id="org.gnome.bijiben">
+-    <key type="s" name="font">
+-      <default>'Cantarell 14'</default>
+-      <_summary>Custom Font</_summary>
+-      <_description>The font name set here will be used as the font when displaying notes.</_description>
+-    </key>
+-    <key type="b" name="use-system-font">
+-      <default>true</default>
+-      <_summary>Whether to use the system monospace font</_summary>
+-    </key>
+-    <key type="s" name="color">
+-      <default>'rgb(239,242,209)'</default>
+-      <_summary>New notes color.</_summary>
+-      <_description>The color name set here will be used as the color when creating new notes.</_description>
+-    </key>
+-    <key type="s" name="default-location">
+-      <default>'local'</default>
+-      <_summary>Primary notes provider to use for new notes.</_summary>
+-      <_description>The primary notebook is the place where new notes are created.</_description>
+-    </key>
+-    <key name="window-maximized" type="b">
+-      <default>false</default>
+-      <_summary>Window maximized</_summary>
+-      <_description>Window maximized state.</_description>
+-    </key>
+-    <key name="window-size" type="ai">
+-       <default>[810, 600]</default>
+-       <_summary>Window size</_summary>
+-       <_description>Window size (width and height).</_description>
+-    </key>
+-    <key name="window-position" type="ai">
+-      <default>[]</default>
+-      <_summary>Window position</_summary>
+-      <_description>Window position (x and y).</_description>
+-    </key>
+-  </schema>
+-</schemalist>
+diff --git a/po/POTFILES.in b/po/POTFILES.in
+index cbc98c4..6fd4ffb 100755
+--- a/po/POTFILES.in
++++ b/po/POTFILES.in
+@@ -2,7 +2,7 @@
+ data/bijiben.appdata.xml.in
+ data/bijiben.desktop.in.in
+ data/bijiben.xml.in
+-data/org.gnome.bijiben.gschema.xml.in
++[type: gettext/gsettings]data/org.gnome.bijiben.gschema.xml
+ src/bjb-app-menu.c
+ src/bjb-bijiben.c
+ src/bjb-color-button.c
+-- 
+cgit v0.12
+

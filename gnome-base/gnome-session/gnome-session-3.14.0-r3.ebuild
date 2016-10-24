@@ -1,9 +1,8 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 
-inherit autotools eutils gnome2
+inherit autotools gnome2
 
 DESCRIPTION="Gnome session manager"
 HOMEPAGE="https://git.gnome.org/browse/gnome-session"
@@ -48,7 +47,7 @@ COMMON_DEPEND="
 RDEPEND="${COMMON_DEPEND}
 	gnome-base/gnome-settings-daemon
 	>=gnome-base/gsettings-desktop-schemas-0.1.7
-	>=x11-themes/gnome-themes-standard-2.91.92
+	x11-themes/adwaita-icon-theme
 	sys-apps/dbus[X]
 
 	!deprecated? (
@@ -76,20 +75,18 @@ DEPEND="${COMMON_DEPEND}
 
 src_prepare() {
 	# Validate autostart condition gsettings key (from '3.14')
-	epatch "${FILESDIR}"/${P}-validate-autostart.patch
+	eapply "${FILESDIR}"/${PN}-3.14.0-validate-autostart.patch
 
 	if use deprecated; then
 		# From Funtoo:
 		# 	https://bugs.funtoo.org/browse/FL-1329
-		epatch "${FILESDIR}"/${PN}-3.12.1-restore-deprecated-code.patch
+		eapply "${FILESDIR}"/${PN}-3.12.1-restore-deprecated-code.patch
 	fi
 
 	# From GNOME:
 	# 	https://bugzilla.gnome.org/show_bug.cgi?id=731173
 	# 	https://git.gnome.org/browse/gnome-session/commit/?id=d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
-	epatch "${FILESDIR}"/${PN}-3.15.3-add-new-commandline-option-disable-acceleration-check.patch
-
-	epatch_user
+	eapply "${FILESDIR}"/${PN}-3.15.3-add-new-commandline-option-disable-acceleration-check.patch
 
 	eautoreconf
 	gnome2_src_prepare
@@ -117,7 +114,7 @@ src_install() {
 	doexe "${FILESDIR}/Gnome"
 
 	insinto /usr/share/applications
-	newins "${FILESDIR}/${P}-defaults.list" gnome-mimeapps.list
+	newins "${FILESDIR}/${PN}-3.14.0-defaults.list" gnome-mimeapps.list
 
 	dodir /etc/X11/xinit/xinitrc.d/
 	exeinto /etc/X11/xinit/xinitrc.d/

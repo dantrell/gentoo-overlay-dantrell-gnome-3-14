@@ -1,10 +1,9 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="no"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit autotools gnome2 readme.gentoo
+inherit autotools gnome2 readme.gentoo-r1
 
 DESCRIPTION="Desktop note-taking application"
 HOMEPAGE="https://wiki.gnome.org/Apps/Gnote"
@@ -48,10 +47,11 @@ DEPEND="${DEPEND}
 src_prepare() {
 	# Use newer boost.m4 to allow build with gcc-5.1; fixed upsteam in 3.16
 	cp "../boost.m4-${BOOST_M4_COMMIT}/build-aux/boost.m4" m4/ || die
-	eautoreconf
 
 	# Do not alter CFLAGS
 	sed 's/-DDEBUG -g/-DDEBUG/' -i configure.ac configure || die
+
+	eautoreconf
 	gnome2_src_prepare
 
 	if has_version net-fs/wdfs; then

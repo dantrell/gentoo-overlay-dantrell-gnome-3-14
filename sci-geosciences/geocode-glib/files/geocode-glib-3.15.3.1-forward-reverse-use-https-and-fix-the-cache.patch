@@ -1,0 +1,54 @@
+From 7043600c142eeac178c604f6c40866b1a91230ff Mon Sep 17 00:00:00 2001
+From: Jonas Danielsson <jonas@threetimestwo.org>
+Date: Wed, 17 Dec 2014 02:36:03 -0500
+Subject: forward, reverse: Use https and fix the cache
+
+At the moment the cache for queries does not work. This is because
+we are using a query with 'http://' to look for cached contents.
+But when we are saving we are using 'https://' since that is what
+the nominatim server redirects us to.
+
+Regardless of that, moving to 'https://' seems like a good thing.
+---
+ geocode-glib/geocode-forward.c | 4 ++--
+ geocode-glib/geocode-reverse.c | 2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/geocode-glib/geocode-forward.c b/geocode-glib/geocode-forward.c
+index 5d20847..2391150 100644
+--- a/geocode-glib/geocode-forward.c
++++ b/geocode-glib/geocode-forward.c
+@@ -490,7 +490,7 @@ get_search_query_for_params (GeocodeForward *forward,
+         if (location != NULL) {
+ 	        /* Prepare the search term */
+                 search_term = soup_uri_encode (location, NULL);
+-                uri = g_strdup_printf ("http://nominatim.gnome.org/search?q=%s&limit=%u&bounded=%d&%s",
++                uri = g_strdup_printf ("https://nominatim.gnome.org/search?q=%s&limit=%u&bounded=%d&%s",
+                                        search_term,
+                                        forward->priv->answer_count,
+                                        !!forward->priv->bounded,
+@@ -498,7 +498,7 @@ get_search_query_for_params (GeocodeForward *forward,
+                 g_free (search_term);
+                 g_free (location);
+         } else {
+-                uri = g_strdup_printf ("http://nominatim.gnome.org/search?limit=1&%s",
++                uri = g_strdup_printf ("https://nominatim.gnome.org/search?limit=1&%s",
+                                        params);
+         }
+ 	g_free (params);
+diff --git a/geocode-glib/geocode-reverse.c b/geocode-glib/geocode-reverse.c
+index 3f94478..aa70077 100644
+--- a/geocode-glib/geocode-reverse.c
++++ b/geocode-glib/geocode-reverse.c
+@@ -373,7 +373,7 @@ get_resolve_query_for_params (GHashTable  *orig_ht)
+ 	g_hash_table_destroy (ht);
+ 	g_free (locale);
+ 
+-	uri = g_strdup_printf ("http://nominatim.gnome.org/reverse?%s", params);
++	uri = g_strdup_printf ("https://nominatim.gnome.org/reverse?%s", params);
+ 	g_free (params);
+ 
+ 	ret = soup_message_new ("GET", uri);
+-- 
+cgit v0.12
+

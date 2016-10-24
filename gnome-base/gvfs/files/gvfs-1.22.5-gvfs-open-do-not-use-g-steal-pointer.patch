@@ -1,0 +1,30 @@
+From 77daad9b0ddaebc032627af6d347afc22a0e0641 Mon Sep 17 00:00:00 2001
+From: Ondrej Holy <oholy@redhat.com>
+Date: Fri, 12 Jun 2015 09:52:52 +0200
+Subject: gvfs-open: Do not use g_steal_pointer
+
+g_steal_pointer was introduced in glib-2.44, however glib-2.42 belongs
+to gnome-3-14 branch. Remove g_steal_pointer from gvfs-open to avoid
+undefined reference build error.
+---
+ programs/gvfs-open.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/programs/gvfs-open.c b/programs/gvfs-open.c
+index 604881e..a564cc9 100644
+--- a/programs/gvfs-open.c
++++ b/programs/gvfs-open.c
+@@ -92,8 +92,8 @@ get_bus_name_and_path_from_uri (char *uri,
+     if (*p == '.')
+       *p = '/';
+ 
+-  *bus_name_out = g_steal_pointer (&bus_name);
+-  *object_path_out = g_steal_pointer (&object_path);
++  *bus_name_out = bus_name;
++  *object_path_out = object_path;
+   got_name = TRUE;
+ 
+ out:
+-- 
+cgit v0.12
+

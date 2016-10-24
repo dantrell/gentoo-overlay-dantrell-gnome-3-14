@@ -1,7 +1,6 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="5"
-GCONF_DEBUG="yes"
+EAPI="6"
 GNOME2_LA_PUNT="yes"
 
 inherit gnome2
@@ -13,7 +12,7 @@ LICENSE="LGPL-2+"
 SLOT="0/1"
 KEYWORDS="*"
 
-IUSE="gnome +introspection kerberos" # telepathy"
+IUSE="debug gnome +introspection kerberos" # telepathy"
 
 # pango used in goaeditablelabel
 # libsoup used in goaoauthprovider
@@ -48,13 +47,17 @@ DEPEND="${RDEPEND}
 	>=dev-util/intltool-0.50.1
 	sys-devel/gettext
 	virtual/pkgconfig
+
+	dev-libs/gobject-introspection-common
+	gnome-base/gnome-common
 "
+# eautoreconf needs gobject-introspection-common, gnome-common
 
 # Due to sub-configure
 QA_CONFIGURE_OPTIONS=".*"
 
 src_configure() {
-	# TODO: Give users a way to set the G/Y!/FB/Twitter/Windows Live secrets
+	# TODO: Give users a way to set the G/FB/Windows Live secrets
 	# Twitter/Y! disabled per upstream recommendation, bug #497168
 	# telepathy optional support is really badly done, bug #494456
 	gnome2_src_configure \
@@ -71,6 +74,7 @@ src_configure() {
 		--enable-pocket \
 		--enable-telepathy \
 		--enable-windows-live \
+		$(usex debug --enable-debug=yes ' ') \
 		$(use_enable kerberos)
 		#$(use_enable telepathy)
 	# gudev & cheese from sub-configure is overriden
