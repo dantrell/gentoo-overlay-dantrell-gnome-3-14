@@ -23,7 +23,7 @@ QA_CONFIGURE_OPTIONS=".*"
 COMMON_DEPEND="
 	>=dev-libs/glib-2.39.91:2[dbus]
 	>=x11-libs/gdk-pixbuf-2.23.0:2
-	>=x11-libs/gtk+-3.13:3[X,wayland?]
+	>=x11-libs/gtk+-3.13:3[X]
 	>=gnome-base/gsettings-desktop-schemas-3.13.91
 	>=gnome-base/gnome-desktop-3.11.3:3=
 	>=gnome-base/gnome-settings-daemon-3.8.3[colord?,policykit]
