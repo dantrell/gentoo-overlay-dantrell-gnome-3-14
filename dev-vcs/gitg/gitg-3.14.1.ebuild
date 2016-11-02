@@ -2,7 +2,7 @@
 
 EAPI="6"
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{3_3,3_4,3_5} )
+PYTHON_COMPAT=( python{3_4,3_5} )
 VALA_MAX_API_VERSION="0.28"
 
 inherit autotools gnome2 pax-utils python-r1 vala
