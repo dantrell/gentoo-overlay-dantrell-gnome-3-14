@@ -107,6 +107,7 @@ multipart/x-zip=org.gnome.FileRoller.desktop;
 text/plain=gedit.desktop;
 text/css=gedit.desktop;
 text/javascript=gedit.desktop;
+text/markdown=gedit.desktop;
 text/mathml=gedit.desktop;
 text/x-csrc=gedit.desktop;
 text/x-chdr=gedit.desktop;

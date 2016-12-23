@@ -43,7 +43,7 @@ RDEPEND="
 		>=app-pda/libimobiledevice-1.1.5:=
 		>=app-pda/libplist-1:= )
 	mtp? ( >=media-libs/libmtp-1.1.6 )
-	samba? ( || ( >=net-fs/samba-3.4.6[smbclient] >=net-fs/samba-4[client] ) )
+	samba? ( >=net-fs/samba-4[client] )
 	systemd? ( sys-apps/systemd:0= )
 	udev? (
 		cdda? ( dev-libs/libcdio-paranoia )
