@@ -30,7 +30,7 @@ COMMON_DEPEND="
 	>=dev-libs/glib-2.41.2:2[${MULTILIB_USEDEP}]
 	media-libs/fontconfig[${MULTILIB_USEDEP}]
 	>=x11-libs/cairo-1.12[aqua?,glib,svg,X?,${MULTILIB_USEDEP}]
-	>=x11-libs/gdk-pixbuf-2.30:2[introspection?,X?,${MULTILIB_USEDEP}]
+	>=x11-libs/gdk-pixbuf-2.30:2[introspection?,${MULTILIB_USEDEP}]
 	>=x11-libs/pango-1.36.7[introspection?,${MULTILIB_USEDEP}]
 	x11-misc/shared-mime-info
 
@@ -117,9 +117,11 @@ src_prepare() {
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=34e6e1a599375da5665f4829faedf4c640f031a6
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c
 	# 	https://git.gnome.org/browse/gtk+/commit/?id=8753ef612940d5977bc8af2cca3ceb6cc669d1e4
+	# 	https://git.gnome.org/browse/gtk+/commit/?id=631f6b536485829a0bd00532f5826ad302b4951b
 	eapply "${FILESDIR}"/${PN}-3.14.15-avoid-g-set-object.patch
 	eapply "${FILESDIR}"/${PN}-3.14.15-gtkplacessidebar-protect-for-checking-a-null-event.patch
 	eapply "${FILESDIR}"/${PN}-3.15.2-render-shadows-for-half-tiled-windows.patch
+	eapply "${FILESDIR}"/${PN}-3.21.3-configure-fix-detecting-cups-2-x.patch
 
 	# -O3 and company cause random crashes in applications. Bug #133469
 	replace-flags -O3 -O2
