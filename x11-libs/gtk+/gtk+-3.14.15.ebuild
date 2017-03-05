@@ -24,7 +24,6 @@ RESTRICT="test"
 
 # FIXME: introspection data is built against system installation of gtk+:3,
 # bug #????
-# NOTE: cairo[svg] dep is due to bug 291283 (not patched to avoid eautoreconf)
 COMMON_DEPEND="
 	>=dev-libs/atk-2.12[introspection?,${MULTILIB_USEDEP}]
 	>=dev-libs/glib-2.41.2:2[${MULTILIB_USEDEP}]
@@ -47,7 +46,6 @@ COMMON_DEPEND="
 	)
 	X? (
 		>=app-accessibility/at-spi2-atk-2.5.3[${MULTILIB_USEDEP}]
-		x11-libs/libXrender[${MULTILIB_USEDEP}]
 		x11-libs/libX11[${MULTILIB_USEDEP}]
 		>=x11-libs/libXi-1.3[${MULTILIB_USEDEP}]
 		x11-libs/libXext[${MULTILIB_USEDEP}]
