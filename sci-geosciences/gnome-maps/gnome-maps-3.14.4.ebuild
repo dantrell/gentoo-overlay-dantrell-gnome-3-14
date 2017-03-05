@@ -14,7 +14,7 @@ KEYWORDS="*"
 IUSE=""
 
 COMMON_DEPEND="
-	>=app-misc/geoclue-1.99.3:2.0[introspection]
+	>=app-misc/geoclue-1.99.3:2.0
 	>=dev-libs/gjs-1.39
 	>=dev-libs/gobject-introspection-0.10.1:=
 	>=dev-libs/glib-2.39.3:2
