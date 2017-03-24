@@ -42,8 +42,6 @@ RDEPEND="
 	>=sys-apps/util-linux-2.20
 	>=net-libs/libsoup-2.38:2.4
 
-	sys-fs/fuse
-	sys-fs/fuseiso
 	sys-fs/mtools
 	virtual/libgudev:=
 "
