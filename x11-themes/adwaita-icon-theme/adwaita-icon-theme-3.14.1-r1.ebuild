@@ -2,7 +2,7 @@
 
 EAPI="6"
 
-inherit gnome2
+inherit autotools gnome2
 
 DESCRIPTION="GNOME default icon theme"
 HOMEPAGE="https://git.gnome.org/browse/adwaita-icon-theme/"
@@ -53,6 +53,7 @@ src_prepare() {
 		-i "${S}"/Makefile.am \
 		-i "${S}"/Makefile.in || die
 
+	eautoreconf # 'aclocal-1.14' is missing on your system
 	gnome2_src_prepare
 }
 
