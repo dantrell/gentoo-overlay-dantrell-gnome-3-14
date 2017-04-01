@@ -23,7 +23,7 @@ RDEPEND="
 "
 DEPEND=""
 
-S="${WORKDIR}/vte-${PV}/gnome-pty-helper"
+S="${WORKDIR}/${GNOME_ORG_MODULE}-${PV}/${PN}"
 
 src_prepare() {
 	# As recommended by upstream (/usr/libexec/$PN is a setgid binary)
@@ -31,5 +31,6 @@ src_prepare() {
 		export SUID_CFLAGS="-fPIE ${SUID_CFLAGS}"
 		export SUID_LDFLAGS="-pie ${SUID_LDFLAGS}"
 	fi
+
 	gnome2_src_prepare
 }
