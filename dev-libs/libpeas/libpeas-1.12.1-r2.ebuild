@@ -2,9 +2,9 @@
 
 EAPI="6"
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{2_7,3_4,3_5,3_6} )
+PYTHON_COMPAT=( python{3_4,3_5,3_6} )
 
-inherit gnome2 multilib python-r1 virtualx
+inherit gnome2 multilib python-single-r1 virtualx
 
 DESCRIPTION="A GObject plugins library"
 HOMEPAGE="https://developer.gnome.org/libpeas/stable/"
@@ -14,7 +14,7 @@ SLOT="0"
 KEYWORDS="*"
 
 IUSE="+gtk glade +python"
-REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} ?? ( $(python_gen_useflags 'python3*') ) )"
+REQUIRED_USE="python? ( ${PYTHON_REQUIRED_USE} )"
 
 RDEPEND="
 	>=dev-libs/glib-2.32:2
@@ -32,6 +32,10 @@ DEPEND="${RDEPEND}
 "
 # eautoreconf needs gobject-introspection-common, gnome-common
 
+pkg_setup() {
+	use python && python-single-r1_pkg_setup
+}
+
 src_configure() {
 	# Wtf, --disable-gcov, --enable-gcov=no, --enable-gcov, all enable gcov
 	# What do we do about gdb, valgrind, gcov, etc?
@@ -43,21 +47,10 @@ src_configure() {
 		--disable-seed
 		--disable-static
 
-		# possibly overriden below
-		--disable-python{2,3}
+		# py2 not supported anymore
+		--disable-python2
+		$(use_enable python python3)
 	)
-
-	python_configure() {
-		local v
-		python_is_python3 && v=3 || v=2
-		myconf+=(
-			"--enable-python${v}"
-			# it is just 'PYTHON' for py3 in the build system
-			"PYTHON${v#3}=${PYTHON}"
-			"PYTHON${v}_CONFIG=$(python_get_PYTHON_CONFIG)"
-		)
-	}
-	use python && python_foreach_impl python_configure
 
 	gnome2_src_configure "${myconf[@]}"
 }
