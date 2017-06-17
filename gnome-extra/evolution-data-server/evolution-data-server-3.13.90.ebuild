@@ -29,7 +29,7 @@ RESTRICT="test"
 RDEPEND="
 	>=app-crypt/gcr-3.4
 	>=app-crypt/libsecret-0.5[crypt]
-	>=dev-db/sqlite-3.5:=
+	>=dev-db/sqlite-3.7.17:=
 	>=dev-libs/glib-2.40:2
 	>=dev-libs/libgdata-0.10:=
 	>=dev-libs/libical-0.43:=
@@ -45,7 +45,7 @@ RDEPEND="
 	berkdb? ( >=sys-libs/db-4:= )
 	gtk? (
 		>=app-crypt/gcr-3.4[gtk]
-		>=x11-libs/gtk+-3.2:3
+		>=x11-libs/gtk+-3.6:3
 	)
 	google? (
 		>=dev-libs/json-glib-1.0.4
@@ -55,7 +55,7 @@ RDEPEND="
 	introspection? ( >=dev-libs/gobject-introspection-0.9.12:= )
 	kerberos? ( virtual/krb5:= )
 	ldap? ( >=net-nds/openldap-2:= )
-	weather? ( >=dev-libs/libgweather-3.8:2= )
+	weather? ( >=dev-libs/libgweather-3.10:2= )
 "
 DEPEND="${RDEPEND}
 	${PYTHON_DEPS}
@@ -102,6 +102,7 @@ src_configure() {
 		$(use_enable introspection) \
 		$(use_enable ipv6) \
 		$(use_with kerberos krb5 "${EPREFIX}"/usr) \
+		$(use_with kerberos krb5-libs "${EPREFIX}"/usr/$(get_libdir)) \
 		$(use_with ldap openldap) \
 		$(use_enable vala vala-bindings) \
 		$(use_enable weather) \

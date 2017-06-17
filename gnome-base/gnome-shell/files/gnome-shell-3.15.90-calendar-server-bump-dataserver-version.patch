@@ -1,0 +1,43 @@
+From 7aa75f8eb060beaaa933f96df6aa6a98f4461a46 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Florian=20M=C3=BCllner?= <fmuellner@gnome.org>
+Date: Tue, 17 Feb 2015 17:01:03 +0100
+Subject: calendar-server: Bump dataserver version
+
+Evolution-data-server bumped its DBus API, so it's update time
+for us ...
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744665
+---
+ configure.ac                           | 2 +-
+ src/calendar-server/calendar-sources.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 3d5919c..6e59ea2 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -80,7 +80,7 @@ MUTTER_MIN_VERSION=3.15.4
+ GTK_MIN_VERSION=3.15.0
+ GIO_MIN_VERSION=2.37.0
+ LIBECAL_MIN_VERSION=3.5.3
+-LIBEDATASERVER_MIN_VERSION=3.5.3
++LIBEDATASERVER_MIN_VERSION=3.13.90
+ TELEPATHY_GLIB_MIN_VERSION=0.17.5
+ POLKIT_MIN_VERSION=0.100
+ STARTUP_NOTIFICATION_MIN_VERSION=0.11
+diff --git a/src/calendar-server/calendar-sources.c b/src/calendar-server/calendar-sources.c
+index 804fb9c..cbfd6f2 100644
+--- a/src/calendar-server/calendar-sources.c
++++ b/src/calendar-server/calendar-sources.c
+@@ -201,7 +201,7 @@ calendar_sources_init (CalendarSources *sources)
+                                         "/", "org.freedesktop.DBus",
+                                         "StartServiceByName",
+                                         g_variant_new ("(su)",
+-                                                       "org.gnome.evolution.dataserver.Sources3",
++                                                       "org.gnome.evolution.dataserver.Sources4",
+                                                        0),
+                                         NULL,
+                                         G_DBUS_CALL_FLAGS_NONE,
+-- 
+cgit v0.12
+

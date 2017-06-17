@@ -1,6 +1,6 @@
 diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
---- a/js/ui/background.js	2015-06-14 06:52:27.382332125 -0400
-+++ b/js/ui/background.js	2015-06-14 07:18:23.804773765 -0400
+--- a/js/ui/background.js	2015-03-23 14:09:14.000000000 -0400
++++ b/js/ui/background.js	2017-06-17 02:51:22.336928079 -0400
 @@ -1,98 +1,5 @@
  // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
  
@@ -100,7 +100,12 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
  const Clutter = imports.gi.Clutter;
  const GDesktopEnums = imports.gi.GDesktopEnums;
  const Gio = imports.gi.Gio;
-@@ -106,8 +13,6 @@
+@@ -102,12 +9,11 @@
+ const Meta = imports.gi.Meta;
+ const Signals = imports.signals;
+ 
++const LoginManager = imports.misc.loginManager;
+ const Main = imports.ui.main;
  const Params = imports.misc.params;
  const Tweener = imports.ui.tweener;
  
@@ -109,17 +114,16 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
  const BACKGROUND_SCHEMA = 'org.gnome.desktop.background';
  const PRIMARY_COLOR_KEY = 'primary-color';
  const SECONDARY_COLOR_KEY = 'secondary-color';
-@@ -131,25 +36,235 @@
+@@ -131,33 +37,245 @@
      Name: 'BackgroundCache',
  
      _init: function() {
--        this._pendingFileLoads = [];
--        this._fileMonitors = {};
++        this._patterns = [];
++        this._images = [];
+         this._pendingFileLoads = [];
+         this._fileMonitors = {};
 -        this._backgroundSources = {};
-+       this._patterns = [];
-+       this._images = [];
-+       this._pendingFileLoads = [];
-+       this._fileMonitors = {};
++        this._animations = {};
 +    },
 +
 +    getPatternContent: function(params) {
@@ -352,16 +356,33 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 +
      getAnimation: function(params) {
          params = Params.parse(params, { filename: null,
++                                        settingsSchema: null,
                                          onLoaded: null });
-@@ -168,6 +283,7 @@
+ 
+-        if (this._animationFilename == params.filename) {
++        if (this._animations[params.settingsSchema] && this._animationFilename == params.filename) {
+             if (params.onLoaded) {
+                 let id = GLib.idle_add(GLib.PRIORITY_DEFAULT, Lang.bind(this, function() {
+-                    params.onLoaded(this._animation);
++                    params.onLoaded(this._animations[params.settingsSchema]);
+                     return GLib.SOURCE_REMOVE;
+                 }));
+                 GLib.Source.set_name_by_id(id, '[gnome-shell] params.onLoaded');
+@@ -168,42 +286,18 @@
          let animation = new Animation({ filename: params.filename });
  
          animation.load(Lang.bind(this, function() {
 +                           this._monitorFile(params.filename);
                             this._animationFilename = params.filename;
-                            this._animation = animation;
+-                           this._animation = animation;
++                           this._animations[params.settingsSchema] = animation;
  
-@@ -179,31 +295,6 @@
+                            if (params.onLoaded) {
+                                let id = GLib.idle_add(GLib.PRIORITY_DEFAULT, Lang.bind(this, function() {
+-                                   params.onLoaded(this._animation);
++                                   params.onLoaded(this._animations[params.settingsSchema]);
+                                    return GLib.SOURCE_REMOVE;
+                                }));
                                 GLib.Source.set_name_by_id(id, '[gnome-shell] params.onLoaded');
                             }
                         }));
@@ -393,7 +414,7 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
      }
  });
  Signals.addSignalMethods(BackgroundCache.prototype);
-@@ -220,19 +311,28 @@
+@@ -220,22 +314,46 @@
      _init: function(params) {
          params = Params.parse(params, { monitorIndex: 0,
                                          layoutManager: Main.layoutManager,
@@ -428,26 +449,45 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
          this._cancellable = new Gio.Cancellable();
          this.isLoaded = false;
  
-@@ -243,9 +343,13 @@
++        this._clock = new GnomeDesktop.WallClock();
++        this._timezoneChangedId = this._clock.connect('notify::timezone',
++            Lang.bind(this, function() {
++                if (this._animation)
++                    this._loadAnimation(this._animation.filename);
++            }));
++
++        let loginManager = LoginManager.getLoginManager();
++        this._prepareForSleepId = loginManager.connect('prepare-for-sleep',
++            (lm, aboutToSuspend) => {
++                if (aboutToSuspend)
++                    return;
++                this._refreshAnimation();
++            });
++
+         this._settingsChangedSignalId = this._settings.connect('changed', Lang.bind(this, function() {
+                                             this.emit('changed');
+                                         }));
+@@ -243,7 +361,7 @@
          this._load();
      },
  
 -    destroy: function() {
 +    _destroy: function() {
          this._cancellable.cancel();
--        this._removeAnimationTimeout();
-+
-+        if (this._updateAnimationTimeoutId) {
-+            GLib.source_remove (this._updateAnimationTimeoutId);
-+            this._updateAnimationTimeoutId = 0;
-+        }
+         this._removeAnimationTimeout();
  
-         let i;
-         let keys = Object.keys(this._fileWatches);
-@@ -254,18 +358,33 @@
+@@ -254,16 +372,47 @@
          }
          this._fileWatches = null;
  
++        if (this._timezoneChangedId != 0)
++            this._clock.disconnect(this._timezoneChangedId);
++        this._timezoneChangedId = 0;
++
++        if (this._prepareForSleepId != 0)
++            LoginManager.getLoginManager().disconnect(this._prepareForSleepId);
++        this._prepareForSleepId = 0;
++
 +        if (this._pattern) {
 +            if (this._pattern.content)
 +                this._cache.removePatternContent(this._pattern.content);
@@ -480,12 +520,16 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -            this._removeAnimationTimeout();
 -            this._updateAnimation();
 -        }
--    },
--
++    _refreshAnimation: function() {
++        if (!this._animation)
++            return;
++
++        this._removeAnimationTimeout();
++        this._updateAnimation();
+     },
+ 
      _setLoaded: function() {
-         if (this.isLoaded)
-             return;
-@@ -289,33 +408,59 @@
+@@ -289,17 +438,22 @@
  
          let shadingType = this._settings.get_enum(COLOR_SHADING_TYPE_KEY);
  
@@ -514,19 +558,10 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
          let signalId = this._cache.connect('file-changed',
                                             Lang.bind(this, function(cache, changedFile) {
                                                 if (changedFile == filename) {
--                                                   let imageCache = Meta.BackgroundImageCache.get_default();
--                                                   imageCache.purge(changedFile);
-                                                    this.emit('changed');
-                                                }
-                                            }));
+@@ -311,6 +465,29 @@
          this._fileWatches[filename] = signalId;
      },
  
--    _removeAnimationTimeout: function() {
--        if (this._updateAnimationTimeoutId) {
--            GLib.source_remove(this._updateAnimationTimeoutId);
--            this._updateAnimationTimeoutId = 0;
--        }
 +    _ensureImage: function(index) {
 +        if (this._images[index])
 +            return;
@@ -550,15 +585,23 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 +        this._watchCacheFile(filename);
 +    },
 +
+     _removeAnimationTimeout: function() {
+         if (this._updateAnimationTimeoutId) {
+             GLib.source_remove(this._updateAnimationTimeoutId);
+@@ -318,46 +495,59 @@
+         }
+     },
+ 
 +    _updateAnimationProgress: function() {
 +        if (this._images[1])
 +            this._images[1].opacity = this._animation.transitionProgress * 255;
 +
 +        this._queueUpdateAnimation();
-     },
- 
++    },
++
      _updateAnimation: function() {
-@@ -324,40 +469,46 @@
+         this._updateAnimationTimeoutId = 0;
+ 
          this._animation.update(this._layoutManager.monitors[this._monitorIndex]);
          let files = this._animation.keyFrameFiles;
  
@@ -631,7 +674,15 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
          }
      },
  
-@@ -401,26 +552,25 @@
+@@ -392,6 +582,7 @@
+ 
+     _loadAnimation: function(filename) {
+         this._cache.getAnimation({ filename: filename,
++                                   settingsSchema: this._settings.schema_id,
+                                              onLoaded: Lang.bind(this, function(animation) {
+                                                  this._animation = animation;
+ 
+@@ -401,26 +592,25 @@
                                                   }
  
                                                   this._updateAnimation();
@@ -672,7 +723,7 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
      },
  
      _loadFile: function(filename) {
-@@ -435,141 +585,95 @@
+@@ -435,141 +625,95 @@
  
          this._loadPattern();
  
@@ -707,20 +758,13 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -Signals.addSignalMethods(Background.prototype);
 -
 -let _systemBackground;
- 
+-
 -const SystemBackground = new Lang.Class({
 -    Name: 'SystemBackground',
-+    get brightness() {
-+        return this._brightness;
-+    },
  
 -    _init: function() {
 -        let filename = global.datadir + '/theme/noise-texture.png';
-+    set brightness(factor) {
-+        this._brightness = factor;
-+        if (this._pattern && this._pattern.content)
-+            this._pattern.content.brightness = factor;
- 
+-
 -        if (_systemBackground == null) {
 -            _systemBackground = new Meta.Background({ meta_screen: global.screen });
 -            _systemBackground.set_color(DEFAULT_BACKGROUND_COLOR);
@@ -747,40 +791,41 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -                                       image.disconnect(id);
 -                                       image = null;
 -                                   }));
-+        let keys = Object.keys(this._images);
-+        for (let i = 0; i < keys.length; i++) {
-+            let image = this._images[keys[i]];
-+            if (image && image.content)
-+                image.content.brightness = factor;
-         }
+-        }
++    get brightness() {
++        return this._brightness;
      },
 -});
 -Signals.addSignalMethods(SystemBackground.prototype);
- 
+-
 -const BackgroundSource = new Lang.Class({
 -    Name: 'BackgroundSource',
--
+ 
 -    _init: function(layoutManager, settingsSchema) {
 -        // Allow override the background image setting for performance testing
 -        this._layoutManager = layoutManager;
 -        this._overrideImage = GLib.getenv('SHELL_BACKGROUND_IMAGE');
 -        this._settings = new Gio.Settings({ schema_id: settingsSchema });
 -        this._backgrounds = [];
--
++    set brightness(factor) {
++        this._brightness = factor;
++        if (this._pattern && this._pattern.content)
++            this._pattern.content.brightness = factor;
+ 
 -        this._monitorsChangedId = global.screen.connect('monitors-changed',
 -                                                        Lang.bind(this, this._onMonitorsChanged));
-+    get vignetteSharpness() {
-+        return this._vignetteSharpness;
++        let keys = Object.keys(this._images);
++        for (let i = 0; i < keys.length; i++) {
++            let image = this._images[keys[i]];
++            if (image && image.content)
++                image.content.brightness = factor;
++        }
      },
  
 -    _onMonitorsChanged: function() {
 -        for (let monitorIndex in this._backgrounds) {
 -            let background = this._backgrounds[monitorIndex];
-+    set vignetteSharpness(sharpness) {
-+        this._vignetteSharpness = sharpness;
-+        if (this._pattern && this._pattern.content)
-+            this._pattern.content.vignette_sharpness = sharpness;
- 
+-
 -            if (monitorIndex < this._layoutManager.monitors.length) {
 -                background.updateResolution();
 -            } else {
@@ -788,20 +833,18 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -                background.destroy();
 -                delete this._backgrounds[monitorIndex];
 -            }
-+        let keys = Object.keys(this._images);
-+        for (let i = 0; i < keys.length; i++) {
-+            let image = this._images[keys[i]];
-+            if (image && image.content)
-+                image.content.vignette_sharpness = sharpness;
-         }
--    },
--
+-        }
++    get vignetteSharpness() {
++        return this._vignetteSharpness;
+     },
+ 
 -    getBackground: function(monitorIndex) {
 -        let filename = null;
 -        let style;
-+    }
-+});
-+Signals.addSignalMethods(Background.prototype);
++    set vignetteSharpness(sharpness) {
++        this._vignetteSharpness = sharpness;
++        if (this._pattern && this._pattern.content)
++            this._pattern.content.vignette_sharpness = sharpness;
  
 -        if (this._overrideImage != null) {
 -            filename = this._overrideImage;
@@ -815,9 +858,15 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -                else
 -                    filename = uri;
 -            }
--        }
-+const SystemBackground = new Lang.Class({
-+    Name: 'SystemBackground',
++        let keys = Object.keys(this._images);
++        for (let i = 0; i < keys.length; i++) {
++            let image = this._images[keys[i]];
++            if (image && image.content)
++                image.content.vignette_sharpness = sharpness;
+         }
++    }
++});
++Signals.addSignalMethods(Background.prototype);
  
 -        // Animated backgrounds are (potentially) per-monitor, since
 -        // they can have variants that depend on the aspect ratio and
@@ -834,7 +883,9 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -                filename: filename,
 -                style: style
 -            });
--
++const SystemBackground = new Lang.Class({
++    Name: 'SystemBackground',
+ 
 -            background._changedId = background.connect('changed', Lang.bind(this, function() {
 -                background.disconnect(background._changedId);
 -                background.destroy();
@@ -880,7 +931,7 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
  
  const Animation = new Lang.Class({
      Name: 'Animation',
-@@ -628,121 +732,100 @@
+@@ -628,121 +772,103 @@
          params = Params.parse(params, { container: null,
                                          layoutManager: Main.layoutManager,
                                          monitorIndex: null,
@@ -906,6 +957,7 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -        this.backgroundActor = this._createBackgroundActor();
 -        this._newBackgroundActor = null;
 +        this.background = this._createBackground();
++        this.backgroundActor = this.background.actor;
 +        this._newBackground = null;
      },
  
@@ -920,19 +972,17 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 +        if (this._newBackground) {
 +            this._newBackground.actor.destroy();
 +            this._newBackground = null;
-+        }
-+
+         }
+ 
+-        if (this.backgroundActor) {
+-            this.backgroundActor.destroy();
 +        if (this.background) {
 +            this.background.actor.destroy();
 +            this.background = null;
+             this.backgroundActor = null;
          }
--
--        if (this.backgroundActor) {
--            this.backgroundActor.destroy();
--            this.backgroundActor = null;
--        }
--    },
--
+     },
+ 
 -    _swapBackgroundActor: function() {
 -        let oldBackgroundActor = this.backgroundActor;
 -        this.backgroundActor = this._newBackgroundActor;
@@ -947,8 +997,8 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 -                               oldBackgroundActor.destroy();
 -                           }
 -                         });
-     },
- 
+-    },
+-
 -    _updateBackgroundActor: function() {
 -        if (this._newBackgroundActor) {
 -            /* Skip displaying existing background queued for load */
@@ -996,6 +1046,7 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
 +                                   time: FADE_ANIMATION_TIME,
 +                                   transition: 'easeOutQuad',
 +                                   onComplete: Lang.bind(this, function() {
++                                       this.background.actor.run_dispose();
 +                                       this.background.actor.destroy();
 +                                       this.background = newBackground;
 +                                       this._newBackground = null;
@@ -1069,8 +1120,8 @@ diff '--exclude=.git' -urN a/js/ui/background.js b/js/ui/background.js
  });
  Signals.addSignalMethods(BackgroundManager.prototype);
 diff '--exclude=.git' -urN a/js/ui/layout.js b/js/ui/layout.js
---- a/js/ui/layout.js	2015-06-14 06:52:27.384332114 -0400
-+++ b/js/ui/layout.js	2015-06-14 06:54:21.754703974 -0400
+--- a/js/ui/layout.js	2015-03-23 14:09:31.000000000 -0400
++++ b/js/ui/layout.js	2017-06-17 02:51:22.336928079 -0400
 @@ -11,7 +11,6 @@
  
  const Background = imports.ui.background;
@@ -1132,8 +1183,8 @@ diff '--exclude=.git' -urN a/js/ui/layout.js b/js/ui/layout.js
      },
  
 diff '--exclude=.git' -urN a/js/ui/overview.js b/js/ui/overview.js
---- a/js/ui/overview.js	2015-06-14 06:52:27.385332108 -0400
-+++ b/js/ui/overview.js	2015-06-14 06:54:21.752703985 -0400
+--- a/js/ui/overview.js	2015-03-23 14:09:14.000000000 -0400
++++ b/js/ui/overview.js	2017-06-17 02:51:22.336928079 -0400
 @@ -185,7 +185,7 @@
          for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
              let bgManager = new Background.BackgroundManager({ container: this._backgroundGroup,
@@ -1172,8 +1223,8 @@ diff '--exclude=.git' -urN a/js/ui/overview.js b/js/ui/overview.js
                                 transition: 'easeOutQuad'
                               });
 diff '--exclude=.git' -urN a/js/ui/workspaceThumbnail.js b/js/ui/workspaceThumbnail.js
---- a/js/ui/workspaceThumbnail.js	2015-06-14 06:52:27.388332092 -0400
-+++ b/js/ui/workspaceThumbnail.js	2015-06-14 06:54:21.751703990 -0400
+--- a/js/ui/workspaceThumbnail.js	2015-03-23 14:09:15.000000000 -0400
++++ b/js/ui/workspaceThumbnail.js	2017-06-17 02:51:22.336928079 -0400
 @@ -306,7 +306,7 @@
      _createBackground: function() {
          this._bgManager = new Background.BackgroundManager({ monitorIndex: Main.layoutManager.primaryIndex,
@@ -1202,8 +1253,8 @@ diff '--exclude=.git' -urN a/js/ui/workspaceThumbnail.js b/js/ui/workspaceThumbn
              clone.setStackAbove(this._windows[this._windows.length - 1].actor);
  
 diff '--exclude=.git' -urN a/src/shell-util.c b/src/shell-util.c
---- a/src/shell-util.c	2015-06-14 06:52:27.402332015 -0400
-+++ b/src/shell-util.c	2015-06-14 06:54:09.314772273 -0400
+--- a/src/shell-util.c	2015-03-23 14:09:31.000000000 -0400
++++ b/src/shell-util.c	2017-06-17 02:51:22.336928079 -0400
 @@ -5,9 +5,6 @@
  #include <sys/types.h>
  #include <sys/wait.h>
@@ -1249,8 +1300,8 @@ diff '--exclude=.git' -urN a/src/shell-util.c b/src/shell-util.c
 -  return FALSE;
 -}
 diff '--exclude=.git' -urN a/src/shell-util.h b/src/shell-util.h
---- a/src/shell-util.h	2015-06-14 06:52:27.402332015 -0400
-+++ b/src/shell-util.h	2015-06-14 06:54:09.313772278 -0400
+--- a/src/shell-util.h	2015-03-23 14:09:31.000000000 -0400
++++ b/src/shell-util.h	2017-06-17 02:51:22.337928074 -0400
 @@ -44,8 +44,6 @@
  void    shell_util_cursor_tracker_to_clutter (MetaCursorTracker *tracker,
                                                ClutterTexture    *texture);

@@ -26,6 +26,7 @@ COMMON_DEPEND="
 	>=dev-libs/glib-2.39.1:2[dbus]
 	>=dev-libs/gjs-1.39
 	>=dev-libs/gobject-introspection-0.10.1:=
+	dev-libs/libical:=
 	>=x11-libs/gtk+-3.13.2:3[introspection]
 	>=media-libs/clutter-1.15.90:1.0[introspection]
 	>=dev-libs/json-glib-0.13.2
@@ -34,14 +35,14 @@ COMMON_DEPEND="
 	>=gnome-base/gsettings-desktop-schemas-3.14
 	>=gnome-base/gnome-keyring-3.3.90
 	gnome-base/libgnome-keyring
-	>=gnome-extra/evolution-data-server-3.5.3:=
+	>=gnome-extra/evolution-data-server-3.13.90:=
 	>=media-libs/gstreamer-0.11.92:1.0
 	>=net-im/telepathy-logger-0.2.4[introspection]
 	>=net-libs/telepathy-glib-0.19[introspection]
 	>=sys-auth/polkit-0.100[introspection]
 	>=x11-libs/libXfixes-5.0
 	x11-libs/libXtst
-	>=x11-wm/mutter-3.14.4[introspection]
+	>=x11-wm/mutter-3.14.4[deprecated-background=,introspection]
 	>=x11-libs/startup-notification-0.11
 
 	${PYTHON_DEPS}
@@ -60,7 +61,6 @@ COMMON_DEPEND="
 	x11-apps/mesa-progs
 
 	bluetooth? ( >=net-wireless/gnome-bluetooth-3.9[introspection] )
-	deprecated-background? ( x11-wm/mutter[deprecated-background] )
 	networkmanager? (
 		app-crypt/libsecret
 		>=gnome-extra/nm-applet-0.9.8
@@ -123,6 +123,10 @@ DEPEND="${COMMON_DEPEND}
 # https://bugs.gentoo.org/show_bug.cgi?id=360413
 
 src_prepare() {
+	# Provided by gnome-base/gnome-shell-common
+	sed -e '/.*calendar-today.svg.*/d' \
+		-i data/Makefile.am || die "sed failed"
+
 	if use deprecated; then
 		# From Funtoo:
 		# 	https://bugs.funtoo.org/browse/FL-1329
@@ -132,10 +136,10 @@ src_prepare() {
 
 	if use deprecated-background; then
 		eapply "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
-
-		# Provided by gnome-base/gnome-shell-common
-		sed -e '/.*calendar-today.svg.*/d' \
-			-i data/Makefile.am || die "sed failed"
+	else
+		# From GNOME:
+		# 	https://git.gnome.org/browse/gnome-shell/commit/?id=965aedb0bb15c0246c67384e2dab13fa027df917
+		eapply "${FILESDIR}"/${PN}-3.19.3-background-reload-animation-on-timezone-changes.patch
 	fi
 
 	if ! use vanilla-motd; then
@@ -147,12 +151,12 @@ src_prepare() {
 	fi
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=965aedb0bb15c0246c67384e2dab13fa027df917
 	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=6660342d2f41d4d22a23fa0653f8e1f36b6bf7dc
 	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=be3c3c64c164e1b2edb5e43343ea177db473fbb4
-	eapply "${FILESDIR}"/${PN}-3.19.3-background-reload-animation-on-timezone-changes.patch
+	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=7aa75f8eb060beaaa933f96df6aa6a98f4461a46
 	eapply "${FILESDIR}"/${PN}-3.14.4-authprompt-fix-hang-if-user-types-password-really-fast.patch
 	eapply "${FILESDIR}"/${PN}-3.15.2-port-gnome-shell-to-python-3.patch
+	eapply "${FILESDIR}"/${PN}-3.15.90-calendar-server-bump-dataserver-version.patch
 
 	# Change favorites defaults, bug #479918
 	eapply "${FILESDIR}"/${PN}-3.14.0-defaults.patch

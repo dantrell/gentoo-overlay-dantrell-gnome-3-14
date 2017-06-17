@@ -54,7 +54,7 @@ RDEPEND="
 	boxes? ( >=gnome-extra/gnome-boxes-${PV} )
 	california? ( >=gnome-extra/california-0.4.0 )
 	epiphany? ( >=www-client/epiphany-${PV} )
-	evolution? ( >=mail-client/evolution-3.12.11 )
+	evolution? ( >=mail-client/evolution-3.13.90 )
 	flashback? ( >=gnome-base/gnome-flashback-${PV} )
 	fonts? (
 		>=media-fonts/noto-20160305
