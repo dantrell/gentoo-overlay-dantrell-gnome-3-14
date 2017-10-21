@@ -13,7 +13,7 @@ SLOT="0"
 KEYWORDS="*"
 
 # profiling?
-IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker vanilla-menu vanilla-rename xmp"
+IUSE="debug exif gnome +introspection packagekit +previewer sendto tracker vanilla-menu vanilla-rename vanilla-thumbnailer xmp"
 
 # FIXME: tests fails under Xvfb, but pass when building manually
 # "FAIL: check failed in nautilus-file.c, line 8307"
@@ -62,11 +62,11 @@ RDEPEND="${COMMON_DEPEND}
 PDEPEND="
 	gnome? ( x11-themes/adwaita-icon-theme )
 	tracker? ( >=gnome-extra/nautilus-tracker-tags-0.12 )
-	previewer? (
-		>=gnome-extra/sushi-0.1.9
-		>=media-video/totem-$(get_version_component_range 1-2) )
+	previewer? ( >=gnome-extra/sushi-0.1.9 )
 	sendto? ( >=gnome-extra/nautilus-sendto-3.0.1 )
 	>=gnome-base/gvfs-1.14[gtk]
+	>=media-video/totem-$(get_version_component_range 1-2)[vanilla-thumbnailer=]
+	!vanilla-thumbnailer? ( media-video/ffmpegthumbnailer )
 "
 # Need gvfs[gtk] for recent:/// support
 
