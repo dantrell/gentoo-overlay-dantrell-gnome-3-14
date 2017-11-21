@@ -11,7 +11,7 @@ SLOT="3.0"
 # double check none of the deps are still masked !
 KEYWORDS="*"
 
-IUSE="+bijiben boxes california epiphany +evolution flashback +fonts +games geary gnote latexila +share +shotwell simple-scan +tracker"
+IUSE="+bijiben boxes california empathy epiphany +evolution flashback +fonts +games geary gnote latexila +share +shotwell simple-scan +tracker"
 
 # Note to developers:
 #
@@ -53,6 +53,7 @@ RDEPEND="
 	bijiben? ( >=app-misc/bijiben-${PV} )
 	boxes? ( >=gnome-extra/gnome-boxes-${PV} )
 	california? ( >=gnome-extra/california-0.4.0 )
+	empathy? ( >=net-im/empathy-3.12.13 )
 	epiphany? ( >=www-client/epiphany-${PV} )
 	evolution? ( >=mail-client/evolution-3.13.90 )
 	flashback? ( >=gnome-base/gnome-flashback-${PV} )
