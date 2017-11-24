@@ -1,0 +1,192 @@
+From a36c11e5920e84950f6f07b93dbbd1560bfe61eb Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Mon, 9 Feb 2015 15:43:17 +0000
+Subject: Remove libyelp redundant declarations
+
+---
+ libyelp/yelp-docbook-document.c | 2 --
+ libyelp/yelp-document.c         | 2 --
+ libyelp/yelp-help-list.c        | 2 --
+ libyelp/yelp-info-document.c    | 2 --
+ libyelp/yelp-mallard-document.c | 2 --
+ libyelp/yelp-man-document.c     | 2 --
+ libyelp/yelp-settings.c         | 2 --
+ libyelp/yelp-simple-document.c  | 2 --
+ libyelp/yelp-sqlite-storage.c   | 2 --
+ libyelp/yelp-transform.c        | 2 --
+ libyelp/yelp-uri.c              | 2 --
+ libyelp/yelp-view.c             | 2 --
+ libyelp/yelp-view.h             | 1 -
+ 13 files changed, 25 deletions(-)
+
+diff --git a/libyelp/yelp-docbook-document.c b/libyelp/yelp-docbook-document.c
+index 6ca53ad..4d4523b 100644
+--- a/libyelp/yelp-docbook-document.c
++++ b/libyelp/yelp-docbook-document.c
+@@ -52,8 +52,6 @@ enum {
+     DOCBOOK_COLUMN_TITLE
+ };
+ 
+-static void           yelp_docbook_document_class_init      (YelpDocbookDocumentClass *klass);
+-static void           yelp_docbook_document_init            (YelpDocbookDocument      *docbook);
+ static void           yelp_docbook_document_dispose         (GObject                  *object);
+ static void           yelp_docbook_document_finalize        (GObject                  *object);
+ 
+diff --git a/libyelp/yelp-document.c b/libyelp/yelp-document.c
+index fb6e0a4..82973e0 100644
+--- a/libyelp/yelp-document.c
++++ b/libyelp/yelp-document.c
+@@ -98,8 +98,6 @@ G_DEFINE_TYPE (YelpDocument, yelp_document, G_TYPE_OBJECT)
+ 
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_DOCUMENT, YelpDocumentPriv))
+ 
+-static void           yelp_document_class_init  (YelpDocumentClass    *klass);
+-static void           yelp_document_init        (YelpDocument         *document);
+ static void           yelp_document_dispose     (GObject              *object);
+ static void           yelp_document_finalize    (GObject              *object);
+ static void           document_get_property     (GObject              *object,
+diff --git a/libyelp/yelp-help-list.c b/libyelp/yelp-help-list.c
+index 03c403c..3578359 100644
+--- a/libyelp/yelp-help-list.c
++++ b/libyelp/yelp-help-list.c
+@@ -36,8 +36,6 @@
+ 
+ typedef struct _HelpListEntry HelpListEntry;
+ 
+-static void           yelp_help_list_class_init      (YelpHelpListClass     *klass);
+-static void           yelp_help_list_init            (YelpHelpList          *list);
+ static void           yelp_help_list_dispose         (GObject               *object);
+ static void           yelp_help_list_finalize        (GObject               *object);
+ 
+diff --git a/libyelp/yelp-info-document.c b/libyelp/yelp-info-document.c
+index 42dd136..bfb6a78 100644
+--- a/libyelp/yelp-info-document.c
++++ b/libyelp/yelp-info-document.c
+@@ -68,8 +68,6 @@ struct _YelpInfoDocumentPrivate {
+ };
+ 
+ 
+-static void           yelp_info_document_class_init       (YelpInfoDocumentClass  *klass);
+-static void           yelp_info_document_init             (YelpInfoDocument       *info);
+ static void           yelp_info_document_dispose          (GObject                *object);
+ static void           yelp_info_document_finalize         (GObject                *object);
+ 
+diff --git a/libyelp/yelp-mallard-document.c b/libyelp/yelp-mallard-document.c
+index 54a3fa0..62b85ec 100644
+--- a/libyelp/yelp-mallard-document.c
++++ b/libyelp/yelp-mallard-document.c
+@@ -71,8 +71,6 @@ typedef struct {
+     gchar         *next_page;
+ } MallardPageData;
+ 
+-static void           yelp_mallard_document_class_init (YelpMallardDocumentClass *klass);
+-static void           yelp_mallard_document_init       (YelpMallardDocument      *mallard);
+ static void           yelp_mallard_document_dispose    (GObject                  *object);
+ static void           yelp_mallard_document_finalize   (GObject                  *object);
+ 
+diff --git a/libyelp/yelp-man-document.c b/libyelp/yelp-man-document.c
+index 6d5f0ea..cfb8d3c 100644
+--- a/libyelp/yelp-man-document.c
++++ b/libyelp/yelp-man-document.c
+@@ -118,8 +118,6 @@ static const YelpLangEncodings langmap[] = {
+     { NULL,    NULL },
+ };
+ 
+-static void           yelp_man_document_class_init       (YelpManDocumentClass   *klass);
+-static void           yelp_man_document_init             (YelpManDocument        *man);
+ static void           yelp_man_document_dispose          (GObject                *object);
+ static void           yelp_man_document_finalize         (GObject                *object);
+ 
+diff --git a/libyelp/yelp-settings.c b/libyelp/yelp-settings.c
+index 6b3ca29..56df4c8 100644
+--- a/libyelp/yelp-settings.c
++++ b/libyelp/yelp-settings.c
+@@ -76,8 +76,6 @@ static gchar *icon_names[YELP_SETTINGS_NUM_ICONS];
+ G_DEFINE_TYPE (YelpSettings, yelp_settings, G_TYPE_OBJECT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_SETTINGS, YelpSettingsPriv))
+ 
+-static void           yelp_settings_class_init   (YelpSettingsClass    *klass);
+-static void           yelp_settings_init         (YelpSettings         *settings);
+ static void           yelp_settings_constructed  (GObject              *object);
+ static void           yelp_settings_dispose      (GObject              *object);
+ static void           yelp_settings_finalize     (GObject              *object);
+diff --git a/libyelp/yelp-simple-document.c b/libyelp/yelp-simple-document.c
+index 2ff6c0f..34e4076 100644
+--- a/libyelp/yelp-simple-document.c
++++ b/libyelp/yelp-simple-document.c
+@@ -59,8 +59,6 @@ struct _YelpSimpleDocumentPriv {
+ G_DEFINE_TYPE (YelpSimpleDocument, yelp_simple_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_SIMPLE_DOCUMENT, YelpSimpleDocumentPriv))
+ 
+-static void           yelp_simple_document_class_init  (YelpSimpleDocumentClass *klass);
+-static void           yelp_simple_document_init        (YelpSimpleDocument      *document);
+ static void           yelp_simple_document_dispose     (GObject                 *object);
+ static void           yelp_simple_document_finalize    (GObject                 *object);
+ 
+diff --git a/libyelp/yelp-sqlite-storage.c b/libyelp/yelp-sqlite-storage.c
+index 6c9a9d4..74f8884 100644
+--- a/libyelp/yelp-sqlite-storage.c
++++ b/libyelp/yelp-sqlite-storage.c
+@@ -25,8 +25,6 @@
+ 
+ #include "yelp-sqlite-storage.h"
+ 
+-static void        yelp_sqlite_storage_init         (YelpSqliteStorage      *storage);
+-static void        yelp_sqlite_storage_class_init   (YelpSqliteStorageClass *klass);
+ static void        yelp_sqlite_storage_iface_init   (YelpStorageInterface   *iface);
+ static void        yelp_sqlite_storage_finalize     (GObject                *object);
+ static void        yelp_sqlite_storage_get_property (GObject                *object,
+diff --git a/libyelp/yelp-transform.c b/libyelp/yelp-transform.c
+index ad567a1..810010e 100644
+--- a/libyelp/yelp-transform.c
++++ b/libyelp/yelp-transform.c
+@@ -44,8 +44,6 @@
+ 
+ #define YELP_NAMESPACE "http://www.gnome.org/yelp/ns"
+ 
+-static void      yelp_transform_init         (YelpTransform           *transform);
+-static void      yelp_transform_class_init   (YelpTransformClass      *klass);
+ static void      yelp_transform_dispose      (GObject                 *object);
+ static void      yelp_transform_finalize     (GObject                 *object);
+ static void      yelp_transform_get_property (GObject                 *object,
+diff --git a/libyelp/yelp-uri.c b/libyelp/yelp-uri.c
+index 1373212..4b4082c 100644
+--- a/libyelp/yelp-uri.c
++++ b/libyelp/yelp-uri.c
+@@ -32,8 +32,6 @@
+ #include "yelp-debug.h"
+ #include "yelp-settings.h"
+ 
+-static void           yelp_uri_class_init        (YelpUriClass   *klass);
+-static void           yelp_uri_init              (YelpUri        *uri);
+ static void           yelp_uri_dispose           (GObject        *object);
+ static void           yelp_uri_finalize          (GObject        *object);
+ 
+diff --git a/libyelp/yelp-view.c b/libyelp/yelp-view.c
+index 89e0637..71106ee 100644
+--- a/libyelp/yelp-view.c
++++ b/libyelp/yelp-view.c
+@@ -42,8 +42,6 @@
+ #define BOGUS_URI "file:///bogus/"
+ #define BOGUS_URI_LEN 14
+ 
+-static void        yelp_view_init                 (YelpView           *view);
+-static void        yelp_view_class_init           (YelpViewClass      *klass);
+ static void        yelp_view_dispose              (GObject            *object);
+ static void        yelp_view_finalize             (GObject            *object);
+ static void        yelp_view_get_property         (GObject            *object,
+diff --git a/libyelp/yelp-view.h b/libyelp/yelp-view.h
+index a96feef..84af05a 100644
+--- a/libyelp/yelp-view.h
++++ b/libyelp/yelp-view.h
+@@ -61,7 +61,6 @@ typedef enum {
+ } YelpViewState;
+ 
+ GType              yelp_view_get_type             (void);
+-GType              yelp_view_state_get_type       (void);
+ 
+ GtkWidget *        yelp_view_new                  (void);
+ void               yelp_view_load                 (YelpView                *view,
+-- 
+cgit v0.12
+

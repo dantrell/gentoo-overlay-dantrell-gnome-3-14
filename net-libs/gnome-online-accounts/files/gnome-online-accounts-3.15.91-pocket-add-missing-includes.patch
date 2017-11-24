@@ -1,0 +1,25 @@
+From b2051083c807dfcb3f6d176107e4035146affcca Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Fri, 27 Feb 2015 19:06:36 +0100
+Subject: pocket: Add missing includes
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742680
+---
+ src/goabackend/goapocketprovider.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/goabackend/goapocketprovider.c b/src/goabackend/goapocketprovider.c
+index ac353ba..7d18661 100644
+--- a/src/goabackend/goapocketprovider.c
++++ b/src/goabackend/goapocketprovider.c
+@@ -21,6 +21,7 @@
+ 
+ #include <rest/rest-proxy.h>
+ #include <json-glib/json-glib.h>
++#include <libsoup/soup.h>
+ #include <webkit/webkit.h>
+ 
+ #include "goaprovider.h"
+-- 
+cgit v0.12
+

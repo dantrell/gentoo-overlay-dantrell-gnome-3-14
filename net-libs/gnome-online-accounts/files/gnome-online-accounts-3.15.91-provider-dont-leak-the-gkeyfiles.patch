@@ -1,0 +1,32 @@
+From aac4049b8699d72147186ea4a6a283972ed4f8ce Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Tue, 3 Mar 2015 18:44:27 +0100
+Subject: provider: Don't leak the GKeyFiles
+
+---
+ src/goabackend/goaprovider.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/goabackend/goaprovider.c b/src/goabackend/goaprovider.c
+index c828c2d..bee43a2 100644
+--- a/src/goabackend/goaprovider.c
++++ b/src/goabackend/goaprovider.c
+@@ -1228,6 +1228,7 @@ goa_util_lookup_keyfile_string (GoaObject    *object,
+     }
+ 
+  out:
++  g_key_file_free (key_file);
+   g_free (group);
+   g_free (path);
+   return ret;
+@@ -1280,6 +1281,7 @@ goa_util_lookup_keyfile_boolean (GoaObject    *object,
+     }
+ 
+  out:
++  g_key_file_free (key_file);
+   g_free (group);
+   g_free (path);
+   return ret;
+-- 
+cgit v0.12
+

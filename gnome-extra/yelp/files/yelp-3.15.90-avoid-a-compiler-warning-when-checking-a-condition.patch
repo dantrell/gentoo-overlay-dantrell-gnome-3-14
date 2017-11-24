@@ -1,0 +1,25 @@
+From 447c419c1bb0b601180e87deff2e00a6acefca6c Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Mon, 9 Feb 2015 22:40:14 +0000
+Subject: Avoid a compiler warning when checking a condition
+
+---
+ libyelp/yelp-view.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/libyelp/yelp-view.c b/libyelp/yelp-view.c
+index 6a07b16..80217aa 100644
+--- a/libyelp/yelp-view.c
++++ b/libyelp/yelp-view.c
+@@ -896,7 +896,7 @@ view_scrolled (GtkAdjustment *adjustment,
+         return;
+     if (adjustment == priv->vadjustment)
+         ((YelpBackEntry *) priv->back_cur->data)->vadj = gtk_adjustment_get_value (adjustment);
+-    else if (adjustment = priv->hadjustment)
++    else if (adjustment == priv->hadjustment)
+         ((YelpBackEntry *) priv->back_cur->data)->hadj = gtk_adjustment_get_value (adjustment);
+ }
+ 
+-- 
+cgit v0.12
+

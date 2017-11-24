@@ -1,0 +1,31 @@
+From 6a77fa85b07059835713a469aa23629b5b5529d0 Mon Sep 17 00:00:00 2001
+From: Yosef Or Boczko <yoseforb@src.gnome.org>
+Date: Fri, 5 Sep 2014 00:06:59 +0300
+Subject: audio: Fix the icons in RTL
+
+With newer GTK+ the custom handling for RTL
+icons are wrong.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=736079
+---
+ src/js/viewers/audio.js | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/js/viewers/audio.js b/src/js/viewers/audio.js
+index c00d953..9220667 100644
+--- a/src/js/viewers/audio.js
++++ b/src/js/viewers/audio.js
+@@ -237,9 +237,7 @@ AudioRenderer.prototype = {
+             this._toolbarPlay.set_icon_name('media-playback-pause-symbolic');
+             break;
+         default:
+-            let iconName =
+-            (this._toolbarPlay.get_direction() == Gtk.TextDirection.RTL) ?
+-                'media-playback-start-rtl-symbolic' : 'media-playback-start-symbolic';
++            let iconName = 'media-playback-start-symbolic';
+             this._toolbarPlay.set_icon_name(iconName);
+         }
+     },
+-- 
+cgit v0.12
+

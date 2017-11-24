@@ -1,0 +1,129 @@
+From 7d3af4e4a3452a8ed8e7b3f42216b3460321ec93 Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Fri, 7 Nov 2014 16:11:58 +0100
+Subject: Port to WebKit2
+
+There is no need or equivalent of adding a SoupProxyResolverDefault to
+the session. This was confirmed by #webkitgtk+ and this epiphany commit
+88b08cad6a446fae4b78dc61c81c742b79da2e08
+
+https://bugzilla.gnome.org/show_bug.cgi?id=739787
+---
+ configure.ac       |  4 ++--
+ src/application.js |  2 +-
+ src/edit.js        | 35 +++++++++--------------------------
+ 3 files changed, 12 insertions(+), 29 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 9b5a227..8e87f21 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -50,7 +50,7 @@ AC_CHECK_LIBM
+ AC_SUBST(LIBM)
+ 
+ EVINCE_MIN_VERSION=3.13.3
+-WEBKITGTK_MIN_VERSION=1.10.0
++WEBKITGTK_MIN_VERSION=2.6.0
+ GLIB_MIN_VERSION=2.39.3
+ GTK_MIN_VERSION=3.15.0
+ GOBJECT_INTROSPECTION_MIN_VERSION=1.31.6
+@@ -75,7 +75,7 @@ AM_CONDITIONAL(BUILD_DOCUMENTATION, test x$enable_documentation = xyes)
+ PKG_CHECK_MODULES(DOCUMENTS,
+                   evince-document-3.0 >= $EVINCE_MIN_VERSION
+                   evince-view-3.0 >= $EVINCE_MIN_VERSION
+-                  webkitgtk-3.0 >= $WEBKITGTK_MIN_VERSION
++                  webkit2gtk-4.0 >= $WEBKITGTK_MIN_VERSION
+                   gjs-1.0
+                   glib-2.0 >= $GLIB_MIN_VERSION
+                   gobject-introspection-1.0 >= $GOBJECT_INTROSPECTION_MIN_VERSION
+diff --git a/src/application.js b/src/application.js
+index 962f67c..a2fd080 100644
+--- a/src/application.js
++++ b/src/application.js
+@@ -32,7 +32,7 @@ imports.gi.versions.Tracker = '1.0';
+ imports.gi.versions.TrackerControl = '1.0';
+ imports.gi.versions.EvinceDocument = '3.0';
+ imports.gi.versions.Goa = '1.0';
+-imports.gi.versions.WebKit = '3.0';
++imports.gi.versions.WebKit2 = '4.0';
+ 
+ const EvDoc = imports.gi.EvinceDocument;
+ const GdPrivate = imports.gi.GdPrivate;
+diff --git a/src/edit.js b/src/edit.js
+index b4b47f4..4affe51 100644
+--- a/src/edit.js
++++ b/src/edit.js
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright (c) 2013 Red Hat, Inc.
++ * Copyright (c) 2013, 2014 Red Hat, Inc.
+  *
+  * Gnome Documents is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by the
+@@ -17,7 +17,7 @@
+  *
+  */
+ 
+-const WebKit = imports.gi.WebKit;
++const WebKit = imports.gi.WebKit2;
+ const Soup = imports.gi.Soup;
+ const Gd = imports.gi.Gd;
+ const GdPrivate = imports.gi.GdPrivate;
+@@ -48,18 +48,12 @@ const EditView = new Lang.Class({
+         this._uri = null;
+ 
+         this.widget = new Gtk.Overlay();
+-
+-        this._scrolledWindow = new Gtk.ScrolledWindow({ hexpand: true,
+-                                                        vexpand: true });
+         this.widget.get_style_context().add_class('documents-scrolledwin');
+-        this.widget.add(this._scrolledWindow);
+ 
+-        this._session = WebKit.get_default_session ();
+-        Soup.Session.prototype.add_feature.call(this._session, new Soup.ProxyResolverDefault());
+-        Soup.Session.prototype.remove_feature.call(this._session, new Soup.CookieJar());
++        context = WebKit.WebContext.get_default();
++        cookie_manager = context.get_cookie_manager();
+         let jarfile = GLib.build_filenamev([GLib.get_user_cache_dir(), 'gnome-documents', 'cookies.sqlite']);
+-        this._cookieJar = new Soup.CookieJarDB({ filename: jarfile, read_only: false });
+-        Soup.Session.prototype.add_feature.call(this._session, this._cookieJar);
++        cookie_manager.set_persistent_storage(jarfile, WebKit.CookiePersistentStorage.SQLITE);
+ 
+         this._progressBar = new Gtk.ProgressBar({ halign: Gtk.Align.FILL,
+                                                   valign: Gtk.Align.START });
+@@ -110,28 +104,17 @@ const EditView = new Lang.Class({
+ 
+     _createView: function() {
+         this.view = new WebKit.WebView();
+-        this._scrolledWindow.add(this.view);
++        this.widget.add(this.view);
+         this.view.show();
+-        this.view.connect('notify::progress', Lang.bind(this, this._onProgressChanged));
+-    },
+-
+-    _isLoading: function() {
+-        let status = this.view.load_status;
+-        if ((status == WebKit.LoadStatus.finished
+-            || status == WebKit.LoadStatus.failed)
+-            && status != WebKit.LoadStatus.provisional)
+-            return false;
+-
+-        return status != WebKit.LoadStatus.finished
+-            && status != WebKit.LoadStatus.failed;
++        this.view.connect('notify::estimated-load-progress', Lang.bind(this, this._onProgressChanged));
+     },
+ 
+     _onProgressChanged: function() {
+         if (!this.view.uri || this.view.uri == _BLANK_URI)
+             return;
+ 
+-        let progress = this.view.progress;
+-        let loading = this._isLoading();
++        let progress = this.view.estimated_load_progress;
++        let loading = this.view.is_loading;
+ 
+         if (progress == 1.0 || !loading) {
+             if (!this._timeoutId)
+-- 
+cgit v0.12
+

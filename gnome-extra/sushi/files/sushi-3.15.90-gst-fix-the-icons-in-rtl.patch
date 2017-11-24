@@ -1,0 +1,31 @@
+From 49d625b7ee38b395c2d493430d6aa2d2c81fd7c5 Mon Sep 17 00:00:00 2001
+From: Yosef Or Boczko <yoseforb@src.gnome.org>
+Date: Fri, 5 Sep 2014 00:07:04 +0300
+Subject: gst: Fix the icons in RTL
+
+With newer GTK+ the custom handling for RTL
+icons are wrong.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=736079
+---
+ src/js/viewers/gst.js | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/src/js/viewers/gst.js b/src/js/viewers/gst.js
+index 3ba8a70..fc4e106 100644
+--- a/src/js/viewers/gst.js
++++ b/src/js/viewers/gst.js
+@@ -129,9 +129,7 @@ GstRenderer.prototype = {
+             this._toolbarPlay.set_icon_name('media-playback-pause-symbolic');
+         else
+         {
+-            let iconName =
+-            (this._toolbarPlay.get_direction() == Gtk.TextDirection.RTL) ?
+-                'media-playback-start-rtl-symbolic' : 'media-playback-start-symbolic';
++            let iconName = 'media-playback-start-symbolic';
+             this._toolbarPlay.set_icon_name(iconName);
+         }
+     },
+-- 
+cgit v0.12
+

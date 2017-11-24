@@ -1,0 +1,29 @@
+From 4b3974bfb94b057259932207c7ed85e26d999175 Mon Sep 17 00:00:00 2001
+From: Pierre-Yves Luyten <py@luyten.fr>
+Date: Sun, 23 Nov 2014 21:34:27 +0100
+Subject: Drop the background rows
+
+Use a simple background for now.
+See 740323.
+---
+ data/Default.css | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/data/Default.css b/data/Default.css
+index 349adc7..07a6141 100644
+--- a/data/Default.css
++++ b/data/Default.css
+@@ -5,10 +5,6 @@ body {
+   margin-bottom:    8em;
+   word-wrap:        break-word;
+ 
+-  background-image: -webkit-linear-gradient(90deg,
+-                               rgba(97%,97%,100%,0) 0%,
+-                               rgba(97%,97%,100%,0) 90%,
+-                               rgba(0%,0%,0%,0.15) 100%);
+   color:            _BIJI_TEXT_COLOR;
+   background-size:  2.0em 2.0em;
+   line-height:      2.0em;
+-- 
+cgit v0.12
+

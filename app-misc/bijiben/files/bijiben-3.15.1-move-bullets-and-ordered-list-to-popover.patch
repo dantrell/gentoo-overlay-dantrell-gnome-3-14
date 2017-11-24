@@ -1,0 +1,137 @@
+From 437518dc7c35fd6563f435c66e9d0c078dc71b57 Mon Sep 17 00:00:00 2001
+From: Pierre-Yves Luyten <py@luyten.fr>
+Date: Sun, 26 Oct 2014 22:48:48 +0100
+Subject: Move bullets and ordered list to popover.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=732212
+---
+ src/bjb-editor-toolbar.c | 39 +++++++++++++++++++++++++++++++++++++++
+ src/bjb-main-toolbar.c   | 34 ----------------------------------
+ 2 files changed, 39 insertions(+), 34 deletions(-)
+
+diff --git a/src/bjb-editor-toolbar.c b/src/bjb-editor-toolbar.c
+index 6aaafc2..d6c4fb4 100644
+--- a/src/bjb-editor-toolbar.c
++++ b/src/bjb-editor-toolbar.c
+@@ -69,6 +69,8 @@ struct _BjbEditorToolbarPrivate
+   GtkWidget          *toolbar_bold;
+   GtkWidget          *toolbar_italic;
+   GtkWidget          *toolbar_strike;
++  GtkWidget          *toolbar_bullet;
++  GtkWidget          *toolbar_list;
+   GtkWidget          *toolbar_link;
+ };
+ 
+@@ -293,6 +295,20 @@ strike_button_callback (GtkWidget *button, BjbEditorToolbar *self)
+ }
+ 
+ static void
++on_bullet_clicked (GtkWidget *button, BjbEditorToolbar *self)
++{
++  biji_note_obj_editor_apply_format (self->priv->note, BIJI_BULLET_LIST);
++  bjb_editor_toolbar_fade_out (self);
++}
++
++static void
++on_list_clicked (GtkWidget *button, BjbEditorToolbar *self)
++{
++  biji_note_obj_editor_apply_format (self->priv->note, BIJI_ORDER_LIST);
++  bjb_editor_toolbar_fade_out (self);
++}
++
++static void
+ link_callback (GtkWidget *button, BjbEditorToolbar *self)
+ {
+   BjbSettings             *settings;
+@@ -383,6 +399,23 @@ bjb_editor_toolbar_constructed (GObject *obj)
+   if (biji_note_obj_can_format (priv->note))
+   {
+ 
++    /* Bullet
++     * Translator : "* " stands for a bullet list.
++     * This is displayed inside a button. */
++    priv->toolbar_bullet = GTK_WIDGET (gtk_tool_button_new (NULL, _("* ")));
++    gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (priv->toolbar_bullet), TRUE);
++    gtk_widget_show (priv->toolbar_bullet);
++    gtk_toolbar_insert (GTK_TOOLBAR (priv->box), GTK_TOOL_ITEM (priv->toolbar_bullet), -1);
++
++    /* List
++     * Translator : this "1." temporarilly stands for ordered list.
++     * This is displayed inside a button. */
++    priv->toolbar_list = GTK_WIDGET (gtk_tool_button_new (NULL, _("1.")));
++    gtk_tool_button_set_use_underline (GTK_TOOL_BUTTON (priv->toolbar_list), TRUE);
++    gtk_widget_show (priv->toolbar_list);
++    gtk_toolbar_insert (GTK_TOOLBAR (priv->box), GTK_TOOL_ITEM (priv->toolbar_list), -1);
++
++
+     /* Bold */
+     image = gtk_image_new_from_icon_name ("format-text-bold-symbolic", GTK_ICON_SIZE_INVALID);
+     gtk_image_set_pixel_size (GTK_IMAGE (image), 24);
+@@ -466,6 +499,12 @@ bjb_editor_toolbar_constructed (GObject *obj)
+   g_signal_connect (priv->toolbar_paste,"clicked",
+                     G_CALLBACK(on_paste_clicked), self);
+ 
++  g_signal_connect (priv->toolbar_bullet,"clicked",
++                    G_CALLBACK(on_bullet_clicked), self);
++
++  g_signal_connect (priv->toolbar_list,"clicked",
++                    G_CALLBACK(on_list_clicked), self);
++
+   g_signal_connect (priv->toolbar_bold,"clicked",
+                     G_CALLBACK(bold_button_callback), self);
+   gtk_widget_add_accelerator (priv->toolbar_bold,
+diff --git a/src/bjb-main-toolbar.c b/src/bjb-main-toolbar.c
+index 5243ff5..a439ca5 100644
+--- a/src/bjb-main-toolbar.c
++++ b/src/bjb-main-toolbar.c
+@@ -701,17 +701,6 @@ on_note_content_changed (BjbMainToolbar *self)
+   gtk_widget_set_sensitive (self->priv->share, sensitive);
+ }
+ 
+-static void
+-bjb_toggle_bullets (BijiWebkitEditor *editor)
+-{
+-  biji_webkit_editor_apply_format (editor, BIJI_BULLET_LIST);
+-}
+-
+-static void
+-bjb_toggle_list (BijiWebkitEditor *editor)
+-{
+-  biji_webkit_editor_apply_format (editor, BIJI_ORDER_LIST);
+-}
+ 
+ static void
+ action_view_tags_callback (GtkWidget *item, gpointer user_data)
+@@ -794,29 +783,6 @@ bjb_note_menu_new (BjbMainToolbar *self)
+   item = gtk_separator_menu_item_new ();
+   gtk_menu_shell_append (GTK_MENU_SHELL (result), item);
+ 
+-  if (biji_note_obj_can_format (priv->note))
+-  {
+-
+-    /* Bullets, ordered list, separator */
+-    /* Bullets : unordered list format  */
+-    item = gtk_menu_item_new_with_label (_("Bullets"));
+-    gtk_menu_shell_append (GTK_MENU_SHELL (result), item);
+-    g_signal_connect_swapped (item, "activate",
+-                              G_CALLBACK (bjb_toggle_bullets), editor);
+-
+-
+-    /* Ordered list as 1.mouse 2.cats 3.dogs */
+-    item = gtk_menu_item_new_with_label (_("Numbered List"));
+-    gtk_menu_shell_append (GTK_MENU_SHELL (result), item);
+-    g_signal_connect_swapped (item, "activate",
+-                              G_CALLBACK (bjb_toggle_list), editor);
+-
+-
+-    item = gtk_separator_menu_item_new ();
+-    gtk_menu_shell_append (GTK_MENU_SHELL (result), item);
+-
+-  }
+-
+ 
+   /* Notebooks */
+ 
+-- 
+cgit v0.12
+

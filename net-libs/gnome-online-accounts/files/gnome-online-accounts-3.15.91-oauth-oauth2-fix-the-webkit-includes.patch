@@ -1,0 +1,70 @@
+From de78b78bcd1b1f61fd04856d51e3f20caa6ff2ce Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Fri, 27 Feb 2015 19:11:20 +0100
+Subject: oauth, oauth2: Fix the WebKit includes
+
+The headers only need webkitdom.h. This doesn't matter so much with
+WebKit1, but with WebKit2 it will be an issue because webkit2.h and
+webkit-web-extensio.h can't end up in the same translation unit.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742680
+---
+ src/goabackend/goaoauth2provider.c | 1 +
+ src/goabackend/goaoauth2provider.h | 2 +-
+ src/goabackend/goaoauthprovider.c  | 1 +
+ src/goabackend/goaoauthprovider.h  | 2 +-
+ 4 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/src/goabackend/goaoauth2provider.c b/src/goabackend/goaoauth2provider.c
+index 594c173..560b0ed 100644
+--- a/src/goabackend/goaoauth2provider.c
++++ b/src/goabackend/goaoauth2provider.c
+@@ -23,6 +23,7 @@
+ #include <rest/oauth2-proxy.h>
+ #include <libsoup/soup.h>
+ #include <json-glib/json-glib.h>
++#include <webkit/webkit.h>
+ 
+ #include "goaprovider.h"
+ #include "goautils.h"
+diff --git a/src/goabackend/goaoauth2provider.h b/src/goabackend/goaoauth2provider.h
+index 65c46cf..a2a66e6 100644
+--- a/src/goabackend/goaoauth2provider.h
++++ b/src/goabackend/goaoauth2provider.h
+@@ -25,7 +25,7 @@
+ 
+ #include <goabackend/goaprovider.h>
+ #include <goabackend/goaprovider-priv.h>
+-#include <webkit/webkit.h>
++#include <webkitdom/webkitdom.h>
+ 
+ G_BEGIN_DECLS
+ 
+diff --git a/src/goabackend/goaoauthprovider.c b/src/goabackend/goaoauthprovider.c
+index 9c95bae..1928036 100644
+--- a/src/goabackend/goaoauthprovider.c
++++ b/src/goabackend/goaoauthprovider.c
+@@ -23,6 +23,7 @@
+ #include <rest/oauth-proxy.h>
+ #include <libsoup/soup.h>
+ #include <json-glib/json-glib.h>
++#include <webkit/webkit.h>
+ 
+ #include "goaprovider.h"
+ #include "goautils.h"
+diff --git a/src/goabackend/goaoauthprovider.h b/src/goabackend/goaoauthprovider.h
+index f39d2b1..a0764fc 100644
+--- a/src/goabackend/goaoauthprovider.h
++++ b/src/goabackend/goaoauthprovider.h
+@@ -26,7 +26,7 @@
+ #include <goabackend/goaprovider.h>
+ #include <goabackend/goaprovider-priv.h>
+ #include <rest/rest-proxy-call.h>
+-#include <webkit/webkit.h>
++#include <webkitdom/webkitdom.h>
+ 
+ G_BEGIN_DECLS
+ 
+-- 
+cgit v0.12
+

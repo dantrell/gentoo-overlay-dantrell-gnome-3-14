@@ -1,0 +1,57 @@
+From ce89be151607f8d254fd26056a44bca84bc4de2b Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Mon, 9 Feb 2015 15:46:33 +0000
+Subject: Fix uninitialized variable warnings
+
+---
+ libyelp/yelp-document.c | 4 ++--
+ libyelp/yelp-view.c     | 4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/libyelp/yelp-document.c b/libyelp/yelp-document.c
+index 82973e0..6ff004a 100644
+--- a/libyelp/yelp-document.c
++++ b/libyelp/yelp-document.c
+@@ -1349,7 +1349,7 @@ request_idle_contents (Request *request)
+     YelpDocument *document;
+     YelpDocumentPriv *priv;
+     YelpDocumentCallback callback = NULL;
+-    gpointer user_data = user_data;
++    gpointer user_data;
+ 
+     g_assert (request != NULL && YELP_IS_DOCUMENT (request->document));
+ 
+@@ -1416,7 +1416,7 @@ request_idle_error (Request *request)
+     YelpDocumentPriv *priv;
+     YelpDocumentCallback callback = NULL;
+     GError *error = NULL;
+-    gpointer user_data = user_data;
++    gpointer user_data;
+ 
+     g_assert (request != NULL && YELP_IS_DOCUMENT (request->document));
+ 
+diff --git a/libyelp/yelp-view.c b/libyelp/yelp-view.c
+index 71106ee..f857a46 100644
+--- a/libyelp/yelp-view.c
++++ b/libyelp/yelp-view.c
+@@ -773,7 +773,7 @@ view_install_uri (YelpView    *view,
+                   const gchar *uri)
+ {
+     GDBusConnection *connection;
+-    GError *error;
++    GError *error = NULL;
+     gboolean help = FALSE, ghelp = FALSE;
+     GVariantBuilder *strv;
+     YelpInstallInfo *info;
+@@ -796,7 +796,7 @@ view_install_uri (YelpView    *view,
+         pkg = (gchar *) uri + 8;
+     }
+ 
+-    connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
++    connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
+     if (connection == NULL) {
+         g_warning ("Unable to connect to dbus: %s", error->message);
+         g_error_free (error);
+-- 
+cgit v0.12
+

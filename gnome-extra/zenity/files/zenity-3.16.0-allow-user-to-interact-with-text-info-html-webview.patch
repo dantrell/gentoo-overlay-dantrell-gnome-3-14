@@ -1,0 +1,109 @@
+From 5b0553e9ef4fcabebefbc510a088b009af73d4ab Mon Sep 17 00:00:00 2001
+From: Kernc <kerncece@gmail.com>
+Date: Sat, 30 Aug 2014 17:07:52 +0200
+Subject: Allow user to interact with --text-info --html WebView
+
+This commit changes the default --text-view behavior (when --html
+is also in effect) so that the clicked links are opened in the
+default browser (closes #732626).
+
+Additionally, a new option is introduced, --prevent-interaction,
+which disables above behavior.
+---
+ src/option.c | 12 ++++++++++++
+ src/text.c   |  8 +++++++-
+ src/zenity.h |  1 +
+ 3 files changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/src/option.c b/src/option.c
+index e11c1ba..eb0a03a 100644
+--- a/src/option.c
++++ b/src/option.c
+@@ -113,6 +113,7 @@ static gboolean zenity_text_auto_scroll;
+ 
+ #ifdef HAVE_WEBKITGTK
+ static gboolean zenity_text_enable_html;
++static gboolean zenity_text_no_interaction;
+ static gchar   *zenity_text_url;
+ #endif
+ 
+@@ -916,6 +917,15 @@ static GOptionEntry text_options[] = {
+     NULL
+   },
+   {
++    "no-interaction",
++    '\0',
++    G_OPTION_FLAG_NOALIAS,
++    G_OPTION_ARG_NONE,
++    &zenity_text_no_interaction,
++    N_("Do not enable user interaction with the WebView. Only works if you use --html option"),
++    NULL
++  },
++  {
+     "url",
+     '\0',
+     G_OPTION_FLAG_NOALIAS,
+@@ -1600,6 +1610,7 @@ zenity_text_pre_callback (GOptionContext *context,
+   zenity_text_auto_scroll = FALSE;
+ #ifdef HAVE_WEBKITGTK
+   zenity_text_enable_html = FALSE;
++  zenity_text_no_interaction = FALSE;
+   zenity_text_url = NULL;
+ #endif
+   return TRUE;
+@@ -2028,6 +2039,7 @@ zenity_text_post_callback (GOptionContext *context,
+     results->text_data->auto_scroll = zenity_text_auto_scroll;
+ #ifdef HAVE_WEBKITGTK
+     results->text_data->html = zenity_text_enable_html;
++    results->text_data->no_interaction = zenity_text_no_interaction;
+     results->text_data->url = zenity_text_url;
+ #endif
+   } else {
+diff --git a/src/text.c b/src/text.c
+index 9f1041c..8f383b9 100644
+--- a/src/text.c
++++ b/src/text.c
+@@ -23,6 +23,7 @@
+ 
+ #include "config.h"
+ 
++#include <gio/gio.h>
+ #include "zenity.h"
+ #include "util.h"
+ 
+@@ -114,6 +115,11 @@ zenity_text_webview_decision_request (WebKitWebView             *webkitwebview,
+                                       gpointer                   user_data)
+ {
+   webkit_web_policy_decision_ignore (policy_decision);
++  if (!zen_text_data->no_interaction &&
++      webkit_web_navigation_action_get_reason (navigation_action) == WEBKIT_WEB_NAVIGATION_REASON_LINK_CLICKED) {
++    g_app_info_launch_default_for_uri (webkit_web_navigation_action_get_original_uri(navigation_action),
++                                       NULL, NULL);
++  }
+   return TRUE;
+ }
+ 
+@@ -333,7 +339,7 @@ zenity_text (ZenityData *data, ZenityTextData *text_data)
+     }
+ 
+     // We don't want user to click on links and navigate to another page.
+-    // So, when page finish load, we block requests.
++    // So, when the page finishes loading, we take handle of the requests.
+ 
+     g_signal_connect (G_OBJECT (web_kit), "document-load-finished",
+                       G_CALLBACK (zenity_text_webview_load_finished), NULL); 
+diff --git a/src/zenity.h b/src/zenity.h
+index 4b3214d..6390b00 100644
+--- a/src/zenity.h
++++ b/src/zenity.h
+@@ -118,6 +118,7 @@ typedef struct {
+   gchar         *checkbox;
+ #ifdef HAVE_WEBKITGTK
+   gboolean       html;
++  gboolean       no_interaction;
+   gchar         *url;
+ #endif
+ } ZenityTextData;
+-- 
+cgit v0.12
+

@@ -1,0 +1,43 @@
+From f63ee725482eb6527b43707a2b4c0ab77990eab1 Mon Sep 17 00:00:00 2001
+From: Yosef Or Boczko <yoseforb@src.gnome.org>
+Date: Fri, 5 Sep 2014 00:05:49 +0300
+Subject: evince-viewer: Fix the icons in RTL
+
+With newer GTK+ the custom handling for RTL
+icons are wrong.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=736079
+---
+ src/js/viewers/evince.js | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/src/js/viewers/evince.js b/src/js/viewers/evince.js
+index a680482..83a7cdc 100644
+--- a/src/js/viewers/evince.js
++++ b/src/js/viewers/evince.js
+@@ -133,12 +133,8 @@ EvinceRenderer.prototype = {
+ 
+         this._toolbarActor = new GtkClutter.Actor({ contents: this._mainToolbar });
+ 
+-        let isRtl = (this._mainToolbar.get_direction() == Gtk.TextDirection.RTL);
+-        let prevIconName = isRtl ? 'go-previous-rtl-symbolic' : 'go-previous-symbolic';
+-        let nextIconName = isRtl ? 'go-next-rtl-symbolic' : 'go-next-symbolic';
+-
+         this._toolbarBack = new Gtk.ToolButton({ expand: false,
+-                                                 icon_name: prevIconName });
++                                                 icon_name: 'go-previous-symbolic' });
+         this._toolbarBack.show();
+         this._mainToolbar.insert(this._toolbarBack, -1);
+ 
+@@ -151,7 +147,7 @@ EvinceRenderer.prototype = {
+         this._mainToolbar.insert(labelItem, -1);
+ 
+         this._toolbarForward = new Gtk.ToolButton({ expand: false,
+-                                                    icon_name: nextIconName });
++                                                    icon_name: 'go-next-symbolic' });
+         this._toolbarForward.show();
+         this._mainToolbar.insert(this._toolbarForward, -1);
+ 
+-- 
+cgit v0.12
+

@@ -1,0 +1,123 @@
+From 27c0c4def6311606e3b1ba6bdc4320fa6a3cb368 Mon Sep 17 00:00:00 2001
+From: Yosef Or Boczko <yoseforb@src.gnome.org>
+Date: Fri, 5 Sep 2014 00:26:04 +0300
+Subject: Use margin-{start,end} instead of margin-{left,right}
+
+https://bugzilla.gnome.org/show_bug.cgi?id=736080
+---
+ src/js/ui/fallbackRenderer.js |  4 ++--
+ src/js/ui/mainWindow.js       |  4 ++--
+ src/js/viewers/audio.js       | 10 +++++-----
+ src/js/viewers/evince.js      |  4 ++--
+ src/js/viewers/gst.js         |  8 ++++----
+ 5 files changed, 15 insertions(+), 15 deletions(-)
+
+diff --git a/src/js/ui/fallbackRenderer.js b/src/js/ui/fallbackRenderer.js
+index 0ed7a2d..57af8ac 100644
+--- a/src/js/ui/fallbackRenderer.js
++++ b/src/js/ui/fallbackRenderer.js
+@@ -68,8 +68,8 @@ FallbackRenderer.prototype = {
+         let vbox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL,
+                                  spacing: 1,
+                                  margin_top: 48,
+-                                 margin_left: 12,
+-                                 margin_right: 12 });
++                                 margin_start: 12,
++                                 margin_end: 12 });
+         this._box.pack_start(vbox, false, false, 0);
+ 
+         let hbox = new Gtk.Box({ orientation: Gtk.Orientation.HORIZONTAL,
+diff --git a/src/js/ui/mainWindow.js b/src/js/ui/mainWindow.js
+index 73d7972..b434a8e 100644
+--- a/src/js/ui/mainWindow.js
++++ b/src/js/ui/mainWindow.js
+@@ -506,8 +506,8 @@ MainWindow.prototype = {
+         this._toolbarActor.set_opacity(0);
+ 
+         this._toolbarActor.margin_bottom = Constants.TOOLBAR_SPACING;
+-        this._toolbarActor.margin_left = Constants.TOOLBAR_SPACING;
+-        this._toolbarActor.margin_right = Constants.TOOLBAR_SPACING;
++        this._toolbarActor.margin_start = Constants.TOOLBAR_SPACING;
++        this._toolbarActor.margin_end = Constants.TOOLBAR_SPACING;
+ 
+         this._mainLayout.add(this._toolbarActor,
+                              Clutter.BinAlignment.CENTER, Clutter.BinAlignment.END);
+diff --git a/src/js/viewers/audio.js b/src/js/viewers/audio.js
+index 9220667..6283f22 100644
+--- a/src/js/viewers/audio.js
++++ b/src/js/viewers/audio.js
+@@ -64,8 +64,8 @@ AudioRenderer.prototype = {
+         let vbox = new Gtk.Box({ orientation: Gtk.Orientation.VERTICAL,
+                                  spacing: 1,
+                                  margin_top: 48,
+-                                 margin_left: 12,
+-                                 margin_right: 12 });
++                                 margin_start: 12,
++                                 margin_end: 12 });
+         this._box.pack_start(vbox, false, false, 0);
+ 
+         this._titleLabel = new Gtk.Label();
+@@ -269,8 +269,8 @@ AudioRenderer.prototype = {
+         this._toolbarPlay.show();
+         this._mainToolbar.insert(this._toolbarPlay, 0);
+ 
+-        this._currentLabel = new Gtk.Label({ margin_left: 6,
+-                                             margin_right: 3 });
++        this._currentLabel = new Gtk.Label({ margin_start: 6,
++                                             margin_end: 3 });
+         let item = new Gtk.ToolItem();
+         item.add(this._currentLabel);
+         item.show_all();
+@@ -299,7 +299,7 @@ AudioRenderer.prototype = {
+         item.show_all();
+         this._mainToolbar.insert(item, 2);
+ 
+-        this._durationLabel = new Gtk.Label({ margin_left: 3 });
++        this._durationLabel = new Gtk.Label({ margin_start: 3 });
+         item = new Gtk.ToolItem();
+         item.add(this._durationLabel);
+         item.show_all();
+diff --git a/src/js/viewers/evince.js b/src/js/viewers/evince.js
+index 83a7cdc..33443bf 100644
+--- a/src/js/viewers/evince.js
++++ b/src/js/viewers/evince.js
+@@ -114,8 +114,8 @@ EvinceRenderer.prototype = {
+     },
+ 
+     _createLabelItem : function() {
+-        this._pageLabel = new Gtk.Label({ margin_left: 10,
+-                                          margin_right: 10 });
++        this._pageLabel = new Gtk.Label({ margin_start: 10,
++                                          margin_end: 10 });
+ 
+         let item = new Gtk.ToolItem();
+         item.set_expand(true);
+diff --git a/src/js/viewers/gst.js b/src/js/viewers/gst.js
+index fc4e106..8d94df4 100644
+--- a/src/js/viewers/gst.js
++++ b/src/js/viewers/gst.js
+@@ -159,8 +159,8 @@ GstRenderer.prototype = {
+         this._toolbarPlay.show();
+         this._mainToolbar.insert(this._toolbarPlay, 0);
+ 
+-        this._currentLabel = new Gtk.Label({ margin_left: 6,
+-                                             margin_right: 3 });
++        this._currentLabel = new Gtk.Label({ margin_start: 6,
++                                             margin_end: 3 });
+         let item = new Gtk.ToolItem();
+         item.add(this._currentLabel);
+         item.show_all();
+@@ -189,8 +189,8 @@ GstRenderer.prototype = {
+         item.show_all();
+         this._mainToolbar.insert(item, 2);
+ 
+-        this._durationLabel = new Gtk.Label({ margin_left: 3,
+-                                              margin_right: 6 });
++        this._durationLabel = new Gtk.Label({ margin_start: 3,
++                                              margin_end: 6 });
+         item = new Gtk.ToolItem();
+         item.add(this._durationLabel);
+         item.show_all();
+-- 
+cgit v0.12
+

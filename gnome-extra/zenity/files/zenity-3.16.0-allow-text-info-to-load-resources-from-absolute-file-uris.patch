@@ -1,0 +1,34 @@
+From 8098bb3dd7c6e1742fb0c8ac349ec35333b15a25 Mon Sep 17 00:00:00 2001
+From: Kernc <kerncece@gmail.com>
+Date: Sat, 30 Aug 2014 16:58:15 +0200
+Subject: Allow --text-info to load resources from absolute file:// URIs
+
+---
+ src/text.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/text.c b/src/text.c
+index fda60dc..e5ba15e 100644
+--- a/src/text.c
++++ b/src/text.c
+@@ -59,7 +59,7 @@ zenity_configure_webkit (WebKitWebView *web_view)
+   g_object_set(G_OBJECT(settings), "enable-developer-extras",     FALSE, NULL);
+   /* unexisting property? g_object_set(G_OBJECT(settings), "enable-dns-prefetching",      FALSE, NULL);*/
+   g_object_set(G_OBJECT(settings), "enable-dom-paste",            FALSE, NULL);
+-  g_object_set(G_OBJECT(settings), "enable-file-access-from-file-uris", FALSE, NULL);
++  g_object_set(G_OBJECT(settings), "enable-file-access-from-file-uris", TRUE, NULL);
+   /* unexisting property? g_object_set(G_OBJECT(settings), "enable-frame-flattening",     FALSE, NULL);*/
+   /* unexisting property? g_object_set(G_OBJECT(settings), "enable-fullscreen",           FALSE, NULL);*/
+   g_object_set(G_OBJECT(settings), "enable-html5-database",       FALSE, NULL);
+@@ -319,7 +319,7 @@ zenity_text (ZenityData *data, ZenityTextData *text_data)
+       gtk_text_buffer_get_start_iter (text_buffer, &start_iter);
+       gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
+       content = gtk_text_buffer_get_text (text_buffer, &start_iter, &end_iter, TRUE);
+-      webkit_web_view_load_string (WEBKIT_WEB_VIEW(web_kit), content, "text/html", "UTF-8", NULL);
++      webkit_web_view_load_string (WEBKIT_WEB_VIEW(web_kit), content, "text/html", "UTF-8", "file:///");
+       g_free (content);
+     }
+ 
+-- 
+cgit v0.12
+

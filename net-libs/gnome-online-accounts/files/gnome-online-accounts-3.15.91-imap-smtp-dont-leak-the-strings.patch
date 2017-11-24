@@ -1,0 +1,32 @@
+From a8a818bfb525036a54c5197abe813b68a0c2c5e4 Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Tue, 3 Mar 2015 18:43:36 +0100
+Subject: imap-smtp: Don't leak the strings
+
+---
+ src/goabackend/goaimapsmtpprovider.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/goabackend/goaimapsmtpprovider.c b/src/goabackend/goaimapsmtpprovider.c
+index 37b7a76..93c3bb8 100644
+--- a/src/goabackend/goaimapsmtpprovider.c
++++ b/src/goabackend/goaimapsmtpprovider.c
+@@ -1539,6 +1539,7 @@ show_account (GoaProvider         *provider,
+ 
+       tmp = g_strconcat (value_str_1, "@", value_str, NULL);
+       show_label (GTK_WIDGET (grid), row++, _("IMAP"), tmp);
++      g_free (tmp);
+     }
+   else
+       show_label (GTK_WIDGET (grid), row++, _("IMAP"), value_str);
+@@ -1553,6 +1554,7 @@ show_account (GoaProvider         *provider,
+ 
+       tmp = g_strconcat (value_str_1, "@", value_str, NULL);
+       show_label (GTK_WIDGET (grid), row++, _("SMTP"), tmp);
++      g_free (tmp);
+     }
+   else
+       show_label (GTK_WIDGET (grid), row++, _("SMTP"), value_str);
+-- 
+cgit v0.12
+

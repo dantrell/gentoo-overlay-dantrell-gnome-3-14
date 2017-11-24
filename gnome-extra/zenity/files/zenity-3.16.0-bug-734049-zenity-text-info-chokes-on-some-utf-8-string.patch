@@ -1,0 +1,26 @@
+From 9fdac81d78db26fc10bc7c2370f9f67d723f272a Mon Sep 17 00:00:00 2001
+From: Arx Cruz <arxcruz@gnome.org>
+Date: Wed, 22 Oct 2014 11:22:15 +0200
+Subject: Bug #734049 - zenity --text-info chokes on some UTF-8 string
+
+text-info is now seting the text to UTF-8 properly
+---
+ src/text.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/text.c b/src/text.c
+index cf4aa63..9f1041c 100644
+--- a/src/text.c
++++ b/src/text.c
+@@ -199,7 +199,7 @@ zenity_text_fill_entries_from_stdin (GtkTextView *text_view)
+   GIOChannel *channel; 
+ 
+   channel = g_io_channel_unix_new (0);
+-  g_io_channel_set_encoding (channel, NULL, NULL);
++  g_io_channel_set_encoding (channel, "UTF-8", NULL);
+   g_io_channel_set_flags (channel, G_IO_FLAG_NONBLOCK, NULL);
+   g_io_add_watch (channel, G_IO_IN | G_IO_HUP, zenity_text_handle_stdin, text_view);
+ }
+-- 
+cgit v0.12
+

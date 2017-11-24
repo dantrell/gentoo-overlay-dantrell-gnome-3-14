@@ -1,0 +1,1507 @@
+From dbf2ccbccc8198920e564a14fc61671dc49174aa Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dami=C3=A1n=20Nohales?= <damiannohales@gmail.com>
+Date: Fri, 9 Jan 2015 15:41:54 -0300
+Subject: Port to WebKit 2
+
+Bump minimum WebKitGTK+ version to 2.7.2 because we need to create our
+own WebKitWebContext and handle user script messages.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742680
+---
+ configure.ac                         |   2 +-
+ data/Makefile.am                     |   4 -
+ data/goawebview.css                  |   3 -
+ src/goabackend/Makefile.am           |  29 +++
+ src/goabackend/goaoauth2provider.c   | 102 ++------
+ src/goabackend/goaoauthprovider.c    | 102 ++------
+ src/goabackend/goaoauthprovider.h    |   4 +-
+ src/goabackend/goawebextension.c     | 270 +++++++++++++++++++++
+ src/goabackend/goawebextension.h     |  45 ++++
+ src/goabackend/goawebextensionmain.c |  53 +++++
+ src/goabackend/goawebview.c          | 443 ++++++++++++++++++++++-------------
+ src/goabackend/goawebview.h          |   7 +-
+ 12 files changed, 734 insertions(+), 330 deletions(-)
+ delete mode 100644 data/goawebview.css
+ create mode 100644 src/goabackend/goawebextension.c
+ create mode 100644 src/goabackend/goawebextension.h
+ create mode 100644 src/goabackend/goawebextensionmain.c
+
+diff --git a/configure.ac b/configure.ac
+index dc9077b..46e3f9f 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -90,7 +90,7 @@ PKG_CHECK_MODULES(GTK, [gtk+-3.0 >= 3.11.1])
+ AC_SUBST(GTK_CFLAGS)
+ AC_SUBST(GTK_LIBS)
+ 
+-PKG_CHECK_MODULES(WEBKIT_GTK, [webkitgtk-3.0 >= 2.1.90])
++PKG_CHECK_MODULES(WEBKIT_GTK, [webkit2gtk-4.0 >= 2.7.2])
+ AC_SUBST(WEBKIT_GTK_CFLAGS)
+ AC_SUBST(WEBKIT_GTK_LIBS)
+ 
+diff --git a/data/Makefile.am b/data/Makefile.am
+index cb30eb8..d5513ef 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -3,9 +3,6 @@ NULL =
+ 
+ SUBDIRS = icons
+ 
+-cssdir = $(pkgdatadir)
+-css_DATA = goawebview.css
+-
+ gsettings_in_files = org.gnome.online-accounts.gschema.xml.in
+ gsettings_SCHEMAS = $(gsettings_in_files:.xml.in=.xml)
+ 
+@@ -20,7 +17,6 @@ $(service_DATA): $(service_in_files) Makefile
+ 	@sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
+ 
+ EXTRA_DIST =						\
+-	$(css_DATA)					\
+ 	$(gsettings_in_files)				\
+ 	$(service_in_files)				\
+ 	dbus-interfaces.xml				\
+diff --git a/data/goawebview.css b/data/goawebview.css
+deleted file mode 100644
+index a3688ef..0000000
+--- a/data/goawebview.css
++++ /dev/null
+@@ -1,3 +0,0 @@
+-::-webkit-scrollbar {
+-  display: none !important;
+-}
+diff --git a/src/goabackend/Makefile.am b/src/goabackend/Makefile.am
+index 9c8809b..8c14774 100644
+--- a/src/goabackend/Makefile.am
++++ b/src/goabackend/Makefile.am
+@@ -19,6 +19,7 @@ AM_CPPFLAGS = 							\
+ 	-DPACKAGE_LOCALSTATE_DIR=\""$(localstatedir)"\" 	\
+ 	-DPACKAGE_LOCALE_DIR=\""$(localedir)"\" 		\
+ 	-DPACKAGE_LIB_DIR=\""$(libdir)"\" 			\
++	-DPACKAGE_WEB_EXTENSIONS_DIR=\""$(libdir)/goa-1.0/web-extensions"\" \
+ 	-D_POSIX_PTHREAD_SEMANTICS -D_REENTRANT			\
+ 	$(WARN_CFLAGS)						\
+ 	$(NULL)
+@@ -139,6 +140,34 @@ libgoa_backend_1_0_la_LDFLAGS = 				\
+ 
+ # ----------------------------------------------------------------------------------------------------
+ 
++webextension_LTLIBRARIES = libgoawebextension.la
++
++webextensiondir = $(libdir)/goa-1.0/web-extensions
++
++libgoawebextension_la_SOURCES =						\
++	goawebextension.h		goawebextension.c		\
++	goawebextensionmain.c						\
++	$(NULL)
++
++libgoawebextension_la_CFLAGS =						\
++	$(REST_CFLAGS)							\
++	$(WEBKIT_GTK_CFLAGS)						\
++	$(NULL)
++
++libgoawebextension_la_LIBADD =						\
++	libgoa-backend-1.0.la						\
++	$(REST_LIBS)							\
++	$(WEBKIT_GTK_LIBS)						\
++	$(NULL)
++
++libgoawebextension_la_LDFLAGS =						\
++	-avoid-version							\
++	-module								\
++	-no-undefined							\
++	$(NULL)
++
++# ----------------------------------------------------------------------------------------------------
++
+ BUILT_SOURCES =								\
+ 	$(libgoa_backend_1_0_la_built_sources)				\
+ 	$(NULL)
+diff --git a/src/goabackend/goaoauth2provider.c b/src/goabackend/goaoauth2provider.c
+index 560b0ed..0d039ad 100644
+--- a/src/goabackend/goaoauth2provider.c
++++ b/src/goabackend/goaoauth2provider.c
+@@ -23,7 +23,7 @@
+ #include <rest/oauth2-proxy.h>
+ #include <libsoup/soup.h>
+ #include <json-glib/json-glib.h>
+-#include <webkit/webkit.h>
++#include <webkit2/webkit2.h>
+ 
+ #include "goaprovider.h"
+ #include "goautils.h"
+@@ -66,7 +66,6 @@ struct _GoaOAuth2ProviderPrivate
+   GError *error;
+   GMainLoop *loop;
+ 
+-  WebKitDOMHTMLInputElement *password_node;
+   const gchar *existing_identity;
+ 
+   gchar *account_object_path;
+@@ -774,7 +773,7 @@ get_tokens_sync (GoaOAuth2Provider  *provider,
+ /* ---------------------------------------------------------------------------------------------------- */
+ 
+ static void
+-on_dom_node_click (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++on_web_view_deny_click (GoaWebView *web_view, gpointer user_data)
+ {
+   GoaOAuth2Provider *provider = GOA_OAUTH2_PROVIDER (user_data);
+   GoaOAuth2ProviderPrivate *priv = provider->priv;
+@@ -782,84 +781,26 @@ on_dom_node_click (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_
+ }
+ 
+ static void
+-on_form_submit (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++on_web_view_password_submit (GoaWebView *web_view, const gchar *password, gpointer user_data)
+ {
+   GoaOAuth2Provider *provider = GOA_OAUTH2_PROVIDER (user_data);
+   GoaOAuth2ProviderPrivate *priv = provider->priv;
+ 
+-  if (priv->password_node == NULL)
+-    return;
+-
+-  priv->password = webkit_dom_html_input_element_get_value (priv->password_node);
+-  priv->password_node = NULL;
+-}
+-
+-static void
+-on_web_view_document_load_finished (WebKitWebView *web_view, WebKitWebFrame *frame, gpointer user_data)
+-{
+-  GoaOAuth2Provider *provider = GOA_OAUTH2_PROVIDER (user_data);
+-  GoaOAuth2ProviderPrivate *priv = provider->priv;
+-  WebKitDOMDocument *document;
+-  WebKitDOMNodeList *elements;
+-  gulong element_count;
+-  gulong i;
+-
+-  document = webkit_web_view_get_dom_document (WEBKIT_WEB_VIEW (web_view));
+-  elements = webkit_dom_document_get_elements_by_tag_name (document, "*");
+-  element_count = webkit_dom_node_list_get_length (elements);
+-
+-  for (i = 0; i < element_count; i++)
+-    {
+-      WebKitDOMNode *element = webkit_dom_node_list_item (elements, i);
+-
+-      if (goa_oauth2_provider_is_deny_node (provider, element))
+-        {
+-          webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (element),
+-                                                      "click",
+-                                                      G_CALLBACK (on_dom_node_click),
+-                                                      FALSE,
+-                                                      provider);
+-        }
+-      else if (priv->existing_identity != NULL
+-               && WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
+-               && goa_oauth2_provider_is_identity_node (provider, WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
+-        {
+-          webkit_dom_html_input_element_set_value (WEBKIT_DOM_HTML_INPUT_ELEMENT (element),
+-                                                   priv->existing_identity);
+-          webkit_dom_html_input_element_set_read_only (WEBKIT_DOM_HTML_INPUT_ELEMENT (element), TRUE);
+-        }
+-      else if (WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
+-               && goa_oauth2_provider_is_password_node (provider, WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
+-        {
+-          WebKitDOMHTMLFormElement *form;
+-
+-          form = webkit_dom_html_input_element_get_form (WEBKIT_DOM_HTML_INPUT_ELEMENT (element));
+-          if (form != NULL)
+-            {
+-              priv->password_node = WEBKIT_DOM_HTML_INPUT_ELEMENT (element);
+-              g_clear_pointer (&priv->password, g_free);
+-              webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (form),
+-                                                          "submit",
+-                                                          G_CALLBACK (on_form_submit),
+-                                                          FALSE,
+-                                                          provider);
+-            }
+-        }
+-    }
++  g_free (priv->password);
++  priv->password = g_strdup (password);
+ }
+ 
+ static gboolean
+-on_web_view_navigation_policy_decision_requested (WebKitWebView             *webView,
+-                                                  WebKitWebFrame            *frame,
+-                                                  WebKitNetworkRequest      *request,
+-                                                  WebKitWebNavigationAction *navigation_action,
+-                                                  WebKitWebPolicyDecision   *policy_decision,
+-                                                  gpointer                   user_data)
++on_web_view_decide_policy (WebKitWebView            *web_view,
++                           WebKitPolicyDecision     *decision,
++                           WebKitPolicyDecisionType  decision_type,
++                           gpointer                  user_data)
+ {
+   GoaOAuth2Provider *provider = GOA_OAUTH2_PROVIDER (user_data);
+   GoaOAuth2ProviderPrivate *priv = provider->priv;
+   GHashTable *key_value_pairs;
+-  SoupMessage *message;
++  WebKitNavigationAction *action;
++  WebKitURIRequest *request;
+   SoupURI *uri;
+   const gchar *fragment;
+   const gchar *oauth2_error;
+@@ -868,15 +809,19 @@ on_web_view_navigation_policy_decision_requested (WebKitWebView             *web
+   const gchar *requested_uri;
+   gint response_id = GTK_RESPONSE_NONE;
+ 
++  if (decision_type != WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION)
++    goto default_behaviour;
++
+   /* TODO: use oauth2_proxy_extract_access_token() */
+ 
+-  requested_uri = webkit_network_request_get_uri (request);
++  action = webkit_navigation_policy_decision_get_navigation_action (WEBKIT_NAVIGATION_POLICY_DECISION (decision));
++  request = webkit_navigation_action_get_request (action);
++  requested_uri = webkit_uri_request_get_uri (request);
+   redirect_uri = goa_oauth2_provider_get_redirect_uri (provider);
+   if (!g_str_has_prefix (requested_uri, redirect_uri))
+     goto default_behaviour;
+ 
+-  message = webkit_network_request_get_message (request);
+-  uri = soup_message_get_uri (message);
++  uri = soup_uri_new (requested_uri);
+   fragment = soup_uri_get_fragment (uri);
+   query = soup_uri_get_query (uri);
+ 
+@@ -974,7 +919,7 @@ on_web_view_navigation_policy_decision_requested (WebKitWebView             *web
+  ignore_request:
+   g_assert (response_id != GTK_RESPONSE_NONE);
+   gtk_dialog_response (priv->dialog, response_id);
+-  webkit_web_policy_decision_ignore (policy_decision);
++  webkit_policy_decision_ignore (decision);
+   return TRUE;
+ 
+  default_behaviour:
+@@ -1048,7 +993,7 @@ get_tokens_and_identity (GoaOAuth2Provider  *provider,
+   gtk_grid_set_row_spacing (GTK_GRID (grid), 12);
+   gtk_container_add (GTK_CONTAINER (vbox), grid);
+ 
+-  web_view = goa_web_view_new ();
++  web_view = goa_web_view_new (GOA_PROVIDER (provider), existing_identity);
+   gtk_widget_set_hexpand (web_view, TRUE);
+   gtk_widget_set_vexpand (web_view, TRUE);
+   embed = goa_web_view_get_view (GOA_WEB_VIEW (web_view));
+@@ -1062,11 +1007,12 @@ get_tokens_and_identity (GoaOAuth2Provider  *provider,
+     goa_web_view_fake_mobile (GOA_WEB_VIEW (web_view));
+ 
+   webkit_web_view_load_uri (WEBKIT_WEB_VIEW (embed), url);
+-  g_signal_connect (embed, "document-load-finished", G_CALLBACK (on_web_view_document_load_finished), provider);
+   g_signal_connect (embed,
+-                    "navigation-policy-decision-requested",
+-                    G_CALLBACK (on_web_view_navigation_policy_decision_requested),
++                    "decide-policy",
++                    G_CALLBACK (on_web_view_decide_policy),
+                     provider);
++  g_signal_connect (web_view, "deny-click", G_CALLBACK (on_web_view_deny_click), provider);
++  g_signal_connect (web_view, "password-submit", G_CALLBACK (on_web_view_password_submit), provider);
+ 
+   gtk_container_add (GTK_CONTAINER (grid), web_view);
+ 
+diff --git a/src/goabackend/goaoauthprovider.c b/src/goabackend/goaoauthprovider.c
+index 1928036..db949db 100644
+--- a/src/goabackend/goaoauthprovider.c
++++ b/src/goabackend/goaoauthprovider.c
+@@ -23,7 +23,7 @@
+ #include <rest/oauth-proxy.h>
+ #include <libsoup/soup.h>
+ #include <json-glib/json-glib.h>
+-#include <webkit/webkit.h>
++#include <webkit2/webkit2.h>
+ 
+ #include "goaprovider.h"
+ #include "goautils.h"
+@@ -619,7 +619,6 @@ typedef struct
+   GError *error;
+   GMainLoop *loop;
+ 
+-  WebKitDOMHTMLInputElement *password_node;
+   gchar *password;
+ 
+   gchar *oauth_verifier;
+@@ -639,102 +638,48 @@ typedef struct
+ } IdentifyData;
+ 
+ static void
+-on_dom_node_click (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++on_web_view_deny_click (GoaWebView *web_view, gpointer user_data)
+ {
+   IdentifyData *data = user_data;
+   gtk_dialog_response (data->dialog, GTK_RESPONSE_CANCEL);
+ }
+ 
+ static void
+-on_form_submit (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++on_web_view_password_submit (GoaWebView *web_view, const gchar *password, gpointer user_data)
+ {
+   IdentifyData *data = user_data;
+ 
+-  if (data->password_node == NULL)
+-    return;
+-
+-  data->password = webkit_dom_html_input_element_get_value (data->password_node);
+-  data->password_node = NULL;
+-}
+-
+-static void
+-on_web_view_document_load_finished (WebKitWebView *web_view, WebKitWebFrame *frame, gpointer user_data)
+-{
+-  IdentifyData *data = user_data;
+-  GoaOAuthProvider *provider = data->provider;
+-  WebKitDOMDocument *document;
+-  WebKitDOMNodeList *elements;
+-  gulong element_count;
+-  gulong i;
+-
+-  document = webkit_web_view_get_dom_document (WEBKIT_WEB_VIEW (web_view));
+-  elements = webkit_dom_document_get_elements_by_tag_name (document, "*");
+-  element_count = webkit_dom_node_list_get_length (elements);
+-
+-  for (i = 0; i < element_count; i++)
+-    {
+-      WebKitDOMNode *element = webkit_dom_node_list_item (elements, i);
+-
+-      if (goa_oauth_provider_is_deny_node (provider, element))
+-        {
+-          webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (element),
+-                                                      "click",
+-                                                      G_CALLBACK (on_dom_node_click),
+-                                                      FALSE,
+-                                                      data);
+-        }
+-      else if (data->existing_identity != NULL
+-               && WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
+-               && goa_oauth_provider_is_identity_node (provider, WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
+-        {
+-          webkit_dom_html_input_element_set_value (WEBKIT_DOM_HTML_INPUT_ELEMENT (element),
+-                                                   data->existing_identity);
+-          webkit_dom_html_input_element_set_read_only (WEBKIT_DOM_HTML_INPUT_ELEMENT (element), TRUE);
+-        }
+-      else if (WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
+-               && goa_oauth_provider_is_password_node (provider, WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
+-        {
+-          WebKitDOMHTMLFormElement *form;
+-
+-          form = webkit_dom_html_input_element_get_form (WEBKIT_DOM_HTML_INPUT_ELEMENT (element));
+-          if (form != NULL)
+-            {
+-              data->password_node = WEBKIT_DOM_HTML_INPUT_ELEMENT (element);
+-              g_clear_pointer (&data->password, g_free);
+-              webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (form),
+-                                                          "submit",
+-                                                          G_CALLBACK (on_form_submit),
+-                                                          FALSE,
+-                                                          data);
+-            }
+-        }
+-    }
++  g_free (data->password);
++  data->password = g_strdup (password);
+ }
+ 
+ static gboolean
+-on_web_view_navigation_policy_decision_requested (WebKitWebView             *webView,
+-                                                  WebKitWebFrame            *frame,
+-                                                  WebKitNetworkRequest      *request,
+-                                                  WebKitWebNavigationAction *navigation_action,
+-                                                  WebKitWebPolicyDecision   *policy_decision,
+-                                                  gpointer                   user_data)
++on_web_view_decide_policy (WebKitWebView            *web_view,
++                           WebKitPolicyDecision     *decision,
++                           WebKitPolicyDecisionType  decision_type,
++                           gpointer                  user_data)
+ {
+   IdentifyData *data = user_data;
++  WebKitNavigationAction *action;
++  WebKitURIRequest *request;
+   const gchar *redirect_uri;
+   const gchar *requested_uri;
+ 
++  if (decision_type != WEBKIT_POLICY_DECISION_TYPE_NAVIGATION_ACTION)
++    return FALSE;
++
+   /* TODO: use oauth_proxy_extract_access_token() */
+ 
+-  requested_uri = webkit_network_request_get_uri (request);
++  action = webkit_navigation_policy_decision_get_navigation_action (WEBKIT_NAVIGATION_POLICY_DECISION (decision));
++  request = webkit_navigation_action_get_request (action);
++  requested_uri = webkit_uri_request_get_uri (request);
+   redirect_uri = goa_oauth_provider_get_callback_uri (data->provider);
+   if (g_str_has_prefix (requested_uri, redirect_uri))
+     {
+-      SoupMessage *message;
+       SoupURI *uri;
+       GHashTable *key_value_pairs;
+ 
+-      message = webkit_network_request_get_message (request);
+-      uri = soup_message_get_uri (message);
++      uri = soup_uri_new (requested_uri);
+       key_value_pairs = soup_form_decode (uri->query);
+ 
+       /* TODO: error handling? */
+@@ -744,7 +689,7 @@ on_web_view_navigation_policy_decision_requested (WebKitWebView             *web
+           gtk_dialog_response (data->dialog, GTK_RESPONSE_OK);
+         }
+       g_hash_table_unref (key_value_pairs);
+-      webkit_web_policy_decision_ignore (policy_decision);
++      webkit_policy_decision_ignore (decision);
+       return TRUE; /* ignore the request */
+     }
+   else
+@@ -887,7 +832,7 @@ get_tokens_and_identity (GoaOAuthProvider *provider,
+                                                             goa_oauth_provider_get_authorization_uri (provider),
+                                                             escaped_request_token);
+ 
+-  web_view = goa_web_view_new ();
++  web_view = goa_web_view_new (GOA_PROVIDER (provider), existing_identity);
+   gtk_widget_set_hexpand (web_view, TRUE);
+   gtk_widget_set_vexpand (web_view, TRUE);
+   embed = goa_web_view_get_view (GOA_WEB_VIEW (web_view));
+@@ -896,11 +841,12 @@ get_tokens_and_identity (GoaOAuthProvider *provider,
+     goa_web_view_fake_mobile (GOA_WEB_VIEW (web_view));
+ 
+   webkit_web_view_load_uri (WEBKIT_WEB_VIEW (embed), url);
+-  g_signal_connect (embed, "document-load-finished", G_CALLBACK (on_web_view_document_load_finished), &data);
+   g_signal_connect (embed,
+-                    "navigation-policy-decision-requested",
+-                    G_CALLBACK (on_web_view_navigation_policy_decision_requested),
++                    "decide-policy",
++                    G_CALLBACK (on_web_view_decide_policy),
+                     &data);
++  g_signal_connect (web_view, "deny-click", G_CALLBACK (on_web_view_deny_click), &data);
++  g_signal_connect (web_view, "password-submit", G_CALLBACK (on_web_view_password_submit), &data);
+ 
+   gtk_container_add (GTK_CONTAINER (grid), web_view);
+ 
+diff --git a/src/goabackend/goaoauthprovider.h b/src/goabackend/goaoauthprovider.h
+index a0764fc..4acb90f 100644
+--- a/src/goabackend/goaoauthprovider.h
++++ b/src/goabackend/goaoauthprovider.h
+@@ -120,8 +120,10 @@ struct _GoaOAuthProviderClass
+                                                 WebKitDOMHTMLInputElement    *element);
+ 
+   /*< private >*/
++  GoaOAuthProviderPrivate *priv;
++
+   /* Padding for future expansion */
+-  gpointer goa_reserved[29];
++  gpointer goa_reserved[28];
+ };
+ 
+ GType        goa_oauth_provider_get_type                     (void) G_GNUC_CONST;
+diff --git a/src/goabackend/goawebextension.c b/src/goabackend/goawebextension.c
+new file mode 100644
+index 0000000..2bfcae8
+--- /dev/null
++++ b/src/goabackend/goawebextension.c
+@@ -0,0 +1,270 @@
++/* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
++/*
++ * Copyright (C) 2015 Damián Nohales
++ * Copyright (C) 2015 Red Hat, Inc.
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General
++ * Public License along with this library; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "config.h"
++
++#include <webkitdom/webkitdom.h>
++
++#include "goaoauthprovider.h"
++#include "goaoauth2provider.h"
++#include "goaprovider.h"
++#include "goawebextension.h"
++
++struct _GoaWebExtension
++{
++  GObject parent;
++  GoaProvider *provider;
++  WebKitWebExtension *wk_extension;
++  gchar *existing_identity;
++  gchar *provider_type;
++};
++
++struct _GoaWebExtensionClass
++{
++  GObjectClass parent;
++};
++
++enum
++{
++  PROP_0,
++  PROP_EXISTING_IDENTITY,
++  PROP_PROVIDER_TYPE,
++  PROP_WK_EXTENSION
++};
++
++G_DEFINE_TYPE (GoaWebExtension, goa_web_extension, G_TYPE_OBJECT)
++
++static void
++web_extension_dom_node_deny_click_cb (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++{
++  WebKitDOMDOMWindow *dom_window = WEBKIT_DOM_DOM_WINDOW (user_data);
++  webkit_dom_dom_window_webkit_message_handlers_post_message (dom_window, "deny-click", "");
++}
++
++static void
++web_extension_dom_node_password_submit_cb (WebKitDOMNode *element, WebKitDOMEvent *event, gpointer user_data)
++{
++  WebKitDOMDOMWindow *dom_window = WEBKIT_DOM_DOM_WINDOW (user_data);
++  WebKitDOMHTMLInputElement *password_node;
++  gchar *password;
++
++  password_node = WEBKIT_DOM_HTML_INPUT_ELEMENT (g_object_get_data (G_OBJECT (dom_window), "goa-password-node"));
++  password = webkit_dom_html_input_element_get_value (password_node);
++  webkit_dom_dom_window_webkit_message_handlers_post_message (dom_window, "password-submit", password);
++  g_free (password);
++}
++
++static void
++web_extension_document_loaded_cb (WebKitWebPage *web_page, gpointer user_data)
++{
++  GoaWebExtension *self = GOA_WEB_EXTENSION (user_data);
++  WebKitDOMDocument *document;
++  WebKitDOMDOMWindow *dom_window;
++  WebKitDOMNodeList *elements;
++  gulong element_count;
++  gulong i;
++
++  document = webkit_web_page_get_dom_document (web_page);
++  elements = webkit_dom_document_get_elements_by_tag_name (document, "*");
++  element_count = webkit_dom_node_list_get_length (elements);
++
++  dom_window = webkit_dom_document_get_default_view (document);
++
++  for (i = 0; i < element_count; i++)
++    {
++      WebKitDOMNode *element = webkit_dom_node_list_item (elements, i);
++
++      if ((GOA_IS_OAUTH_PROVIDER (self->provider)
++           && goa_oauth_provider_is_deny_node (GOA_OAUTH_PROVIDER (self->provider), element))
++          || (GOA_IS_OAUTH2_PROVIDER (self->provider)
++              && goa_oauth2_provider_is_deny_node (GOA_OAUTH2_PROVIDER (self->provider), element)))
++        {
++          webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (element),
++                                                      "click",
++                                                      G_CALLBACK (web_extension_dom_node_deny_click_cb),
++                                                      FALSE,
++                                                      dom_window);
++        }
++      else if (self->existing_identity != NULL
++               && self->existing_identity[0] != '\0'
++               && WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
++               && ((GOA_IS_OAUTH_PROVIDER (self->provider)
++                    && goa_oauth_provider_is_identity_node (GOA_OAUTH_PROVIDER (self->provider),
++                                                            WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
++                   || (GOA_IS_OAUTH2_PROVIDER (self->provider)
++                       && goa_oauth2_provider_is_identity_node (GOA_OAUTH2_PROVIDER (self->provider),
++                                                                WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))))
++        {
++          webkit_dom_html_input_element_set_value (WEBKIT_DOM_HTML_INPUT_ELEMENT (element),
++                                                   self->existing_identity);
++          webkit_dom_html_input_element_set_read_only (WEBKIT_DOM_HTML_INPUT_ELEMENT (element), TRUE);
++        }
++      else if (WEBKIT_DOM_IS_HTML_INPUT_ELEMENT (element)
++               && ((GOA_IS_OAUTH_PROVIDER (self->provider)
++                   && goa_oauth_provider_is_password_node (GOA_OAUTH_PROVIDER (self->provider),
++                                                           WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))
++                   || (GOA_IS_OAUTH2_PROVIDER (self->provider)
++                       && goa_oauth2_provider_is_password_node (GOA_OAUTH2_PROVIDER (self->provider),
++                                                                WEBKIT_DOM_HTML_INPUT_ELEMENT (element)))))
++        {
++          WebKitDOMHTMLFormElement *form;
++
++          form = webkit_dom_html_input_element_get_form (WEBKIT_DOM_HTML_INPUT_ELEMENT (element));
++          if (form != NULL)
++            {
++              g_object_set_data_full (G_OBJECT (dom_window),
++                                      "goa-password-node",
++                                      g_object_ref (element),
++                                      g_object_unref);
++              webkit_dom_event_target_add_event_listener (WEBKIT_DOM_EVENT_TARGET (form),
++                                                          "submit",
++                                                          G_CALLBACK (web_extension_dom_node_password_submit_cb),
++                                                          FALSE,
++                                                          dom_window);
++            }
++        }
++    }
++}
++
++static void
++web_extension_page_created_cb (GoaWebExtension *self, WebKitWebPage *web_page)
++{
++  g_signal_connect_object (web_page, "document-loaded", G_CALLBACK (web_extension_document_loaded_cb), self, 0);
++}
++
++static void
++goa_web_extension_constructed (GObject *object)
++{
++  GoaWebExtension *self = GOA_WEB_EXTENSION (object);
++
++  G_OBJECT_CLASS (goa_web_extension_parent_class)->constructed (object);
++
++  self->provider = goa_provider_get_for_provider_type (self->provider_type);
++
++  g_signal_connect_object (self->wk_extension,
++                           "page-created",
++                           G_CALLBACK (web_extension_page_created_cb),
++                           self,
++                           G_CONNECT_SWAPPED);
++}
++
++static void
++goa_web_extension_dispose (GObject *object)
++{
++  GoaWebExtension *self = GOA_WEB_EXTENSION (object);
++
++  g_clear_object (&self->provider);
++  g_clear_object (&self->wk_extension);
++
++  G_OBJECT_CLASS (goa_web_extension_parent_class)->dispose (object);
++}
++
++static void
++goa_web_extension_finalize (GObject *object)
++{
++  GoaWebExtension *self = GOA_WEB_EXTENSION (object);
++
++  g_free (self->existing_identity);
++  g_free (self->provider_type);
++
++  G_OBJECT_CLASS (goa_web_extension_parent_class)->finalize (object);
++}
++
++static void
++goa_web_extension_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
++{
++  GoaWebExtension *self = GOA_WEB_EXTENSION (object);
++
++  switch (prop_id)
++    {
++    case PROP_EXISTING_IDENTITY:
++      self->existing_identity = g_value_dup_string (value);
++      break;
++
++    case PROP_PROVIDER_TYPE:
++      self->provider_type = g_value_dup_string (value);
++      break;
++
++    case PROP_WK_EXTENSION:
++      self->wk_extension = WEBKIT_WEB_EXTENSION (g_value_dup_object (value));
++      break;
++
++    default:
++      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      break;
++    }
++}
++
++static void
++goa_web_extension_class_init (GoaWebExtensionClass *klass)
++{
++  GObjectClass *object_class = G_OBJECT_CLASS (klass);
++
++  object_class->constructed = goa_web_extension_constructed;
++  object_class->dispose = goa_web_extension_dispose;
++  object_class->finalize = goa_web_extension_finalize;
++  object_class->set_property = goa_web_extension_set_property;
++
++  g_object_class_install_property (object_class,
++                                   PROP_EXISTING_IDENTITY,
++                                   g_param_spec_string ("existing-identity",
++                                                        "A GoaAccount identity",
++                                                        "The user name with which we want to prefill the form",
++                                                        NULL,
++                                                        G_PARAM_WRITABLE |
++                                                        G_PARAM_CONSTRUCT_ONLY |
++                                                        G_PARAM_STATIC_STRINGS));
++
++  g_object_class_install_property (object_class,
++                                   PROP_PROVIDER_TYPE,
++                                   g_param_spec_string ("provider-type",
++                                                        "A GoaProvider type",
++                                                        "The provider type that is represented by this view",
++                                                        NULL,
++                                                        G_PARAM_WRITABLE |
++                                                        G_PARAM_CONSTRUCT_ONLY |
++                                                        G_PARAM_STATIC_STRINGS));
++
++  g_object_class_install_property (object_class,
++                                   PROP_WK_EXTENSION,
++                                   g_param_spec_object ("wk-extension",
++                                                        "A WebKitWebExtension",
++                                                        "The associated WebKitWebExtension",
++                                                        WEBKIT_TYPE_WEB_EXTENSION,
++                                                        G_PARAM_WRITABLE |
++                                                        G_PARAM_CONSTRUCT_ONLY |
++                                                        G_PARAM_STATIC_STRINGS));
++}
++
++static void
++goa_web_extension_init (GoaWebExtension *self)
++{
++}
++
++GoaWebExtension *
++goa_web_extension_new (WebKitWebExtension *wk_extension,
++                       const gchar *provider_type,
++                       const gchar *existing_identity)
++{
++  return g_object_new (GOA_TYPE_WEB_EXTENSION,
++                       "existing-identity", existing_identity,
++                       "provider-type", provider_type,
++                       "wk-extension", wk_extension,
++                       NULL);
++}
+diff --git a/src/goabackend/goawebextension.h b/src/goabackend/goawebextension.h
+new file mode 100644
+index 0000000..029cb21
+--- /dev/null
++++ b/src/goabackend/goawebextension.h
+@@ -0,0 +1,45 @@
++/* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
++/*
++ * Copyright (C) 2015 Damián Nohales
++ * Copyright (C) 2015 Red Hat, Inc.
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General
++ * Public License along with this library; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#ifndef __GOA_WEB_EXTENSION_H__
++#define __GOA_WEB_EXTENSION_H__
++
++#include <glib-object.h>
++#include <webkit2/webkit-web-extension.h>
++
++G_BEGIN_DECLS
++
++#define GOA_TYPE_WEB_EXTENSION            (goa_web_extension_get_type())
++#define GOA_WEB_EXTENSION(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), GOA_TYPE_WEB_EXTENSION, GoaWebExtension))
++#define GOA_WEB_EXTENSION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  GOA_TYPE_WEB_EXTENSION, GoaWebExtensionClass))
++#define GOA_IS_WEB_EXTENSION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), GOA_TYPE_WEB_EXTENSION))
++#define GOA_IS_WEB_EXTENSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  GOA_TYPE_WEB_EXTENSION))
++#define GOA_WEB_EXTENSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  GOA_TYPE_WEB_EXTENSION, GoaWebExtensionClass))
++
++typedef struct _GoaWebExtension      GoaWebExtension;
++typedef struct _GoaWebExtensionClass GoaWebExtensionClass;
++
++GType                goa_web_extension_get_type   (void);
++GoaWebExtension     *goa_web_extension_new        (WebKitWebExtension *wk_extension,
++                                                   const gchar        *provider_type,
++                                                   const gchar        *existing_identity);
++
++G_END_DECLS
++
++#endif /* __GOA_WEB_EXTENSION_H__ */
+diff --git a/src/goabackend/goawebextensionmain.c b/src/goabackend/goawebextensionmain.c
+new file mode 100644
+index 0000000..89bf839
+--- /dev/null
++++ b/src/goabackend/goawebextensionmain.c
+@@ -0,0 +1,53 @@
++/* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
++/*
++ * Copyright (C) 2015 Damián Nohales
++ * Copyright (C) 2015 Red Hat, Inc.
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General
++ * Public License along with this library; if not, see <http://www.gnu.org/licenses/>.
++ */
++
++#include "config.h"
++
++#include <gmodule.h>
++#include <webkit2/webkit-web-extension.h>
++
++#include "goawebextension.h"
++
++static GoaWebExtension *the_extension;
++
++/* Silence -Wmissing-prototypes */
++void webkit_web_extension_initialize (WebKitWebExtension *wk_extension);
++void webkit_web_extension_initialize_with_user_data (WebKitWebExtension *wk_extension, GVariant *user_data);
++
++G_MODULE_EXPORT void
++webkit_web_extension_initialize (WebKitWebExtension *wk_extension)
++{
++  g_warning ("Error initializing web extension: user data not set");
++}
++
++G_MODULE_EXPORT void
++webkit_web_extension_initialize_with_user_data (WebKitWebExtension *wk_extension, GVariant *user_data)
++{
++  const gchar *existing_identity;
++  const gchar *provider_type;
++
++  g_variant_get (user_data, "(&s&s)", &provider_type, &existing_identity);
++  the_extension = goa_web_extension_new (wk_extension, provider_type, existing_identity);
++}
++
++static void __attribute__((destructor))
++goa_web_extension_shutdown (void)
++{
++  g_clear_object (&the_extension);
++}
+diff --git a/src/goabackend/goawebview.c b/src/goabackend/goawebview.c
+index 0c7c75c..32999f9 100644
+--- a/src/goabackend/goawebview.c
++++ b/src/goabackend/goawebview.c
+@@ -1,6 +1,7 @@
+ /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*-
+  *
+- * Copyright (C) 2012, 2013, 2014 Red Hat, Inc.
++ * Copyright (C) 2015 Damián Nohales
++ * Copyright (C) 2012, 2013, 2014, 2015 Red Hat, Inc.
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+@@ -23,23 +24,44 @@
+ 
+ #include <glib.h>
+ #include <glib/gi18n-lib.h>
++#include <JavaScriptCore/JavaScript.h>
+ #include <libsoup/soup.h>
+-#include <webkit/webkit.h>
++#include <webkit2/webkit2.h>
+ 
+ #include "goawebview.h"
+ #include "nautilus-floating-bar.h"
+ 
+ struct _GoaWebViewPrivate
+ {
++  GoaProvider *provider;
+   GtkWidget *floating_bar;
+   GtkWidget *progress_bar;
+   GtkWidget *web_view;
+-  gboolean status;
++  SoupCookieJar *cookie_jar;
++  WebKitUserContentManager *user_content_manager;
++  WebKitWebContext *context;
++  gchar *existing_identity;
+   gulong clear_notify_progress_id;
+   gulong notify_load_status_id;
+   gulong notify_progress_id;
+ };
+ 
++enum
++{
++  PROP_0,
++  PROP_EXISTING_IDENTITY,
++  PROP_PROVIDER
++};
++
++enum
++{
++  DENY_CLICK,
++  PASSWORD_SUBMIT,
++  LAST_SIGNAL
++};
++
++static guint signals[LAST_SIGNAL] = { 0 };
++
+ #define GOA_WEB_VIEW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE ((obj), GOA_TYPE_WEB_VIEW, GoaWebViewPrivate))
+ 
+ G_DEFINE_TYPE (GoaWebView, goa_web_view, GTK_TYPE_OVERLAY)
+@@ -89,58 +111,78 @@ web_view_floating_bar_update (GoaWebView *self, const gchar *text)
+     gtk_widget_show (priv->floating_bar);
+ }
+ 
+-static gboolean
+-web_view_is_loading (GoaWebView *self)
++static void
++web_view_initialize_web_extensions_cb (GoaWebView *self)
+ {
+   GoaWebViewPrivate *priv = self->priv;
+-  WebKitLoadStatus status;
++  GVariant *data;
++  const gchar *existing_identity;
++  const gchar *provider_type;
+ 
+-  status = webkit_web_view_get_load_status (WEBKIT_WEB_VIEW (priv->web_view));
++  webkit_web_context_set_web_extensions_directory (priv->context, PACKAGE_WEB_EXTENSIONS_DIR);
+ 
+-  if ((priv->status == WEBKIT_LOAD_FINISHED || priv->status == WEBKIT_LOAD_FAILED)
+-      && status != WEBKIT_LOAD_PROVISIONAL)
+-    return FALSE;
++  if (priv->provider == NULL)
++    return;
+ 
+-  priv->status = status;
+-  return status != WEBKIT_LOAD_FINISHED && status != WEBKIT_LOAD_FAILED;
++  provider_type = goa_provider_get_provider_type (priv->provider);
++  existing_identity = (priv->existing_identity == NULL) ? "" : priv->existing_identity;
++  data = g_variant_new ("(ss)", provider_type, existing_identity);
++  webkit_web_context_set_web_extensions_initialization_user_data (priv->context, data);
+ }
+ 
++#ifdef GOA_INSPECTOR_ENABLED
+ static void
+-web_view_log_printer (SoupLogger         *logger,
+-                      SoupLoggerLogLevel  level,
+-                      gchar               direction,
+-                      const gchar        *data,
+-                      gpointer            user_data)
++web_view_inspector_closed_cb (WebKitWebInspector *inspector)
+ {
+-  gchar *message;
++  GtkWidget *window;
++  WebKitWebViewBase *inspector_web_view;
+ 
+-  message = g_strdup_printf ("%c %s", direction, data);
+-  g_log_default_handler ("goa", G_LOG_LEVEL_DEBUG, message, NULL);
+-  g_free (message);
++  inspector_web_view = webkit_web_inspector_get_web_view (inspector);
++  window = gtk_widget_get_toplevel (GTK_WIDGET (inspector_web_view));
++  if (gtk_widget_is_toplevel (window))
++    gtk_widget_destroy (window);
+ }
+ 
++static gboolean
++web_view_inspector_open_window_cb (WebKitWebInspector *inspector)
++{
++  GtkWidget *window;
++  GtkWindowGroup *group;
++  WebKitWebViewBase *inspector_web_view;
++
++  group = gtk_window_group_new ();
++
++  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
++  gtk_window_resize (GTK_WINDOW (window), 800, 600);
++  gtk_window_group_add_window (group, GTK_WINDOW (window));
++  g_object_unref (group);
++
++  inspector_web_view = webkit_web_inspector_get_web_view (inspector);
++  gtk_container_add (GTK_CONTAINER (window), GTK_WIDGET (inspector_web_view));
++
++  gtk_widget_show_all (window);
++  gtk_window_present (GTK_WINDOW (window));
++
++  return GDK_EVENT_STOP;
++}
++#endif /* GOA_INSPECTOR_ENABLED */
++
+ static void
+-web_view_notify_load_status_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
++web_view_load_changed_cb (WebKitWebView  *web_view,
++                          WebKitLoadEvent load_event,
++                          gpointer        user_data)
+ {
+   GoaWebView *self = GOA_WEB_VIEW (user_data);
+-  WebKitWebView *web_view = WEBKIT_WEB_VIEW (object);
+-  WebKitLoadStatus status;
+ 
+-  status = webkit_web_view_get_load_status (web_view);
+-  switch (status)
++  switch (load_event)
+     {
+-    case WEBKIT_LOAD_PROVISIONAL:
++    case WEBKIT_LOAD_STARTED:
++    case WEBKIT_LOAD_COMMITTED:
+       {
+-        WebKitNetworkRequest *request;
+-        WebKitWebDataSource *source;
+-        WebKitWebFrame *frame;
+         const gchar *uri;
+         gchar *title;
+ 
+-        frame = webkit_web_view_get_main_frame (web_view);
+-        source = webkit_web_frame_get_provisional_data_source (frame);
+-        request = webkit_web_data_source_get_initial_request (source);
+-        uri = webkit_network_request_get_uri (request);
++        uri = webkit_web_view_get_uri (web_view);
+         title = web_view_create_loading_title (uri);
+ 
+         web_view_floating_bar_update (self, title);
+@@ -148,7 +190,10 @@ web_view_notify_load_status_cb (GObject *object, GParamSpec *pspec, gpointer use
+         break;
+       }
+ 
+-    case WEBKIT_LOAD_FAILED:
++    case WEBKIT_LOAD_REDIRECTED:
++      /* TODO: Update the loading uri */
++      break;
++
+     case WEBKIT_LOAD_FINISHED:
+       web_view_floating_bar_update (self, NULL);
+       break;
+@@ -159,7 +204,9 @@ web_view_notify_load_status_cb (GObject *object, GParamSpec *pspec, gpointer use
+ }
+ 
+ static void
+-web_view_notify_progress_cb (GObject *object, GParamSpec *pspec, gpointer user_data)
++web_view_notify_estimated_load_progress_cb (GObject    *object,
++                                            GParamSpec *pspec,
++                                            gpointer    user_data)
+ {
+   GoaWebView *self = GOA_WEB_VIEW (user_data);
+   GoaWebViewPrivate *priv = self->priv;
+@@ -178,8 +225,8 @@ web_view_notify_progress_cb (GObject *object, GParamSpec *pspec, gpointer user_d
+   if (!uri || g_str_equal (uri, "about:blank"))
+     return;
+ 
+-  progress = webkit_web_view_get_progress (WEBKIT_WEB_VIEW (priv->web_view));
+-  loading = web_view_is_loading (self);
++  progress = webkit_web_view_get_estimated_load_progress (web_view);
++  loading = webkit_web_view_is_loading (web_view);
+ 
+   if (progress == 1.0 || !loading)
+     priv->clear_notify_progress_id = g_timeout_add (500, web_view_clear_notify_progress_cb, self);
+@@ -191,11 +238,131 @@ web_view_notify_progress_cb (GObject *object, GParamSpec *pspec, gpointer user_d
+ }
+ 
+ static void
++web_view_script_message_received_deny_click_cb (GoaWebView *self)
++{
++  g_signal_emit (self, signals[DENY_CLICK], 0);
++}
++
++static void
++web_view_script_message_received_password_submit_cb (GoaWebView *self, WebKitJavascriptResult *js_result)
++{
++  JSGlobalContextRef js_context;
++  JSStringRef js_string;
++  JSValueRef js_value;
++  gsize max_size;
++
++  js_value = webkit_javascript_result_get_value (js_result);
++  js_context = webkit_javascript_result_get_global_context (js_result);
++  js_string = JSValueToStringCopy (js_context, js_value, NULL);
++  max_size = JSStringGetMaximumUTF8CStringSize (js_string);
++  if (max_size > 0)
++    {
++      gchar *password;
++
++      password = g_malloc0 (max_size);
++      JSStringGetUTF8CString (js_string, password, max_size);
++      g_signal_emit (self, signals[PASSWORD_SUBMIT], 0, password);
++      g_free (password);
++    }
++
++  JSStringRelease (js_string);
++}
++
++static void
++goa_web_view_constructed (GObject *object)
++{
++  GoaWebView *self = GOA_WEB_VIEW (object);
++  GoaWebViewPrivate *priv = self->priv;
++  WebKitCookieManager *cookie_manager;
++  gchar *jar_dir;
++  gchar *jar_file;
++
++  G_OBJECT_CLASS (goa_web_view_parent_class)->constructed (object);
++
++  priv->context = webkit_web_context_new ();
++  g_signal_connect_swapped (priv->context,
++                            "initialize-web-extensions",
++                            G_CALLBACK (web_view_initialize_web_extensions_cb),
++                            self);
++
++  cookie_manager = webkit_web_context_get_cookie_manager (priv->context);
++  jar_file = g_build_filename (g_get_user_cache_dir (), "goa-1.0", "cookies.sqlite", NULL);
++  jar_dir = g_path_get_dirname (jar_file);
++  g_mkdir_with_parents (jar_dir, 0700);
++  priv->cookie_jar = soup_cookie_jar_db_new (jar_file, FALSE);
++  webkit_cookie_manager_set_persistent_storage (cookie_manager, jar_file, WEBKIT_COOKIE_PERSISTENT_STORAGE_SQLITE);
++  webkit_cookie_manager_delete_all_cookies (cookie_manager);
++  g_free (jar_dir);
++  g_free (jar_file);
++
++  priv->user_content_manager = webkit_user_content_manager_new ();
++  g_signal_connect_swapped (priv->user_content_manager,
++                            "script-message-received::deny-click",
++                            G_CALLBACK (web_view_script_message_received_deny_click_cb),
++                            self);
++  g_signal_connect_swapped (priv->user_content_manager,
++                            "script-message-received::password-submit",
++                            G_CALLBACK (web_view_script_message_received_password_submit_cb),
++                            self);
++  webkit_user_content_manager_register_script_message_handler (priv->user_content_manager, "deny-click");
++  webkit_user_content_manager_register_script_message_handler (priv->user_content_manager, "password-submit");
++
++  priv->web_view = GTK_WIDGET (g_object_new (WEBKIT_TYPE_WEB_VIEW,
++                                             "user-content-manager", priv->user_content_manager,
++                                             "web-context", priv->context,
++                                             NULL));
++  gtk_widget_set_size_request (priv->web_view, 500, 400);
++  gtk_container_add (GTK_CONTAINER (self), priv->web_view);
++
++#ifdef GOA_INSPECTOR_ENABLED
++  {
++    WebKitSettings *settings;
++    WebKitWebInspector *inspector;
++
++    /* Setup the inspector */
++    settings = webkit_web_view_get_settings (WEBKIT_WEB_VIEW (priv->web_view));
++    g_object_set (settings, "enable-developer-extras", TRUE, NULL);
++
++    inspector = webkit_web_view_get_inspector (WEBKIT_WEB_VIEW (priv->web_view));
++    g_signal_connect (inspector, "closed", G_CALLBACK (web_view_inspector_closed_cb), NULL);
++    g_signal_connect (inspector, "open-window", G_CALLBACK (web_view_inspector_open_window_cb), NULL);
++  }
++#endif /* GOA_INSPECTOR_ENABLED */
++
++  /* statusbar is hidden by default */
++  priv->floating_bar = nautilus_floating_bar_new (NULL, FALSE);
++  gtk_widget_set_halign (priv->floating_bar, GTK_ALIGN_START);
++  gtk_widget_set_valign (priv->floating_bar, GTK_ALIGN_END);
++  gtk_widget_set_no_show_all (priv->floating_bar, TRUE);
++  gtk_overlay_add_overlay (GTK_OVERLAY (self), priv->floating_bar);
++
++  priv->progress_bar = gtk_progress_bar_new ();
++  gtk_style_context_add_class (gtk_widget_get_style_context (priv->progress_bar),
++                               GTK_STYLE_CLASS_OSD);
++  gtk_widget_set_halign (priv->progress_bar, GTK_ALIGN_FILL);
++  gtk_widget_set_valign (priv->progress_bar, GTK_ALIGN_START);
++  gtk_overlay_add_overlay (GTK_OVERLAY (self), priv->progress_bar);
++
++  priv->notify_progress_id = g_signal_connect (priv->web_view,
++                                               "notify::estimated-load-progress",
++                                               G_CALLBACK (web_view_notify_estimated_load_progress_cb),
++                                               self);
++  priv->notify_load_status_id = g_signal_connect (priv->web_view,
++                                                  "load_changed",
++                                                  G_CALLBACK (web_view_load_changed_cb),
++                                                  self);
++}
++
++static void
+ goa_web_view_dispose (GObject *object)
+ {
+   GoaWebView *self = GOA_WEB_VIEW (object);
+   GoaWebViewPrivate *priv = self->priv;
+ 
++  g_clear_object (&priv->cookie_jar);
++  g_clear_object (&priv->user_content_manager);
++  g_clear_object (&priv->context);
++
+   if (priv->clear_notify_progress_id != 0)
+     {
+       g_source_remove (priv->clear_notify_progress_id);
+@@ -217,133 +384,45 @@ goa_web_view_dispose (GObject *object)
+   G_OBJECT_CLASS (goa_web_view_parent_class)->dispose (object);
+ }
+ 
+-#ifdef GOA_INSPECTOR_ENABLED
+-static WebKitWebView *
+-web_inspector_inspect_web_view_cb (WebKitWebInspector *inspector,
+-                                   WebKitWebView      *web_view,
+-                                   gpointer            user_data)
++static void
++goa_web_view_finalize (GObject *object)
+ {
+-  GtkWidget *inspector_web_view;
+-  GtkWidget *scrolled_window;
+-  GtkWidget *window;
+-
+-  inspector_web_view = webkit_web_view_new ();
+-
+-  window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+-  gtk_window_resize (GTK_WINDOW (window), 800, 600);
+-
+-  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+-                                  GTK_POLICY_AUTOMATIC,
+-                                  GTK_POLICY_AUTOMATIC);
+-
+-  gtk_container_add (GTK_CONTAINER (window), scrolled_window);
+-  gtk_container_add (GTK_CONTAINER (scrolled_window), inspector_web_view);
++  GoaWebView *self = GOA_WEB_VIEW (object);
++  GoaWebViewPrivate *priv = self->priv;
+ 
+-  g_object_set_data (G_OBJECT (inspector), "window", window);
++  g_free (priv->existing_identity);
++  g_object_remove_weak_pointer (G_OBJECT (priv->provider), (gpointer *) &priv->provider);
+ 
+-  return WEBKIT_WEB_VIEW (inspector_web_view);
++  G_OBJECT_CLASS (goa_web_view_parent_class)->finalize (object);
+ }
+ 
+-static gboolean
+-web_inspector_show_window_cb (WebKitWebInspector *inspector,
+-                              gpointer            user_data)
++static void
++goa_web_view_set_property (GObject *object, guint prop_id, const GValue *value, GParamSpec *pspec)
+ {
+-  GtkWidget *window;
+-  GtkWindowGroup *group;
++  GoaWebView *self = GOA_WEB_VIEW (object);
++  GoaWebViewPrivate *priv = self->priv;
+ 
+-  group = gtk_window_group_new ();
++  switch (prop_id)
++    {
++    case PROP_EXISTING_IDENTITY:
++      priv->existing_identity = g_value_dup_string (value);
++      break;
+ 
+-  window = g_object_get_data (G_OBJECT (inspector), "window");
+-  gtk_window_group_add_window (group, GTK_WINDOW (window));
+-  gtk_widget_show_all (window);
+-  gtk_window_present (GTK_WINDOW (window));
++    case PROP_PROVIDER:
++      priv->provider = GOA_PROVIDER (g_value_get_object (value));
++      g_object_add_weak_pointer (G_OBJECT (priv->provider), (gpointer *) &priv->provider);
++      break;
+ 
+-  g_object_unref (group);
+-  return GDK_EVENT_STOP;
++    default:
++      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
++      break;
++    }
+ }
+-#endif /* GOA_INSPECTOR_ENABLED */
+ 
+ static void
+ goa_web_view_init (GoaWebView *self)
+ {
+-  GoaWebViewPrivate *priv;
+-  GtkWidget *scrolled_window;
+-  SoupCookieJar *cookie_jar;
+-  SoupLogger *logger;
+-  SoupSession *session;
+-  WebKitWebSettings *settings;
+-
+   self->priv = GOA_WEB_VIEW_GET_PRIVATE (self);
+-  priv = self->priv;
+-
+-  session = webkit_get_default_session ();
+-  g_object_set (session, SOUP_SESSION_SSL_USE_SYSTEM_CA_FILE, TRUE, SOUP_SESSION_SSL_STRICT, TRUE, NULL);
+-
+-  soup_session_add_feature_by_type (session, SOUP_TYPE_PROXY_RESOLVER_DEFAULT);
+-  g_object_set (session, "accept-language-auto", TRUE, NULL);
+-
+-  soup_session_remove_feature_by_type (session, SOUP_TYPE_COOKIE_JAR);
+-  cookie_jar = soup_cookie_jar_new ();
+-  soup_session_add_feature (session, SOUP_SESSION_FEATURE (cookie_jar));
+-  g_object_unref (cookie_jar);
+-
+-  logger = soup_logger_new (SOUP_LOGGER_LOG_BODY, -1);
+-  soup_logger_set_printer (logger, web_view_log_printer, NULL, NULL);
+-  soup_session_add_feature (session, SOUP_SESSION_FEATURE (logger));
+-  g_object_unref (logger);
+-
+-  scrolled_window = gtk_scrolled_window_new (NULL, NULL);
+-  gtk_widget_set_size_request (scrolled_window, 500, 400);
+-  gtk_scrolled_window_set_shadow_type (GTK_SCROLLED_WINDOW (scrolled_window), GTK_SHADOW_IN);
+-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled_window),
+-                                  GTK_POLICY_AUTOMATIC,
+-                                  GTK_POLICY_AUTOMATIC);
+-  gtk_container_add (GTK_CONTAINER (self), scrolled_window);
+-
+-  priv->web_view = webkit_web_view_new ();
+-  priv->status = WEBKIT_LOAD_PROVISIONAL;
+-  gtk_container_add (GTK_CONTAINER (scrolled_window), priv->web_view);
+-
+-  settings = webkit_web_view_get_settings (WEBKIT_WEB_VIEW (priv->web_view));
+-  g_object_set (settings, "user-stylesheet-uri", "file://" PACKAGE_DATA_DIR "/goawebview.css", NULL);
+-
+-#ifdef GOA_INSPECTOR_ENABLED
+-  {
+-    WebKitWebInspector *inspector;
+-
+-    /* Setup the inspector */
+-    g_object_set (settings, "enable-developer-extras", TRUE, NULL);
+-    inspector = webkit_web_view_get_inspector (WEBKIT_WEB_VIEW (priv->web_view));
+-    webkit_web_inspector_show (WEBKIT_WEB_INSPECTOR (inspector));
+-
+-    g_signal_connect (inspector, "inspect-web-view", G_CALLBACK (web_inspector_inspect_web_view_cb), NULL);
+-    g_signal_connect (inspector, "show-window", G_CALLBACK (web_inspector_show_window_cb), NULL);
+-  }
+-#endif /* GOA_INSPECTOR_ENABLED */
+-
+-  /* statusbar is hidden by default */
+-  priv->floating_bar = nautilus_floating_bar_new (NULL, FALSE);
+-  gtk_widget_set_halign (priv->floating_bar, GTK_ALIGN_START);
+-  gtk_widget_set_valign (priv->floating_bar, GTK_ALIGN_END);
+-  gtk_widget_set_no_show_all (priv->floating_bar, TRUE);
+-  gtk_overlay_add_overlay (GTK_OVERLAY (self), priv->floating_bar);
+-
+-  priv->progress_bar = gtk_progress_bar_new ();
+-  gtk_style_context_add_class (gtk_widget_get_style_context (priv->progress_bar),
+-                               GTK_STYLE_CLASS_OSD);
+-  gtk_widget_set_halign (priv->progress_bar, GTK_ALIGN_FILL);
+-  gtk_widget_set_valign (priv->progress_bar, GTK_ALIGN_START);
+-  gtk_overlay_add_overlay (GTK_OVERLAY (self), priv->progress_bar);
+-
+-  priv->notify_progress_id = g_signal_connect (priv->web_view,
+-                                               "notify::progress",
+-                                               G_CALLBACK (web_view_notify_progress_cb),
+-                                               self);
+-  priv->notify_load_status_id = g_signal_connect (priv->web_view,
+-                                                  "notify::load-status",
+-                                                  G_CALLBACK (web_view_notify_load_status_cb),
+-                                                  self);
+ }
+ 
+ static void
+@@ -352,15 +431,59 @@ goa_web_view_class_init (GoaWebViewClass *klass)
+   GObjectClass *object_class;
+ 
+   object_class = G_OBJECT_CLASS (klass);
++  object_class->constructed = goa_web_view_constructed;
+   object_class->dispose = goa_web_view_dispose;
++  object_class->finalize = goa_web_view_finalize;
++  object_class->set_property = goa_web_view_set_property;
++
++  g_object_class_install_property (object_class,
++                                   PROP_EXISTING_IDENTITY,
++                                   g_param_spec_string ("existing-identity",
++                                                        "A GoaAccount identity",
++                                                        "The user name with which we want to prefill the form",
++                                                        NULL,
++                                                        G_PARAM_WRITABLE |
++                                                        G_PARAM_CONSTRUCT_ONLY |
++                                                        G_PARAM_STATIC_STRINGS));
++
++  g_object_class_install_property (object_class,
++                                   PROP_PROVIDER,
++                                   g_param_spec_object ("provider",
++                                                        "A GoaProvider",
++                                                        "The provider that is represented by this view",
++                                                        GOA_TYPE_PROVIDER,
++                                                        G_PARAM_WRITABLE |
++                                                        G_PARAM_CONSTRUCT_ONLY |
++                                                        G_PARAM_STATIC_STRINGS));
++
++  signals[DENY_CLICK] = g_signal_new ("deny-click",
++                                      G_TYPE_FROM_CLASS (klass),
++                                      G_SIGNAL_RUN_LAST,
++                                      0,
++                                      NULL,
++                                      NULL,
++                                      g_cclosure_marshal_VOID__VOID,
++                                      G_TYPE_NONE,
++                                      0);
++
++  signals[PASSWORD_SUBMIT] = g_signal_new ("password-submit",
++                                           G_TYPE_FROM_CLASS (klass),
++                                           G_SIGNAL_RUN_LAST,
++                                           0,
++                                           NULL,
++                                           NULL,
++                                           g_cclosure_marshal_VOID__STRING,
++                                           G_TYPE_NONE,
++                                           1,
++                                           G_TYPE_STRING);
+ 
+   g_type_class_add_private (object_class, sizeof (GoaWebViewPrivate));
+ }
+ 
+ GtkWidget *
+-goa_web_view_new (void)
++goa_web_view_new (GoaProvider *provider, const gchar *existing_identity)
+ {
+-  return g_object_new (GOA_TYPE_WEB_VIEW, NULL);
++  return g_object_new (GOA_TYPE_WEB_VIEW, "provider", provider, "existing-identity", existing_identity, NULL);
+ }
+ 
+ GtkWidget *
+@@ -372,7 +495,7 @@ goa_web_view_get_view (GoaWebView *self)
+ void
+ goa_web_view_fake_mobile (GoaWebView *self)
+ {
+-  WebKitWebSettings *settings;
++  WebKitSettings *settings;
+ 
+   settings = webkit_web_view_get_settings (WEBKIT_WEB_VIEW (self->priv->web_view));
+ 
+@@ -389,26 +512,20 @@ goa_web_view_fake_mobile (GoaWebView *self)
+    * Also note that the user agents of some mobile browsers may
+    * not work. eg., Nokia N9.
+    */
+-  g_object_set (G_OBJECT (settings),
+-                "user-agent", "Mozilla/5.0 (GNOME; not Android) "
+-                              "AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile",
+-                NULL);
++  webkit_settings_set_user_agent (settings,
++                                  "Mozilla/5.0 (GNOME; not Android) "
++                                  "AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile");
+ }
+ 
+ void
+ goa_web_view_add_cookies (GoaWebView *self,
+                           GSList     *cookies)
+ {
+-  SoupCookieJar *cookie_jar;
+-  SoupSession *session;
+   GSList *l;
+ 
+-  session = webkit_get_default_session ();
+-  cookie_jar = SOUP_COOKIE_JAR (soup_session_get_feature (session, SOUP_TYPE_COOKIE_JAR));
+-
+   for (l = cookies; l != NULL; l = l->next)
+     {
+       SoupCookie *cookie = l->data;
+-      soup_cookie_jar_add_cookie (cookie_jar, soup_cookie_copy (cookie));
++      soup_cookie_jar_add_cookie (self->priv->cookie_jar, soup_cookie_copy (cookie));
+     }
+ }
+diff --git a/src/goabackend/goawebview.h b/src/goabackend/goawebview.h
+index 633afaa..31989a0 100644
+--- a/src/goabackend/goawebview.h
++++ b/src/goabackend/goawebview.h
+@@ -1,6 +1,6 @@
+ /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*-
+  *
+- * Copyright (C) 2012 Red Hat, Inc.
++ * Copyright (C) 2012, 2015 Red Hat, Inc.
+  *
+  * This library is free software; you can redistribute it and/or
+  * modify it under the terms of the GNU Lesser General Public
+@@ -21,6 +21,8 @@
+ 
+ #include <gtk/gtk.h>
+ 
++#include "goaprovider.h"
++
+ G_BEGIN_DECLS
+ 
+ #define GOA_TYPE_WEB_VIEW            (goa_web_view_get_type ())
+@@ -46,7 +48,8 @@ struct _GoaWebViewClass
+ };
+ 
+ GType                  goa_web_view_get_type               (void) G_GNUC_CONST;
+-GtkWidget             *goa_web_view_new                    (void);
++GtkWidget             *goa_web_view_new                    (GoaProvider *provider,
++                                                            const gchar *existing_identity);
+ GtkWidget             *goa_web_view_get_view               (GoaWebView *self);
+ void                   goa_web_view_fake_mobile            (GoaWebView *self);
+ void                   goa_web_view_add_cookies            (GoaWebView *self,
+-- 
+cgit v0.12
+

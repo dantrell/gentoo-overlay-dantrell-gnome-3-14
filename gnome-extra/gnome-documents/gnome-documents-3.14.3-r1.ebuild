@@ -16,7 +16,7 @@ IUSE=""
 # cairo-1.14 for cairo_surface_set_device_scale check and usage
 COMMON_DEPEND="
 	>=app-text/evince-3.13.3[introspection]
-	>=net-libs/webkit-gtk-1.10.0:3[introspection]
+	>=net-libs/webkit-gtk-2.6:4[introspection]
 	dev-libs/gjs
 	>=dev-libs/glib-2.39.3:2
 	>=dev-libs/gobject-introspection-1.31.6:=
@@ -41,5 +41,20 @@ DEPEND="${COMMON_DEPEND}
 	>=dev-util/intltool-0.50.1
 	dev-util/itstool
 	virtual/pkgconfig
+
+	app-text/yelp-tools
 "
 # eautoreconf requires yelp-tools
+
+src_prepare() {
+	# From GNOME:
+	# 	https://git.gnome.org/browse/gnome-documents/commit/?=7d3af4e4a3452a8ed8e7b3f42216b3460321ec93
+	# 	https://git.gnome.org/browse/gnome-documents/commit/?=9fd8bfaf78b9c1bcc4cb7e9ad75e1708f6727198
+	# 	https://git.gnome.org/browse/gnome-documents/commit/?=103595481ef7135b172965c4c3e7e27cc735b5f6
+	eapply "${FILESDIR}"/${PN}-3.15.2-port-to-webkit2.patch
+	eapply "${FILESDIR}"/${PN}-3.15.2-edit-dont-use-undeclared-variables.patch
+	eapply "${FILESDIR}"/${PN}-3.16.2-edit-prevent-webkit2-from-blowing-away-our-cache.patch
+
+	eautoreconf
+	gnome2_src_prepare
+}

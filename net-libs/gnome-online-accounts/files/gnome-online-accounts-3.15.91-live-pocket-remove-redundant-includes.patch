@@ -1,0 +1,41 @@
+From 19565da9620a19fdce0335a23f7c70057eefebcc Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Dami=C3=A1n=20Nohales?= <damiannohales@gmail.com>
+Date: Fri, 27 Feb 2015 19:46:21 +0100
+Subject: live, pocket: Remove redundant includes
+
+The providers only need webkitdom.h, which is already provided by the
+base class headers.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742680
+---
+ src/goabackend/goapocketprovider.c      | 1 -
+ src/goabackend/goawindowsliveprovider.c | 1 -
+ 2 files changed, 2 deletions(-)
+
+diff --git a/src/goabackend/goapocketprovider.c b/src/goabackend/goapocketprovider.c
+index 7d18661..e24bfb9 100644
+--- a/src/goabackend/goapocketprovider.c
++++ b/src/goabackend/goapocketprovider.c
+@@ -22,7 +22,6 @@
+ #include <rest/rest-proxy.h>
+ #include <json-glib/json-glib.h>
+ #include <libsoup/soup.h>
+-#include <webkit/webkit.h>
+ 
+ #include "goaprovider.h"
+ #include "goaprovider-priv.h"
+diff --git a/src/goabackend/goawindowsliveprovider.c b/src/goabackend/goawindowsliveprovider.c
+index e1ac1ab..ac6fe46 100644
+--- a/src/goabackend/goawindowsliveprovider.c
++++ b/src/goabackend/goawindowsliveprovider.c
+@@ -22,7 +22,6 @@
+ 
+ #include <rest/rest-proxy.h>
+ #include <json-glib/json-glib.h>
+-#include <webkit/webkit.h>
+ 
+ #include "goaprovider.h"
+ #include "goaprovider-priv.h"
+-- 
+cgit v0.12
+

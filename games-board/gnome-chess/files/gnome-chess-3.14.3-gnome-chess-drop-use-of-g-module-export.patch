@@ -1,0 +1,182 @@
+diff '--exclude=.git' -urN a/src/gnome-chess.vala b/src/gnome-chess.vala
+--- a/src/gnome-chess.vala	2015-02-21 12:41:03.000000000 -0500
++++ b/src/gnome-chess.vala	2017-11-23 20:50:27.776283819 -0500
+@@ -1317,14 +1317,14 @@
+         window.show ();
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT gnome_chess_app_delete_event_cb", instance_pos = -1)]
++    [CCode (cname = "gnome_chess_app_delete_event_cb", instance_pos = -1)]
+     public bool gnome_chess_app_delete_event_cb (Gtk.Widget widget, Gdk.Event event)
+     {
+         quit_game ();
+         return false;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT gnome_chess_app_configure_event_cb", instance_pos = -1)]
++    [CCode (cname = "gnome_chess_app_configure_event_cb", instance_pos = -1)]
+     public bool gnome_chess_app_configure_event_cb (Gtk.Widget widget, Gdk.EventConfigure event)
+     {
+         if (!settings.get_boolean ("maximized"))
+@@ -1336,7 +1336,7 @@
+         return false;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT gnome_chess_app_window_state_event_cb", instance_pos = -1)]
++    [CCode (cname = "gnome_chess_app_window_state_event_cb", instance_pos = -1)]
+     public bool gnome_chess_app_window_state_event_cb (Gtk.Widget widget, Gdk.EventWindowState event)
+     {
+         if ((event.changed_mask & Gdk.WindowState.MAXIMIZED) != 0)
+@@ -1510,7 +1510,7 @@
+         quit_game ();
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT white_time_draw_cb", instance_pos = -1)]
++    [CCode (cname = "white_time_draw_cb", instance_pos = -1)]
+     public bool white_time_draw_cb (Gtk.Widget widget, Cairo.Context c)
+     {
+         double fg[3] = { 0.0, 0.0, 0.0 };
+@@ -1520,7 +1520,7 @@
+         return false;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT black_time_draw_cb", instance_pos = -1)]
++    [CCode (cname = "black_time_draw_cb", instance_pos = -1)]
+     public bool black_time_draw_cb (Gtk.Widget widget, Cairo.Context c)
+     {
+         double fg[3] = { 1.0, 1.0, 1.0 };
+@@ -1607,7 +1607,7 @@
+             widget.set_size_request (compute_time_label_width_request (c), -1);
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT history_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "history_combo_changed_cb", instance_pos = -1)]
+     public void history_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         Gtk.TreeIter iter;
+@@ -1620,13 +1620,13 @@
+         scene.move_number = move_number;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT history_latest_clicked_cb", instance_pos = -1)]
++    [CCode (cname = "history_latest_clicked_cb", instance_pos = -1)]
+     public void history_latest_clicked_cb (Gtk.Widget widget)
+     {
+         scene.move_number = -1;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT history_next_clicked_cb", instance_pos = -1)]
++    [CCode (cname = "history_next_clicked_cb", instance_pos = -1)]
+     public void history_next_clicked_cb (Gtk.Widget widget)
+     {
+         if (scene.move_number == -1)
+@@ -1639,7 +1639,7 @@
+             scene.move_number = move_number;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT history_previous_clicked_cb", instance_pos = -1)]
++    [CCode (cname = "history_previous_clicked_cb", instance_pos = -1)]
+     public void history_previous_clicked_cb (Gtk.Widget widget)
+     {
+         if (scene.move_number == 0)
+@@ -1651,7 +1651,7 @@
+             scene.move_number = scene.move_number - 1;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT history_start_clicked_cb", instance_pos = -1)]
++    [CCode (cname = "history_start_clicked_cb", instance_pos = -1)]
+     public void history_start_clicked_cb (Gtk.Widget widget)
+     {
+         scene.move_number = 0;
+@@ -1762,7 +1762,7 @@
+         return value;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT side_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "side_combo_changed_cb", instance_pos = -1)]
+     public void side_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         Gtk.TreeIter iter;
+@@ -1773,7 +1773,7 @@
+         settings.set_boolean ("play-as-white", play_as_white);
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT opponent_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "opponent_combo_changed_cb", instance_pos = -1)]
+     public void opponent_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         Gtk.TreeIter iter;
+@@ -1787,7 +1787,7 @@
+         difficulty_combo.sensitive = !vs_human;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT difficulty_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "difficulty_combo_changed_cb", instance_pos = -1)]
+     public void difficulty_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         Gtk.TreeIter iter;
+@@ -1873,7 +1873,7 @@
+         return false;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT duration_changed_cb", instance_pos = -1)]
++    [CCode (cname = "duration_changed_cb", instance_pos = -1)]
+     public void duration_changed_cb (Gtk.Adjustment adjustment)
+     {
+         var model = (Gtk.ListStore) custom_duration_units_combo.model;
+@@ -1904,7 +1904,7 @@
+         save_duration ();
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT duration_units_changed_cb", instance_pos = -1)]
++    [CCode (cname = "duration_units_changed_cb", instance_pos = -1)]
+     public void duration_units_changed_cb (Gtk.Widget widget)
+     {
+         save_duration ();
+@@ -1918,7 +1918,7 @@
+         save_duration_timeout = Timeout.add (100, save_duration_cb);
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT duration_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "duration_combo_changed_cb", instance_pos = -1)]
+     public void duration_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         Gtk.TreeIter iter;
+@@ -1937,32 +1937,32 @@
+         save_duration ();
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT preferences_response_cb", instance_pos = -1)]
++    [CCode (cname = "preferences_response_cb", instance_pos = -1)]
+     public void preferences_response_cb (Gtk.Widget widget, int response_id)
+     {
+         preferences_dialog.hide ();
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT preferences_delete_event_cb", instance_pos = -1)]
++    [CCode (cname = "preferences_delete_event_cb", instance_pos = -1)]
+     public bool preferences_delete_event_cb (Gtk.Widget widget, Gdk.Event event)
+     {
+         preferences_response_cb (widget, Gtk.ResponseType.CANCEL);
+         return true;
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT piece_style_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "piece_style_combo_changed_cb", instance_pos = -1)]
+     public void piece_style_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         settings.set_string ("piece-theme", get_combo (combo, 1));
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT move_format_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "move_format_combo_changed_cb", instance_pos = -1)]
+     public void move_format_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         settings.set_string ("move-format", get_combo (combo, 1));
+     }
+ 
+-    [CCode (cname = "G_MODULE_EXPORT orientation_combo_changed_cb", instance_pos = -1)]
++    [CCode (cname = "orientation_combo_changed_cb", instance_pos = -1)]
+     public void orientation_combo_changed_cb (Gtk.ComboBox combo)
+     {
+         settings.set_string ("board-side", get_combo (combo, 1));    

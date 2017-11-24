@@ -1,0 +1,79 @@
+From cdfaf4621c359200d86bbf21823172d3048319b7 Mon Sep 17 00:00:00 2001
+From: Debarshi Ray <debarshir@gnome.org>
+Date: Mon, 2 Mar 2015 16:49:08 +0100
+Subject: build: Move things around to accommodate the new web extension
+
+https://bugzilla.gnome.org/show_bug.cgi?id=742680
+---
+ src/goabackend/Makefile.am | 48 ++++++++++++++++++++++++----------------------
+ 1 file changed, 25 insertions(+), 23 deletions(-)
+
+diff --git a/src/goabackend/Makefile.am b/src/goabackend/Makefile.am
+index 5ca8e5c..9c8809b 100644
+--- a/src/goabackend/Makefile.am
++++ b/src/goabackend/Makefile.am
+@@ -99,29 +99,6 @@ libgoa_backend_1_0_la_SOURCES =						\
+ 	$(top_builddir)/src/goaidentity/org.freedesktop.realmd.c	\
+ 	$(NULL)
+ 
+-BUILT_SOURCES =								\
+-	$(libgoa_backend_1_0_la_built_sources)				\
+-	$(NULL)
+-
+-EXTRA_DIST +=								\
+-	goadleynaservermanager.xml					\
+-	goadleynaservermediadevice.xml					\
+-	$(NULL)
+-
+-goadleynaservermanager.h goadleynaservermanager.c: goadleynaservermanager.xml
+-	$(AM_V_GEN)gdbus-codegen						\
+-		--c-namespace DleynaServer					\
+-		--generate-c-code goadleynaservermanager			\
+-		--interface-prefix com.intel.dLeynaServer.			\
+-		$<
+-
+-goadleynaservermediadevice.h goadleynaservermediadevice.c: goadleynaservermediadevice.xml
+-	$(AM_V_GEN)gdbus-codegen								\
+-		--c-namespace DleynaServer							\
+-		--generate-c-code goadleynaservermediadevice					\
+-		--interface-prefix com.intel.dLeynaServer.					\
+-		$<
+-
+ if BUILD_KERBEROS
+ libgoa_backend_1_0_la_SOURCES +=					\
+ 	goakerberosprovider.h		goakerberosprovider.c
+@@ -162,6 +139,31 @@ libgoa_backend_1_0_la_LDFLAGS = 				\
+ 
+ # ----------------------------------------------------------------------------------------------------
+ 
++BUILT_SOURCES =								\
++	$(libgoa_backend_1_0_la_built_sources)				\
++	$(NULL)
++
++EXTRA_DIST +=								\
++	goadleynaservermanager.xml					\
++	goadleynaservermediadevice.xml					\
++	$(NULL)
++
++goadleynaservermanager.h goadleynaservermanager.c: goadleynaservermanager.xml
++	$(AM_V_GEN)gdbus-codegen						\
++		--c-namespace DleynaServer					\
++		--generate-c-code goadleynaservermanager			\
++		--interface-prefix com.intel.dLeynaServer.			\
++		$<
++
++goadleynaservermediadevice.h goadleynaservermediadevice.c: goadleynaservermediadevice.xml
++	$(AM_V_GEN)gdbus-codegen								\
++		--c-namespace DleynaServer							\
++		--generate-c-code goadleynaservermediadevice					\
++		--interface-prefix com.intel.dLeynaServer.					\
++		$<
++
++# ----------------------------------------------------------------------------------------------------
++
+ pkgconfigdir = $(libdir)/pkgconfig
+ pkgconfig_DATA = goa-backend-1.0.pc
+ 
+-- 
+cgit v0.12
+

@@ -1,6 +1,7 @@
 # Distributed under the terms of the GNU General Public License v2
 
 EAPI="6"
+GNOME2_EAUTORECONF="yes"
 GNOME2_LA_PUNT="yes"
 
 inherit gnome2
@@ -27,7 +28,7 @@ RDEPEND="
 	>=net-libs/libsoup-2.42:2.4
 	net-libs/rest:0.7
 	net-libs/telepathy-glib
-	>=net-libs/webkit-gtk-2.1.90:3
+	>=net-libs/webkit-gtk-2.7.2:4
 	>=x11-libs/gtk+-3.11.1:3
 	x11-libs/pango
 
@@ -54,6 +55,24 @@ DEPEND="${RDEPEND}
 # eautoreconf needs gobject-introspection-common, gnome-common
 
 PATCHES=(
+	# From GNOME:
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=a8a818bfb525036a54c5197abe813b68a0c2c5e4
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=aac4049b8699d72147186ea4a6a283972ed4f8ce
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=b2051083c807dfcb3f6d176107e4035146affcca
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=de78b78bcd1b1f61fd04856d51e3f20caa6ff2ce
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=19565da9620a19fdce0335a23f7c70057eefebcc
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=cdfaf4621c359200d86bbf21823172d3048319b7
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=dbf2ccbccc8198920e564a14fc61671dc49174aa
+	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=2c6f5cb83eaae898973e9f3858228a1b48358e2a
+	"${FILESDIR}"/${PN}-3.15.91-imap-smtp-dont-leak-the-strings.patch
+	"${FILESDIR}"/${PN}-3.15.91-provider-dont-leak-the-gkeyfiles.patch
+	"${FILESDIR}"/${PN}-3.15.91-pocket-add-missing-includes.patch
+	"${FILESDIR}"/${PN}-3.15.91-oauth-oauth2-fix-the-webkit-includes.patch
+	"${FILESDIR}"/${PN}-3.15.91-live-pocket-remove-redundant-includes.patch
+	"${FILESDIR}"/${PN}-3.15.91-build-move-things-around-to-accommodate-the-new-web-extension.patch
+	"${FILESDIR}"/${PN}-3.15.91-port-to-webkit-2.patch
+	"${FILESDIR}"/${PN}-3.17.91-build-fix-parallel-install-failure.patch
+
 	# From GNOME:
 	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=5dc30f43e6c721708a6d15fcfcd086a11d41bc2d
 	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=01882bde514aae12796c98e03818f8d30cbd13b9

@@ -1,0 +1,217 @@
+From 3f57371f0593780a17eb1d7282886cec2480845a Mon Sep 17 00:00:00 2001
+From: David King <amigadave@amigadave.com>
+Date: Mon, 9 Feb 2015 15:17:02 +0000
+Subject: Remove redundant extra semicolons
+
+---
+ libyelp/yelp-docbook-document.c |  2 +-
+ libyelp/yelp-document.c         |  2 +-
+ libyelp/yelp-help-list.c        |  2 +-
+ libyelp/yelp-info-document.c    |  2 +-
+ libyelp/yelp-mallard-document.c |  2 +-
+ libyelp/yelp-man-document.c     |  2 +-
+ libyelp/yelp-man-parser.c       | 26 +++++++++++++-------------
+ libyelp/yelp-settings.c         |  2 +-
+ libyelp/yelp-simple-document.c  |  2 +-
+ libyelp/yelp-transform.c        |  2 +-
+ libyelp/yelp-uri.c              |  2 +-
+ libyelp/yelp-view.c             |  2 +-
+ src/yelp-window.c               |  2 +-
+ 13 files changed, 25 insertions(+), 25 deletions(-)
+
+diff --git a/libyelp/yelp-docbook-document.c b/libyelp/yelp-docbook-document.c
+index 2a866ac..6ca53ad 100644
+--- a/libyelp/yelp-docbook-document.c
++++ b/libyelp/yelp-docbook-document.c
+@@ -93,7 +93,7 @@ static void           transform_error           (YelpTransform        *transform
+ static void           transform_finalized       (YelpDocbookDocument  *docbook,
+                                                  gpointer              transform);
+ 
+-G_DEFINE_TYPE (YelpDocbookDocument, yelp_docbook_document, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpDocbookDocument, yelp_docbook_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_DOCBOOK_DOCUMENT, YelpDocbookDocumentPrivate))
+ 
+ typedef struct _YelpDocbookDocumentPrivate  YelpDocbookDocumentPrivate;
+diff --git a/libyelp/yelp-document.c b/libyelp/yelp-document.c
+index 14d82a7..fb6e0a4 100644
+--- a/libyelp/yelp-document.c
++++ b/libyelp/yelp-document.c
+@@ -94,7 +94,7 @@ struct _YelpDocumentPriv {
+     GError *idle_error;
+ };
+ 
+-G_DEFINE_TYPE (YelpDocument, yelp_document, G_TYPE_OBJECT);
++G_DEFINE_TYPE (YelpDocument, yelp_document, G_TYPE_OBJECT)
+ 
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_DOCUMENT, YelpDocumentPriv))
+ 
+diff --git a/libyelp/yelp-help-list.c b/libyelp/yelp-help-list.c
+index 1085ef8..03c403c 100644
+--- a/libyelp/yelp-help-list.c
++++ b/libyelp/yelp-help-list.c
+@@ -86,7 +86,7 @@ help_list_entry_cmp (HelpListEntry *a, HelpListEntry *b)
+     return g_utf8_collate (as, bs);
+ }
+ 
+-G_DEFINE_TYPE (YelpHelpList, yelp_help_list, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpHelpList, yelp_help_list, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_HELP_LIST, YelpHelpListPrivate))
+ 
+ typedef struct _YelpHelpListPrivate  YelpHelpListPrivate;
+diff --git a/libyelp/yelp-info-document.c b/libyelp/yelp-info-document.c
+index cb4f6ef..42dd136 100644
+--- a/libyelp/yelp-info-document.c
++++ b/libyelp/yelp-info-document.c
+@@ -99,7 +99,7 @@ static gboolean       info_sections_visit       (GtkTreeModel         *model,
+ static void           info_document_disconnect  (YelpInfoDocument     *info);
+ 
+ 
+-G_DEFINE_TYPE (YelpInfoDocument, yelp_info_document, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpInfoDocument, yelp_info_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_INFO_DOCUMENT, YelpInfoDocumentPrivate))
+ 
+ static void
+diff --git a/libyelp/yelp-mallard-document.c b/libyelp/yelp-mallard-document.c
+index d43a492..54a3fa0 100644
+--- a/libyelp/yelp-mallard-document.c
++++ b/libyelp/yelp-mallard-document.c
+@@ -114,7 +114,7 @@ static gboolean       xml_node_is_ns_name       (xmlNodePtr            node,
+                                                  const xmlChar        *name);
+ 
+ 
+-G_DEFINE_TYPE (YelpMallardDocument, yelp_mallard_document, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpMallardDocument, yelp_mallard_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_MALLARD_DOCUMENT, YelpMallardDocumentPrivate))
+ 
+ typedef struct _YelpMallardDocumentPrivate  YelpMallardDocumentPrivate;
+diff --git a/libyelp/yelp-man-document.c b/libyelp/yelp-man-document.c
+index fd931e8..6d5f0ea 100644
+--- a/libyelp/yelp-man-document.c
++++ b/libyelp/yelp-man-document.c
+@@ -147,7 +147,7 @@ static void           man_document_process               (YelpManDocument
+ static void           man_document_disconnect            (YelpManDocument        *man);
+ 
+ 
+-G_DEFINE_TYPE (YelpManDocument, yelp_man_document, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpManDocument, yelp_man_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_MAN_DOCUMENT, YelpManDocumentPrivate))
+ 
+ static void
+diff --git a/libyelp/yelp-man-parser.c b/libyelp/yelp-man-parser.c
+index acec270..cc4705d 100644
+--- a/libyelp/yelp-man-parser.c
++++ b/libyelp/yelp-man-parser.c
+@@ -140,19 +140,19 @@ typedef gboolean (*LineParser)(YelpManParser *, GError **);
+ #define DECLARE_LINE_PARSER(name) \
+     static gboolean (name) (YelpManParser *parser, GError **error);
+ 
+-DECLARE_LINE_PARSER (parse_xf);
+-DECLARE_LINE_PARSER (parse_f);
+-DECLARE_LINE_PARSER (parse_V);
+-DECLARE_LINE_PARSER (parse_H);
+-DECLARE_LINE_PARSER (parse_v);
+-DECLARE_LINE_PARSER (parse_h);
+-DECLARE_LINE_PARSER (parse_text);
+-DECLARE_LINE_PARSER (parse_w);
+-DECLARE_LINE_PARSER (parse_body_text);
+-DECLARE_LINE_PARSER (parse_n);
+-DECLARE_LINE_PARSER (parse_N);
+-DECLARE_LINE_PARSER (parse_C);
+-DECLARE_LINE_PARSER (parse_p);
++DECLARE_LINE_PARSER (parse_xf)
++DECLARE_LINE_PARSER (parse_f)
++DECLARE_LINE_PARSER (parse_V)
++DECLARE_LINE_PARSER (parse_H)
++DECLARE_LINE_PARSER (parse_v)
++DECLARE_LINE_PARSER (parse_h)
++DECLARE_LINE_PARSER (parse_text)
++DECLARE_LINE_PARSER (parse_w)
++DECLARE_LINE_PARSER (parse_body_text)
++DECLARE_LINE_PARSER (parse_n)
++DECLARE_LINE_PARSER (parse_N)
++DECLARE_LINE_PARSER (parse_C)
++DECLARE_LINE_PARSER (parse_p)
+ 
+ /* Declare a sort of alist registry of parsers for different lines. */
+ struct LineParsePair
+diff --git a/libyelp/yelp-settings.c b/libyelp/yelp-settings.c
+index aeb3407..6b3ca29 100644
+--- a/libyelp/yelp-settings.c
++++ b/libyelp/yelp-settings.c
+@@ -73,7 +73,7 @@ enum {
+ 
+ static gchar *icon_names[YELP_SETTINGS_NUM_ICONS];
+ 
+-G_DEFINE_TYPE (YelpSettings, yelp_settings, G_TYPE_OBJECT);
++G_DEFINE_TYPE (YelpSettings, yelp_settings, G_TYPE_OBJECT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_SETTINGS, YelpSettingsPriv))
+ 
+ static void           yelp_settings_class_init   (YelpSettingsClass    *klass);
+diff --git a/libyelp/yelp-simple-document.c b/libyelp/yelp-simple-document.c
+index 2f6ab28..2ff6c0f 100644
+--- a/libyelp/yelp-simple-document.c
++++ b/libyelp/yelp-simple-document.c
+@@ -56,7 +56,7 @@ struct _YelpSimpleDocumentPriv {
+ 
+ #define BUFFER_SIZE 4096
+ 
+-G_DEFINE_TYPE (YelpSimpleDocument, yelp_simple_document, YELP_TYPE_DOCUMENT);
++G_DEFINE_TYPE (YelpSimpleDocument, yelp_simple_document, YELP_TYPE_DOCUMENT)
+ #define GET_PRIV(object) (G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_SIMPLE_DOCUMENT, YelpSimpleDocumentPriv))
+ 
+ static void           yelp_simple_document_class_init  (YelpSimpleDocumentClass *klass);
+diff --git a/libyelp/yelp-transform.c b/libyelp/yelp-transform.c
+index 04dc630..ad567a1 100644
+--- a/libyelp/yelp-transform.c
++++ b/libyelp/yelp-transform.c
+@@ -90,7 +90,7 @@ enum {
+ };
+ static gint signals[LAST_SIGNAL] = { 0 };
+ 
+-G_DEFINE_TYPE (YelpTransform, yelp_transform, G_TYPE_OBJECT);
++G_DEFINE_TYPE (YelpTransform, yelp_transform, G_TYPE_OBJECT)
+ #define GET_PRIV(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_TRANSFORM, YelpTransformPrivate))
+ 
+ typedef struct _YelpTransformPrivate YelpTransformPrivate;
+diff --git a/libyelp/yelp-uri.c b/libyelp/yelp-uri.c
+index e22dffb..1373212 100644
+--- a/libyelp/yelp-uri.c
++++ b/libyelp/yelp-uri.c
+@@ -63,7 +63,7 @@ static void           resolve_gfile              (YelpUri        *uri,
+ static gboolean       is_man_path                (const gchar    *uri,
+                                                   const gchar    *encoding);
+ 
+-G_DEFINE_TYPE (YelpUri, yelp_uri, G_TYPE_OBJECT);
++G_DEFINE_TYPE (YelpUri, yelp_uri, G_TYPE_OBJECT)
+ #define GET_PRIV(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_URI, YelpUriPrivate))
+ 
+ typedef struct _YelpUriPrivate YelpUriPrivate;
+diff --git a/libyelp/yelp-view.c b/libyelp/yelp-view.c
+index 33036c2..89e0637 100644
+--- a/libyelp/yelp-view.c
++++ b/libyelp/yelp-view.c
+@@ -150,7 +150,7 @@ enum {
+ };
+ static gint signals[LAST_SIGNAL] = { 0 };
+ 
+-G_DEFINE_TYPE (YelpView, yelp_view, WEBKIT_TYPE_WEB_VIEW);
++G_DEFINE_TYPE (YelpView, yelp_view, WEBKIT_TYPE_WEB_VIEW)
+ #define GET_PRIV(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_VIEW, YelpViewPrivate))
+ 
+ static WebKitWebSettings *websettings;
+diff --git a/src/yelp-window.c b/src/yelp-window.c
+index e06487b..baaa9f3 100644
+--- a/src/yelp-window.c
++++ b/src/yelp-window.c
+@@ -146,7 +146,7 @@ enum {
+ 
+ static guint signals[LAST_SIGNAL] = { 0 };
+ 
+-G_DEFINE_TYPE (YelpWindow, yelp_window, GTK_TYPE_APPLICATION_WINDOW);
++G_DEFINE_TYPE (YelpWindow, yelp_window, GTK_TYPE_APPLICATION_WINDOW)
+ #define GET_PRIV(object)(G_TYPE_INSTANCE_GET_PRIVATE ((object), YELP_TYPE_WINDOW, YelpWindowPrivate))
+ 
+ typedef struct _YelpWindowPrivate YelpWindowPrivate;
+-- 
+cgit v0.12
+
