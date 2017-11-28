@@ -1,0 +1,300 @@
+diff '--exclude=.git' -urN a/web-extensions/e-html-editor-link-dialog-dom-functions.c b/web-extensions/e-html-editor-link-dialog-dom-functions.c
+--- a/web-extensions/e-html-editor-link-dialog-dom-functions.c	2017-11-27 20:22:02.425181523 -0500
++++ b/web-extensions/e-html-editor-link-dialog-dom-functions.c	2017-11-27 20:22:17.766101093 -0500
+@@ -66,8 +66,7 @@
+ 				webkit_dom_range_get_start_container (range, NULL),
+ 				webkit_dom_range_get_start_offset (range, NULL),
+ 				webkit_dom_range_get_end_container (range, NULL),
+-				webkit_dom_range_get_end_offset (range, NULL),
+-				NULL);
++				webkit_dom_range_get_end_offset (range, NULL));
+ 		} else {
+ 			WebKitDOMNode *node;
+ 			/* get element that was clicked on */
+diff '--exclude=.git' -urN a/web-extensions/e-html-editor-selection-dom-functions.c b/web-extensions/e-html-editor-selection-dom-functions.c
+--- a/web-extensions/e-html-editor-selection-dom-functions.c	2017-11-27 20:22:02.425181523 -0500
++++ b/web-extensions/e-html-editor-selection-dom-functions.c	2017-11-27 20:22:17.767101088 -0500
+@@ -30,7 +30,7 @@
+ #include <webkitdom/WebKitDOMRangeUnstable.h>
+ #include <webkitdom/WebKitDOMDOMSelection.h>
+ #include <webkitdom/WebKitDOMDOMWindowUnstable.h>
+-#include <webkitdom/WebKitDOMHTMLElementUnstable.h>
++#include <webkitdom/WebKitDOMElementUnstable.h>
+ #include <webkitdom/WebKitDOMDocumentUnstable.h>
+ 
+ static const GdkRGBA black = { 0, 0, 0, 1 };
+@@ -1145,9 +1145,9 @@
+ 		WEBKIT_DOM_NODE (selection_start_marker));
+ 	source_list = webkit_dom_node_get_parent_node (item);
+ 	new_list = WEBKIT_DOM_ELEMENT (
+-		webkit_dom_node_clone_node (source_list, FALSE));
++		webkit_dom_node_clone_node_with_error (source_list, FALSE, NULL));
+ 	current_list = source_list;
+-	source_list_clone = webkit_dom_node_clone_node (source_list, FALSE);
++	source_list_clone = webkit_dom_node_clone_node_with_error (source_list, FALSE, NULL);
+ 
+ 	webkit_dom_node_insert_before (
+ 		webkit_dom_node_get_parent_node (source_list),
+@@ -1234,7 +1234,7 @@
+ 	while ((child = webkit_dom_node_get_first_child (WEBKIT_DOM_NODE (element)))) {
+ 		if (webkit_dom_node_is_equal_node (child, block_to_process)) {
+ 			before_node = FALSE;
+-			node_clone = webkit_dom_node_clone_node (child, TRUE);
++			node_clone = webkit_dom_node_clone_node_with_error (child, TRUE, NULL);
+ 			remove_node (child);
+ 			continue;
+ 		}
+@@ -2030,7 +2030,7 @@
+ 		if (!webkit_dom_node_has_child_nodes (paragraph))
+ 			return WEBKIT_DOM_ELEMENT (paragraph);
+ 
+-		paragraph_clone = webkit_dom_node_clone_node (paragraph, TRUE);
++		paragraph_clone = webkit_dom_node_clone_node_with_error (paragraph, TRUE, NULL);
+ 		element = webkit_dom_element_query_selector (
+ 			WEBKIT_DOM_ELEMENT (paragraph_clone),
+ 			"span#-x-evo-caret-position",
+@@ -3342,8 +3342,8 @@
+ 
+ 			webkit_dom_element_set_id (tt_element, "ev-tt");
+ 
+-			webkit_dom_html_element_insert_adjacent_html (
+-				WEBKIT_DOM_HTML_ELEMENT (tt_element),
++			webkit_dom_element_insert_adjacent_html (
++				WEBKIT_DOM_ELEMENT (tt_element),
+ 				"beforeend",
+ 				UNICODE_ZERO_WIDTH_SPACE,
+ 				NULL);
+@@ -4266,7 +4266,7 @@
+ 		WEBKIT_DOM_NODE (selection_start_marker));
+ 	source_list = webkit_dom_node_get_parent_node (item);
+ 	current_list = source_list;
+-	source_list_clone = webkit_dom_node_clone_node (source_list, FALSE);
++	source_list_clone = webkit_dom_node_clone_node_with_error (source_list, FALSE, NULL);
+ 
+ 	if (element_has_class (WEBKIT_DOM_ELEMENT (source_list), "-x-evo-indented"))
+ 		element_add_class (WEBKIT_DOM_ELEMENT (new_list), "-x-evo-indented");
+@@ -4284,7 +4284,7 @@
+ 
+ 		if (webkit_dom_node_contains (item, WEBKIT_DOM_NODE (selection_end_marker))) {
+ 			g_object_unref (source_list_clone);
+-			source_list_clone = webkit_dom_node_clone_node (current_list, FALSE);
++			source_list_clone = webkit_dom_node_clone_node_with_error (current_list, FALSE, NULL);
+ 			after_selection_end = TRUE;
+ 		}
+ 
+@@ -4416,7 +4416,7 @@
+ 	item = get_list_item_node_from_child (
+ 		WEBKIT_DOM_NODE (selection_start));
+ 	source_list = webkit_dom_node_get_parent_node (WEBKIT_DOM_NODE (item));
+-	source_list_clone = webkit_dom_node_clone_node (source_list, FALSE);
++	source_list_clone = webkit_dom_node_clone_node_with_error (source_list, FALSE, NULL);
+ 
+ 	webkit_dom_node_insert_before (
+ 		webkit_dom_node_get_parent_node (source_list),
+diff '--exclude=.git' -urN a/web-extensions/e-html-editor-spell-check-dialog-dom-functions.c b/web-extensions/e-html-editor-spell-check-dialog-dom-functions.c
+--- a/web-extensions/e-html-editor-spell-check-dialog-dom-functions.c	2017-11-27 20:22:00.749190312 -0500
++++ b/web-extensions/e-html-editor-spell-check-dialog-dom-functions.c	2017-11-27 20:22:17.767101088 -0500
+@@ -99,7 +99,7 @@
+ 	 * reached only when we reach the end of the document */
+ 	if (start && end)
+ 		webkit_dom_dom_selection_set_base_and_extent (
+-			selection, start, start_offset, end, end_offset, NULL);
++			selection, start, start_offset, end, end_offset);
+ 
+ 	return FALSE;
+ }
+@@ -184,7 +184,7 @@
+ 	 * reached only when we reach the beginning of the document */
+ 	if (start && end)
+ 		webkit_dom_dom_selection_set_base_and_extent (
+-			selection, start, start_offset, end, end_offset, NULL);
++			selection, start, start_offset, end, end_offset);
+ 
+ 	return FALSE;
+ }
+diff '--exclude=.git' -urN a/web-extensions/e-html-editor-view-dom-functions.c b/web-extensions/e-html-editor-view-dom-functions.c
+--- a/web-extensions/e-html-editor-view-dom-functions.c	2017-11-27 20:22:02.416181571 -0500
++++ b/web-extensions/e-html-editor-view-dom-functions.c	2017-11-27 20:36:17.982829143 -0500
+@@ -30,7 +30,7 @@
+ #include <webkitdom/WebKitDOMRangeUnstable.h>
+ #include <webkitdom/WebKitDOMDOMSelection.h>
+ #include <webkitdom/WebKitDOMDOMWindowUnstable.h>
+-#include <webkitdom/WebKitDOMHTMLElementUnstable.h>
++#include <webkitdom/WebKitDOMElementUnstable.h>
+ 
+ #define HTML_KEY_CODE_BACKSPACE 8
+ #define HTML_KEY_CODE_RETURN 13
+@@ -492,7 +492,7 @@
+ 
+ 		webkit_dom_node_insert_before (
+ 			webkit_dom_node_get_parent_node (br),
+-			webkit_dom_node_clone_node (quoted_node, TRUE),
++			webkit_dom_node_clone_node_with_error (quoted_node, TRUE, NULL),
+ 			webkit_dom_node_get_next_sibling (br),
+ 			NULL);
+ 	}
+@@ -594,7 +594,7 @@
+ 		current_block = get_parent_block_node_from_child (
+ 			WEBKIT_DOM_NODE (selection_start_marker));
+ 
+-		block_clone = webkit_dom_node_clone_node (current_block, TRUE);
++		block_clone = webkit_dom_node_clone_node_with_error (current_block, TRUE, NULL);
+ 		/* Find selection start marker and restore it after the new line
+ 		 * is inserted */
+ 		selection_start_marker = webkit_dom_element_query_selector (
+@@ -608,7 +608,7 @@
+ 			WebKitDOMNode *node;
+ 
+ 			parent_block = parent;
+-			node = webkit_dom_node_clone_node (parent_block, FALSE);
++			node = webkit_dom_node_clone_node_with_error (parent_block, FALSE, NULL);
+ 			webkit_dom_node_append_child (node, block_clone, NULL);
+ 			block_clone = node;
+ 			parent = webkit_dom_node_get_parent_node (parent_block);
+@@ -910,8 +910,8 @@
+ 
+ 		url_text_node = webkit_dom_text_split_text (
+ 			WEBKIT_DOM_TEXT (node), url_start, NULL);
+-		url_text_node_clone = webkit_dom_node_clone_node (
+-			WEBKIT_DOM_NODE (url_text_node), TRUE);
++		url_text_node_clone = webkit_dom_node_clone_node_with_error (
++			WEBKIT_DOM_NODE (url_text_node), TRUE, NULL);
+ 		url_text = webkit_dom_text_get_whole_text (
+ 			WEBKIT_DOM_TEXT (url_text_node_clone));
+ 
+@@ -1015,8 +1015,8 @@
+ 					new_href);
+ 
+ 				if (appending_to_link) {
+-					webkit_dom_html_element_insert_adjacent_html (
+-						WEBKIT_DOM_HTML_ELEMENT (parent),
++					webkit_dom_element_insert_adjacent_html (
++						WEBKIT_DOM_ELEMENT (parent),
+ 						"beforeend",
+ 						text_to_append,
+ 						NULL);
+@@ -1049,8 +1049,8 @@
+ 					new_href);
+ 
+ 				if (appending_to_link) {
+-					webkit_dom_html_element_insert_adjacent_html (
+-						WEBKIT_DOM_HTML_ELEMENT (parent),
++					webkit_dom_element_insert_adjacent_html (
++						WEBKIT_DOM_ELEMENT (parent),
+ 						"beforeend",
+ 						text_to_append,
+ 						NULL);
+@@ -2271,7 +2271,7 @@
+ 			 * the citation that is one level lower */
+ 			WebKitDOMNode *clone, *child;
+ 
+-			clone = webkit_dom_node_clone_node (parent, FALSE);
++			clone = webkit_dom_node_clone_node_with_error (parent, FALSE, NULL);
+ 
+ 			/* Move nodes that are after the currect block into the
+ 			 * new blockquote */
+@@ -2442,7 +2442,7 @@
+ 	wrapper = webkit_dom_document_create_element (document, "SPAN", NULL);
+ 	webkit_dom_element_set_class_name (wrapper, "-x-evo-temp-text-wrapper");
+ 
+-	node_clone = webkit_dom_node_clone_node (node, TRUE);
++	node_clone = webkit_dom_node_clone_node_with_error (node, TRUE, NULL);
+ 
+ 	webkit_dom_node_append_child (
+ 		WEBKIT_DOM_NODE (wrapper),
+@@ -2826,7 +2826,7 @@
+ 	WebKitDOMNodeList *list;
+ 	gint ii, length, level;
+ 
+-	element_clone = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (element), TRUE);
++	element_clone = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (element), TRUE, NULL);
+ 	level = get_citation_level (WEBKIT_DOM_NODE (element), TRUE);
+ 
+ 	/* Remove old quote characters if the exists */
+@@ -2884,7 +2884,7 @@
+ 		return NULL;
+ 
+ 	body = webkit_dom_document_get_body (document);
+-	body_clone = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (body), TRUE);
++	body_clone = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (body), TRUE, NULL);
+ 
+ 	/* Clean unwanted spaces before and after blockquotes */
+ 	list = webkit_dom_element_query_selector_all (
+@@ -3096,7 +3096,7 @@
+ 	if (!block || WEBKIT_DOM_IS_HTML_DIV_ELEMENT (block))
+ 		paragraph = dom_get_paragraph_element (document, extension, -1, 0);
+ 	else
+-		paragraph = WEBKIT_DOM_ELEMENT (webkit_dom_node_clone_node (block, FALSE));
++		paragraph = WEBKIT_DOM_ELEMENT (webkit_dom_node_clone_node_with_error (block, FALSE, NULL));
+ 
+ 	webkit_dom_html_element_set_inner_html (
+ 		WEBKIT_DOM_HTML_ELEMENT (paragraph),
+@@ -3318,7 +3318,7 @@
+                                       if (!block || WEBKIT_DOM_IS_HTML_DIV_ELEMENT (block))
+                                                paragraph = dom_get_paragraph_element (document, extension, -1, 0);
+                                        else
+-                                               paragraph = WEBKIT_DOM_ELEMENT (webkit_dom_node_clone_node (block, FALSE));
++                                               paragraph = WEBKIT_DOM_ELEMENT (webkit_dom_node_clone_node_with_error (block, FALSE, NULL));
+                                }
+ 
+ 				html = webkit_dom_html_element_get_inner_html (
+@@ -3329,8 +3329,8 @@
+ 					rest_to_insert ? rest_to_insert : "<br>",
+ 					NULL),
+ 
+-				webkit_dom_html_element_insert_adjacent_html (
+-					WEBKIT_DOM_HTML_ELEMENT (paragraph),
++				webkit_dom_element_insert_adjacent_html (
++					WEBKIT_DOM_ELEMENT (paragraph),
+ 					"beforeend",
+ 					content_to_append,
+ 					NULL);
+@@ -3812,7 +3812,7 @@
+ 		WEBKIT_DOM_HTML_ELEMENT (content_wrapper));
+ 
+ 	/* Replace the old body with the new one. */
+-	node = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (body), FALSE);
++	node = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (body), FALSE, NULL);
+ 	webkit_dom_node_replace_child (
+ 		webkit_dom_node_get_parent_node (WEBKIT_DOM_NODE (body)),
+ 		node,
+@@ -4245,8 +4245,8 @@
+ 		webkit_dom_element_remove_attribute (WEBKIT_DOM_ELEMENT (parent), "id");
+ 
+ 		/* Check if WebKit created wrong structure */
+-		clone1 = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (paragraph), FALSE);
+-		clone2 = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (parent), FALSE);
++		clone1 = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (paragraph), FALSE, NULL);
++		clone2 = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (parent), FALSE, NULL);
+ 		if (webkit_dom_node_is_equal_node (clone1, clone2))
+ 			fix_structure_after_pasting_multiline_content (paragraph);
+ 
+@@ -5465,7 +5465,7 @@
+ 		if (signature) {
+ 			WebKitDOMNode *parent = webkit_dom_node_get_parent_node (
+ 				WEBKIT_DOM_NODE (signature));
+-			signature_clone = webkit_dom_node_clone_node (parent, TRUE);
++			signature_clone = webkit_dom_node_clone_node_with_error (parent, TRUE, NULL);
+ 			remove_node (parent);
+ 		}
+ 		from = WEBKIT_DOM_NODE (element);
+@@ -5563,7 +5563,7 @@
+ 		WEBKIT_DOM_ELEMENT (body), "data-converted");
+ 	is_from_new_message = webkit_dom_element_has_attribute (
+ 		WEBKIT_DOM_ELEMENT (body), "data-new-message");
+-	source = webkit_dom_node_clone_node (WEBKIT_DOM_NODE (body), TRUE);
++	source = webkit_dom_node_clone_node_with_error (WEBKIT_DOM_NODE (body), TRUE, NULL);
+ 
+ 	/* If composer is in HTML mode we have to move the content to plain version */
+ 	if (e_html_editor_web_extension_get_html_mode (extension)) {
+@@ -5734,8 +5734,8 @@
+ 	if (from_domain != NULL)
+ 		inline_images_to_restore = dom_get_inline_images_data (document, extension, from_domain);
+ 
+-	document_clone = webkit_dom_node_clone_node (
+-		WEBKIT_DOM_NODE (webkit_dom_document_get_document_element (document)), TRUE);
++	document_clone = webkit_dom_node_clone_node_with_error (
++		WEBKIT_DOM_NODE (webkit_dom_document_get_document_element (document)), TRUE, NULL);
+ 	node = WEBKIT_DOM_NODE (webkit_dom_element_query_selector (
+ 		WEBKIT_DOM_ELEMENT (document_clone), "style#-x-evo-quote-style", NULL));
+ 	if (node)
