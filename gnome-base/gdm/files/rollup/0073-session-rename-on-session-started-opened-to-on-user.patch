@@ -1,0 +1,65 @@
+From fab6fe9a1cd31396e43b9338d1b02c84e8636eda Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 17:26:21 -0500
+Subject: [PATCH 073/315] session: rename on_session_{started,opened} to
+ on_user_session_{started,opened}
+
+All the other handlers dealing with user sessions have user in the
+name, so this commits brings the two outliers in line.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-manager.c | 20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 4735194d..c5cd6273 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1593,10 +1593,10 @@ start_user_session_if_ready (GdmManager *manager,
+ }
+ 
+ static void
+-on_session_opened (GdmSession       *session,
+-                   const char       *service_name,
+-                   const char       *session_id,
+-                   GdmManager       *manager)
++on_user_session_opened (GdmSession       *session,
++                        const char       *service_name,
++                        const char       *session_id,
++                        GdmManager       *manager)
+ {
+         manager->priv->user_sessions = g_list_append (manager->priv->user_sessions,
+                                                       g_object_ref (session));
+@@ -1611,10 +1611,10 @@ on_session_opened (GdmSession       *session,
+ }
+ 
+ static void
+-on_session_started (GdmSession      *session,
+-                    const char      *service_name,
+-                    GPid             pid,
+-                    GdmManager      *manager)
++on_user_session_started (GdmSession      *session,
++                         const char      *service_name,
++                         GPid             pid,
++                         GdmManager      *manager)
+ {
+         g_debug ("GdmManager: session started %d", pid);
+ }
+@@ -2062,11 +2062,11 @@ create_seed_session_for_display (GdmManager *manager,
+                           manager);
+         g_signal_connect (session,
+                           "session-opened",
+-                          G_CALLBACK (on_session_opened),
++                          G_CALLBACK (on_user_session_opened),
+                           manager);
+         g_signal_connect (session,
+                           "session-started",
+-                          G_CALLBACK (on_session_started),
++                          G_CALLBACK (on_user_session_started),
+                           manager);
+         g_signal_connect (session,
+                           "session-exited",
+-- 
+2.15.1
+

@@ -1,0 +1,41 @@
+From 2ba0912414735ed38093d109b426b93bee88e99e Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 12:48:07 -0500
+Subject: [PATCH 085/315] local-display-factory: don't assume display has
+ display number
+
+logind managed displays don't have (known) display numbers, so
+we shouldn't assert that there's going to be one on display
+status changes.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-local-display-factory.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index d49bf25e..de2feb7c 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -271,7 +271,6 @@ on_display_status_changed (GdmDisplay             *display,
+ 
+         num = -1;
+         gdm_display_get_x11_display_number (display, &num, NULL);
+-        g_assert (num != -1);
+ 
+         store = gdm_display_factory_get_display_store (GDM_DISPLAY_FACTORY (factory));
+ 
+@@ -285,7 +284,9 @@ on_display_status_changed (GdmDisplay             *display,
+         case GDM_DISPLAY_FINISHED:
+                 /* remove the display number from factory->priv->used_display_numbers
+                    so that it may be reused */
+-                g_hash_table_remove (factory->priv->used_display_numbers, GUINT_TO_POINTER (num));
++                if (num != -1) {
++                        g_hash_table_remove (factory->priv->used_display_numbers, GUINT_TO_POINTER (num));
++                }
+                 gdm_display_store_remove (store, display);
+ 
+                 /* Create a new equivalent display if it was static */
+-- 
+2.15.1
+

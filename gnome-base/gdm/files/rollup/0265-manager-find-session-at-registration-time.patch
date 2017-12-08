@@ -1,0 +1,74 @@
+From e5a0e92f59e256edc6489f2234fbe54c25ba9743 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 2 Apr 2015 10:55:47 -0400
+Subject: [PATCH 265/315] manager: find session at registration time
+
+We try to look up the session at registration time to add wtmp
+records for it.  We fail to actually find the session, though,
+because we're using the "embryonic-user-session" object data
+key, which is only non-NULL when the user session is still
+getting setup.
+
+This commit changes the registration code, to instead, fetch
+the session straight from the manager object.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747169
+---
+ daemon/gdm-manager.c | 27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index db008c0d..4190e119 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1069,6 +1069,30 @@ out:
+         return recorded;
+ }
+ 
++static GdmSession *
++get_user_session_for_display (GdmManager *self,
++                              GdmDisplay *display)
++{
++        GList *node;
++
++        for (node = self->priv->user_sessions;
++             node != NULL;
++             node = node->next) {
++                GdmSession *session = node->data;
++                GdmDisplay *candidate_display;
++                GList *next_node = node->next;
++
++                candidate_display = get_display_for_user_session (session);
++
++                if (candidate_display == display)
++                        return session;
++
++                node = next_node;
++        }
++
++        return NULL;
++}
++
+ static gboolean
+ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+                                      GDBusMethodInvocation *invocation,
+@@ -1095,7 +1119,7 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+                 return TRUE;
+         }
+ 
+-        session = get_embryonic_user_session_for_display (display);
++        session = get_user_session_for_display (self, display);
+ 
+         if (session != NULL) {
+                 GPid pid;
+@@ -1112,6 +1136,7 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+         gdm_dbus_manager_complete_register_display (GDM_DBUS_MANAGER (manager),
+                                                     invocation);
+ 
++        g_clear_pointer (&x11_display_name, g_free);
+         return TRUE;
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,41 @@
+From 22cab0be6e1b1b3a2a60d1ee85bc7f8ca07a6069 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 20:31:33 -0500
+Subject: [PATCH 091/315] worker: force vt 1 for initial display
+
+If the session is logind managed, then we currently give
+it the next available VT. VT 1 will never show up as available,
+though, since it's allocated and in the foreground.
+
+This commit makes sure that, if the initial display is logind managed,
+then it will get put on VT 1.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session-worker.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 4c6ac2e6..783801f3 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -2025,9 +2025,13 @@ set_up_for_new_vt (GdmSessionWorker *worker)
+                 goto fail;
+         }
+ 
+-        if (ioctl(fd, VT_OPENQRY, &session_vt) < 0) {
+-                g_debug ("GdmSessionWorker: couldn't open new VT: %m");
+-                goto fail;
++        if (worker->priv->display_is_initial) {
++                session_vt = atoi (GDM_INITIAL_VT);
++        } else {
++                if (ioctl(fd, VT_OPENQRY, &session_vt) < 0) {
++                        g_debug ("GdmSessionWorker: couldn't open new VT: %m");
++                        goto fail;
++                }
+         }
+ 
+         worker->priv->login_vt = vt_state.v_active;
+-- 
+2.15.1
+

@@ -1,0 +1,40 @@
+From 7421c01686b66ff7ce09fd6c60d3f9eaf566898d Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Mar 2015 08:15:09 -0400
+Subject: [PATCH 229/315] data: add a couple of tips to custom.conf
+
+There are two things that are pretty useful for a user to
+do when troubleshooting problems:
+
+1) turn on debugging
+2) turn of wayland support since it's so new
+
+This commit adds comments to custom.conf to give tips on how
+to do those things.
+---
+ data/gdm.conf-custom.in | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/data/gdm.conf-custom.in b/data/gdm.conf-custom.in
+index 36591e31..f38571e2 100644
+--- a/data/gdm.conf-custom.in
++++ b/data/gdm.conf-custom.in
+@@ -1,6 +1,8 @@
+ # GDM configuration storage
+ 
+ [daemon]
++# Uncoment the line below to force the login screen to use Xorg
++#WaylandEnable=true
+ 
+ [security]
+ 
+@@ -11,4 +13,6 @@
+ [chooser]
+ 
+ [debug]
++# Uncomment the line below to turn on debugging
++#Enable=true
+ 
+-- 
+2.15.1
+

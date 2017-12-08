@@ -1,0 +1,61 @@
+From b679b6daa07812c956bcabcc726608bf51b107a6 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 17:00:09 -0500
+Subject: [PATCH 172/315] display: improve autologin debug message
+
+---
+ daemon/gdm-display.c | 17 +++++++++++------
+ daemon/gdm-manager.c |  2 ++
+ 2 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 624e6188..36c15c5c 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -404,7 +404,7 @@ gdm_display_get_timed_login_details (GdmDisplay *self,
+         gboolean res;
+         gboolean enabled;
+         int      delay;
+-        char    *username;
++        char    *username = NULL;
+ 
+         enabled = FALSE;
+         username = NULL;
+@@ -473,11 +473,16 @@ gdm_display_get_timed_login_details (GdmDisplay *self,
+                 *delayp = delay;
+         }
+ 
+-        g_debug ("GdmDisplay: Got timed login details for display %s: %d '%s' %d",
+-                 self->priv->x11_display_name,
+-                 enabled,
+-                 username,
+-                 delay);
++        if (enabled) {
++                g_debug ("GdmDisplay: Got timed login details for display %s: %d %s %d",
++                         self->priv->x11_display_name,
++                         enabled,
++                         username,
++                         delay);
++        } else {
++                g_debug ("GdmDisplay: Got timed login details for display %s: 0",
++                         self->priv->x11_display_name);
++        }
+ }
+ 
+ gboolean
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 1728b357..9bdfb15f 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2182,6 +2182,8 @@ start_autologin_conversation_if_necessary (GdmManager *manager,
+                 return;
+         }
+ 
++        g_object_set (G_OBJECT (session), "display-is-initial", TRUE, NULL);
++
+         g_debug ("GdmManager: Starting automatic login conversation");
+         gdm_session_start_conversation (session, "gdm-autologin");
+ }
+-- 
+2.15.1
+

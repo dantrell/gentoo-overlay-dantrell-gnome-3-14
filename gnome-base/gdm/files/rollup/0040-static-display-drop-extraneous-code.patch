@@ -1,0 +1,95 @@
+From fe350ef6da5acbd48ee12e3304a49635e183c084 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 19 Jan 2015 08:38:21 -0500
+Subject: [PATCH 040/315] static-display: drop extraneous code
+
+We set up vfuncs that just call into the default implementation.
+
+This commit strips it.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-static-display.c | 52 ---------------------------------------------
+ 1 file changed, 52 deletions(-)
+
+diff --git a/daemon/gdm-static-display.c b/daemon/gdm-static-display.c
+index 8e7254da..32c5b01d 100644
+--- a/daemon/gdm-static-display.c
++++ b/daemon/gdm-static-display.c
+@@ -53,43 +53,6 @@ static void     gdm_static_display_init         (GdmStaticDisplay      *static_d
+ 
+ G_DEFINE_TYPE (GdmStaticDisplay, gdm_static_display, GDM_TYPE_DISPLAY)
+ 
+-static gboolean
+-gdm_static_display_create_authority (GdmDisplay *display)
+-{
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        GDM_DISPLAY_CLASS (gdm_static_display_parent_class)->create_authority (display);
+-
+-        return TRUE;
+-}
+-
+-static gboolean
+-gdm_static_display_add_user_authorization (GdmDisplay *display,
+-                                           const char *username,
+-                                           char      **filename,
+-                                           GError    **error)
+-{
+-        return GDM_DISPLAY_CLASS (gdm_static_display_parent_class)->add_user_authorization (display, username, filename, error);
+-}
+-
+-static gboolean
+-gdm_static_display_remove_user_authorization (GdmDisplay *display,
+-                                              const char *username,
+-                                              GError    **error)
+-{
+-        return GDM_DISPLAY_CLASS (gdm_static_display_parent_class)->remove_user_authorization (display, username, error);
+-}
+-
+-static gboolean
+-gdm_static_display_manage (GdmDisplay *display)
+-{
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        GDM_DISPLAY_CLASS (gdm_static_display_parent_class)->manage (display);
+-
+-        return TRUE;
+-}
+-
+ static gboolean
+ gdm_static_display_finish (GdmDisplay *display)
+ {
+@@ -111,16 +74,6 @@ gdm_static_display_finish (GdmDisplay *display)
+         return TRUE;
+ }
+ 
+-static gboolean
+-gdm_static_display_unmanage (GdmDisplay *display)
+-{
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        GDM_DISPLAY_CLASS (gdm_static_display_parent_class)->unmanage (display);
+-
+-        return TRUE;
+-}
+-
+ static GObject *
+ gdm_static_display_constructor (GType                  type,
+                                    guint                  n_construct_properties,
+@@ -159,12 +112,7 @@ gdm_static_display_class_init (GdmStaticDisplayClass *klass)
+         object_class->constructor = gdm_static_display_constructor;
+         object_class->finalize = gdm_static_display_finalize;
+ 
+-        display_class->create_authority = gdm_static_display_create_authority;
+-        display_class->add_user_authorization = gdm_static_display_add_user_authorization;
+-        display_class->remove_user_authorization = gdm_static_display_remove_user_authorization;
+-        display_class->manage = gdm_static_display_manage;
+         display_class->finish = gdm_static_display_finish;
+-        display_class->unmanage = gdm_static_display_unmanage;
+ 
+         g_type_class_add_private (klass, sizeof (GdmStaticDisplayPrivate));
+ }
+-- 
+2.15.1
+

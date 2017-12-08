@@ -1,0 +1,34 @@
+From 69d632179db402f73302bf4929e350bd9544e5ac Mon Sep 17 00:00:00 2001
+From: Shobha Tyagi <tyagishobha@gmail.com>
+Date: Tue, 7 Apr 2015 10:27:59 +0530
+Subject: [PATCH 271/315] corrected typos bug 747328
+
+---
+ docs/C/index.docbook | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/docs/C/index.docbook b/docs/C/index.docbook
+index 47c2961d..f41afba3 100644
+--- a/docs/C/index.docbook
++++ b/docs/C/index.docbook
+@@ -1829,7 +1829,7 @@ gdm:.my.domain
+       </sect3>
+ 
+       <sect3 id="accessibilitytoolsconfiguration">
+-        <title>Linking GConf Keys to Accessbility Tools</title>
++        <title>Linking GConf Keys to Accessibility Tools</title>
+ 
+         <para>
+          For the screen_magnifier_enabled, the screen_keyboard_enabled, and the
+@@ -2085,7 +2085,7 @@ Language=cs_CZ.UTF-8
+ 
+         <para>
+           <command>gdm</command> is the main daemon which sets up
+-          graphical login environment and starts necesary helpers.
++          graphical login environment and starts necessary helpers.
+        </para>
+ 
+         <variablelist>
+-- 
+2.15.1
+

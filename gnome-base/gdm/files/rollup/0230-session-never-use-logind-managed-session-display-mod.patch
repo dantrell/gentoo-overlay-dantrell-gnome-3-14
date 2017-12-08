@@ -1,0 +1,31 @@
+From 03c565d25e77c2503453eb4e7c608d123e9896b5 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Mar 2015 19:44:27 -0400
+Subject: [PATCH 230/315] session: never use LOGIND_MANAGED session display
+ mode
+
+Neither wayland nor X11 is ready to be fully logind managed,
+yet, including the login screen.  This commit makes sure
+we never use it.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746492
+---
+ daemon/gdm-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 16734a8b..52fbc172 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2965,7 +2965,7 @@ gdm_session_get_display_mode (GdmSession *self)
+          * within the login session and managed by logind
+          */
+         if (self->priv->is_program_session) {
+-                return GDM_SESSION_DISPLAY_MODE_LOGIND_MANAGED;
++                return GDM_SESSION_DISPLAY_MODE_NEW_VT;
+         }
+ 
+         /* user based X sessions need us to allocate a VT for them
+-- 
+2.15.1
+

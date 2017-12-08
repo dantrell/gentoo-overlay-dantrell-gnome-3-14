@@ -1,0 +1,60 @@
+From ab1bc2f8d19246f2c60f16f3e6174373bc7f0f19 Mon Sep 17 00:00:00 2001
+From: Cosimo Cecchi <cosimo@endlessm.com>
+Date: Mon, 20 Oct 2014 15:16:05 -0700
+Subject: [PATCH 002/315] Revert "slave: Use more RANDR 1.3"
+
+This reverts commit cafa3bf4fc99a3a5dcf43efe339a72c49cc2ee2c.
+
+Conflicts:
+	daemon/gdm-slave.c
+
+https://bugzilla.gnome.org/show_bug.cgi?id=738904
+---
+ daemon/gdm-slave.c | 24 ++----------------------
+ 1 file changed, 2 insertions(+), 22 deletions(-)
+
+diff --git a/daemon/gdm-slave.c b/daemon/gdm-slave.c
+index b4bbcfd9..a6d54ba7 100644
+--- a/daemon/gdm-slave.c
++++ b/daemon/gdm-slave.c
+@@ -122,27 +122,6 @@ gdm_slave_error_quark (void)
+         return ret;
+ }
+ 
+-static XRRScreenResources *
+-get_screen_resources (Display *dpy)
+-{
+-        int major = 0, minor = 0;
+-
+-        if (!XRRQueryVersion(dpy, &major, &minor)) {
+-                return NULL;
+-        }
+-
+-        if (major > 1) {
+-                return NULL;
+-        }
+-
+-        if (minor >= 3) {
+-                return XRRGetScreenResourcesCurrent (dpy,
+-                                                     DefaultRootWindow (dpy));
+-        }
+-
+-        return XRRGetScreenResources (dpy, DefaultRootWindow (dpy));
+-}
+-
+ static void
+ determine_initial_cursor_position (GdmSlave *slave,
+                                    int      *x,
+@@ -161,7 +140,8 @@ determine_initial_cursor_position (GdmSlave *slave,
+                                  DefaultScreen (slave->priv->server_display));
+ 
+         gdm_error_trap_push ();
+-        resources = get_screen_resources (slave->priv->server_display);
++        resources = XRRGetScreenResources (slave->priv->server_display,
++                                           DefaultRootWindow (slave->priv->server_display));
+         primary_output = XRRGetOutputPrimary (slave->priv->server_display,
+                                               DefaultRootWindow (slave->priv->server_display));
+         gdm_error_trap_pop ();
+-- 
+2.15.1
+

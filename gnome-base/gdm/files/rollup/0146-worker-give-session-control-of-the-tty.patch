@@ -1,0 +1,53 @@
+From 99c4809c5589175855eceff2b73f9cbb6ac57aa1 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 23 Feb 2015 14:43:09 -0500
+Subject: [PATCH 146/315] worker: give session control of the tty
+
+The X server relies on the controlling tty to be set up
+properly when getting run in a non-privileged mode.  This
+commit makes sure that happens.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745031
+---
+ daemon/gdm-session-worker.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 39e97b5e..a5c684c6 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -1836,7 +1836,7 @@ gdm_session_worker_start_session (GdmSessionWorker  *worker,
+                 const char * const * environment;
+                 char  *home_dir;
+                 int    stdin_fd = -1, stdout_fd = -1, stderr_fd = -1;
+-                gboolean has_journald = FALSE;
++                gboolean has_journald = FALSE, needs_controlling_terminal = FALSE;
+                 sigset_t mask;
+ 
+                 /* Leak the TTY into the session as stdin so that it stays open
+@@ -1845,6 +1845,7 @@ gdm_session_worker_start_session (GdmSessionWorker  *worker,
+                         dup2 (worker->priv->session_tty_fd, STDIN_FILENO);
+                         close (worker->priv->session_tty_fd);
+                         worker->priv->session_tty_fd = -1;
++                        needs_controlling_terminal = TRUE;
+                 } else {
+                         stdin_fd = open ("/dev/null", O_RDWR);
+                         dup2 (stdin_fd, STDIN_FILENO);
+@@ -1878,6 +1879,14 @@ gdm_session_worker_start_session (GdmSessionWorker  *worker,
+                         _exit (2);
+                 }
+ 
++#ifdef WITH_SYSTEMD
++                /* Take control of the tty
++                 */
++                if (needs_controlling_terminal) {
++                        ioctl (STDIN_FILENO, TIOCSCTTY, 0);
++                }
++#endif
++
+                 environment = gdm_session_worker_get_environment (worker);
+ 
+                 g_assert (geteuid () == getuid ());
+-- 
+2.15.1
+

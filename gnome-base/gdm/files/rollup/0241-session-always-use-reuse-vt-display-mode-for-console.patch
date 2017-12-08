@@ -1,0 +1,32 @@
+From c0c56178c941e144305af318e3f42637529ca862 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Mar 2015 20:55:40 -0400
+Subject: [PATCH 241/315] session: always use REUSE_VT display mode for
+ ConsoleKit
+
+The ConsoleKit path needs to use GdmLegacyDisplay, which always
+reuses the greeter display.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746497
+---
+ daemon/gdm-session.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 52fbc172..33a08e3c 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2945,6 +2945,10 @@ gdm_session_get_display_mode (GdmSession *self)
+                  self->priv->is_program_session? "yes" : "no",
+                  self->priv->display_seat_id);
+ 
++        if (!LOGIND_RUNNING()) {
++                return GDM_SESSION_DISPLAY_MODE_REUSE_VT;
++        }
++
+ #ifdef ENABLE_WAYLAND_SUPPORT
+         /* Wayland sessions are for now assumed to run in a
+          * mutter-launch-like environment, so we allocate
+-- 
+2.15.1
+

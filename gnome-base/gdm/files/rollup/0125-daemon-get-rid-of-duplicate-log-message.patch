@@ -1,0 +1,28 @@
+From 3e44da3cb00ac5809bcb533ee0c2ae024cf95f80 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 14:52:11 -0500
+Subject: [PATCH 125/315] daemon: get rid of duplicate log message
+
+we write to different messages every time
+we set a pam environment variable.
+
+This commit drops one of them.
+---
+ daemon/gdm-session-worker.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 783801f3..58f3977b 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -2297,7 +2297,6 @@ gdm_session_worker_handle_set_environment_variable (GdmDBusWorker         *objec
+                                                     const char            *value)
+ {
+         GdmSessionWorker *worker = GDM_SESSION_WORKER (object);
+-        g_debug ("GdmSessionWorker: set env: %s = %s", key, value);
+         gdm_session_worker_set_environment_variable (worker, key, value);
+         gdm_dbus_worker_complete_set_environment_variable (object, invocation);
+         return TRUE;
+-- 
+2.15.1
+

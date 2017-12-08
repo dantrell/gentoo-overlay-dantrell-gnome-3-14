@@ -1,0 +1,137 @@
+From 4d25bda84d9ed57efecb8a6444ef8d978f74b2d6 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 16 Jan 2015 09:46:26 -0500
+Subject: [PATCH 024/315] Revert "pam: drop postlogin from fedora pam config"
+
+This reverts commit 76d26d8c1c37c6bd38bcac082d5cc62670fe5d39.
+
+It breaks pam_ecryptfs.
+Downstream: https://bugzilla.redhat.com/show_bug.cgi?id=1174366
+
+https://bugzilla.gnome.org/show_bug.cgi?id=743045
+---
+ data/pam-redhat/gdm-autologin.pam          | 2 ++
+ data/pam-redhat/gdm-fingerprint.pam        | 2 ++
+ data/pam-redhat/gdm-launch-environment.pam | 2 ++
+ data/pam-redhat/gdm-password.pam           | 2 ++
+ data/pam-redhat/gdm-pin.pam                | 2 ++
+ data/pam-redhat/gdm-smartcard.pam          | 2 ++
+ data/pam-redhat/gdm.pam                    | 3 +++
+ 7 files changed, 15 insertions(+)
+
+diff --git a/data/pam-redhat/gdm-autologin.pam b/data/pam-redhat/gdm-autologin.pam
+index 08d4543e..0616e66f 100644
+--- a/data/pam-redhat/gdm-autologin.pam
++++ b/data/pam-redhat/gdm-autologin.pam
+@@ -1,6 +1,7 @@
+  #%PAM-1.0
+ auth       required    pam_env.so
+ auth       required    pam_permit.so
++auth       include     postlogin
+ account    required    pam_nologin.so
+ account    include     system-auth
+ password   include     system-auth
+@@ -12,3 +13,4 @@ session    required    pam_selinux.so open
+ session    optional    pam_keyinit.so force revoke
+ session    required    pam_namespace.so
+ session    include     system-auth
++session    include     postlogin
+diff --git a/data/pam-redhat/gdm-fingerprint.pam b/data/pam-redhat/gdm-fingerprint.pam
+index ee0635d3..c5a35985 100644
+--- a/data/pam-redhat/gdm-fingerprint.pam
++++ b/data/pam-redhat/gdm-fingerprint.pam
+@@ -1,4 +1,5 @@
+ auth        substack      fingerprint-auth
++auth        include       postlogin
+ 
+ account     required      pam_nologin.so
+ account     include       fingerprint-auth
+@@ -13,3 +14,4 @@ session     required      pam_selinux.so open
+ session     optional      pam_keyinit.so force revoke
+ session     required      pam_namespace.so
+ session     include       fingerprint-auth
++session     include       postlogin
+diff --git a/data/pam-redhat/gdm-launch-environment.pam b/data/pam-redhat/gdm-launch-environment.pam
+index f1811f14..a5130ea6 100644
+--- a/data/pam-redhat/gdm-launch-environment.pam
++++ b/data/pam-redhat/gdm-launch-environment.pam
+@@ -1,7 +1,9 @@
+ #%PAM-1.0
+ auth       required    pam_env.so
+ auth       required    pam_permit.so
++auth       include     postlogin
+ account    include     system-auth
+ password   include     system-auth
+ session    optional    pam_keyinit.so force revoke
+ session    include     system-auth
++session    include     postlogin
+diff --git a/data/pam-redhat/gdm-password.pam b/data/pam-redhat/gdm-password.pam
+index b95ca164..3006d0ca 100644
+--- a/data/pam-redhat/gdm-password.pam
++++ b/data/pam-redhat/gdm-password.pam
+@@ -1,6 +1,7 @@
+ auth     [success=done ignore=ignore default=bad] pam_selinux_permit.so
+ auth        substack      password-auth
+ auth        optional      pam_gnome_keyring.so
++auth        include       postlogin
+ 
+ account     required      pam_nologin.so
+ account     include       password-auth
+@@ -17,3 +18,4 @@ session     optional      pam_keyinit.so force revoke
+ session     required      pam_namespace.so
+ session     include       password-auth
+ session     optional      pam_gnome_keyring.so auto_start
++session     include       postlogin
+diff --git a/data/pam-redhat/gdm-pin.pam b/data/pam-redhat/gdm-pin.pam
+index d0a4e71e..75946532 100644
+--- a/data/pam-redhat/gdm-pin.pam
++++ b/data/pam-redhat/gdm-pin.pam
+@@ -2,6 +2,7 @@ auth     [success=done ignore=ignore default=bad] pam_selinux_permit.so
+ auth        requisite     pam_pin.so
+ auth        substack      password-auth
+ auth        optional      pam_gnome_keyring.so
++auth        include       postlogin
+ 
+ account     required      pam_nologin.so
+ account     include       password-auth
+@@ -18,3 +19,4 @@ session     optional      pam_keyinit.so force revoke
+ session     required      pam_namespace.so
+ session     include       password-auth
+ session     optional      pam_gnome_keyring.so auto_start
++session     include       postlogin
+diff --git a/data/pam-redhat/gdm-smartcard.pam b/data/pam-redhat/gdm-smartcard.pam
+index d49eef9c..c91cf0d1 100644
+--- a/data/pam-redhat/gdm-smartcard.pam
++++ b/data/pam-redhat/gdm-smartcard.pam
+@@ -1,4 +1,5 @@
+ auth        substack      smartcard-auth
++auth        include       postlogin
+ 
+ account     required      pam_nologin.so
+ account     include       smartcard-auth
+@@ -13,3 +14,4 @@ session     required      pam_selinux.so open
+ session     optional      pam_keyinit.so force revoke
+ session     required      pam_namespace.so
+ session     include       smartcard-auth
++session     include       postlogin
+diff --git a/data/pam-redhat/gdm.pam b/data/pam-redhat/gdm.pam
+index 9d95a512..baa058b1 100644
+--- a/data/pam-redhat/gdm.pam
++++ b/data/pam-redhat/gdm.pam
+@@ -1,10 +1,13 @@
+ #%PAM-1.0
+ auth       required    pam_env.so
+ auth       sufficient  pam_succeed_if.so user ingroup nopasswdlogin
++auth       include     postlogin
+ auth       include     system-auth
++account    required    pam_nologin.so
+ account    include     system-auth
+ password   include     system-auth
+ session    optional    pam_keyinit.so force revoke
+ session    include     system-auth
+ session    required    pam_loginuid.so
+ session    optional    pam_console.so
++session    include     postlogin
+-- 
+2.15.1
+

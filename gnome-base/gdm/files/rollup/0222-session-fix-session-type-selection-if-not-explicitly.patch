@@ -1,0 +1,101 @@
+From 4bb106f28551ccb9eaaa74137e52b5ef72f7d173 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Mar 2015 10:05:10 -0400
+Subject: [PATCH 222/315] session: fix session type selection if not explicitly
+ chosen
+
+If we read the saved selection from user data, we don't select
+the right session type.
+
+This commit makes sure any time the selection is changed, we check
+if the session is wayland or X11.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746348
+---
+ daemon/gdm-session.c | 36 ++++++++++++++++++++++++------------
+ 1 file changed, 24 insertions(+), 12 deletions(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 51bd5c4a..f8522eb8 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -174,6 +174,7 @@ enum {
+ #ifdef ENABLE_WAYLAND_SUPPORT
+ static gboolean gdm_session_is_wayland_session (GdmSession *self);
+ #endif
++static void update_session_type (GdmSession *self);
+ static void set_session_type (GdmSession *self,
+                               const char *session_type);
+ static guint signals [LAST_SIGNAL] = { 0, };
+@@ -905,6 +906,8 @@ worker_on_saved_session_name_read (GdmDBusWorker          *worker,
+                 g_free (self->priv->saved_session);
+                 self->priv->saved_session = g_strdup (session_name);
+ 
++                update_session_type (self);
++
+                 if (self->priv->greeter_interface != NULL) {
+                         gdm_dbus_greeter_emit_default_session_name_changed (self->priv->greeter_interface,
+                                                                             session_name);
+@@ -2875,6 +2878,21 @@ out:
+ }
+ #endif
+ 
++static void
++update_session_type (GdmSession *self)
++{
++#ifdef ENABLE_WAYLAND_SUPPORT
++        gboolean is_wayland_session;
++
++        is_wayland_session = gdm_session_is_wayland_session (self);
++        if (is_wayland_session) {
++                set_session_type (self, "wayland");
++        } else {
++                set_session_type (self, NULL);
++        }
++#endif
++}
++
+ gboolean
+ gdm_session_bypasses_xsession (GdmSession *self)
+ {
+@@ -2994,21 +3012,13 @@ gdm_session_select_session (GdmSession *self,
+ {
+         GHashTableIter iter;
+         gpointer key, value;
+-        gboolean is_wayland_session = FALSE;
+ 
+         g_debug ("GdmSession: selecting session '%s'", text);
+ 
+         g_free (self->priv->selected_session);
+         self->priv->selected_session = g_strdup (text);
+ 
+-#ifdef ENABLE_WAYLAND_SUPPORT
+-        is_wayland_session = gdm_session_is_wayland_session (self);
+-        if (is_wayland_session) {
+-                set_session_type (self, "wayland");
+-        } else {
+-                set_session_type (self, NULL);
+-        }
+-#endif
++        update_session_type (self);
+ 
+         g_hash_table_iter_init (&iter, self->priv->conversations);
+         while (g_hash_table_iter_next (&iter, &key, &value)) {
+@@ -3114,9 +3124,11 @@ set_session_type (GdmSession *self,
+                   const char *session_type)
+ {
+ 
+-        g_debug ("GdmSession: setting session to type '%s'", session_type? session_type : "");
+-        g_free (self->priv->session_type);
+-        self->priv->session_type = g_strdup (session_type);
++        if (g_strcmp0 (session_type, session_type) != 0) {
++                g_debug ("GdmSession: setting session to type '%s'", session_type? session_type : "");
++                g_free (self->priv->session_type);
++                self->priv->session_type = g_strdup (session_type);
++        }
+ }
+ 
+ static void
+-- 
+2.15.1
+

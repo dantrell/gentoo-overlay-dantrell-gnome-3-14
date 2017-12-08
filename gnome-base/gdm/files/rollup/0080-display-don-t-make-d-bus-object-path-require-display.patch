@@ -1,0 +1,46 @@
+From d1058c37f5705854b4fe48d71dd39104686cdaca Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 11:47:33 -0500
+Subject: [PATCH 080/315] display: don't make d-bus object path require display
+ number
+
+Going forward we aren't always going to know the display
+number ahead of time, so don't use it for encoding the
+display id.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c | 10 ++--------
+ 1 file changed, 2 insertions(+), 8 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 36bfc9d0..b3cc0c8e 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -1273,21 +1273,15 @@ gdm_display_constructor (GType                  type,
+                          GObjectConstructParam *construct_properties)
+ {
+         GdmDisplay      *self;
+-        char            *canonical_display_name;
+         gboolean         res;
+ 
+         self = GDM_DISPLAY (G_OBJECT_CLASS (gdm_display_parent_class)->constructor (type,
+                                                                                     n_construct_properties,
+                                                                                     construct_properties));
+ 
+-        canonical_display_name = g_strdelimit (g_strdup (self->priv->x11_display_name),
+-                                               ":" G_STR_DELIMITERS, '_');
+-
+         g_free (self->priv->id);
+-        self->priv->id = g_strdup_printf ("/org/gnome/DisplayManager/Displays/%s",
+-                                             canonical_display_name);
+-
+-        g_free (canonical_display_name);
++        self->priv->id = g_strdup_printf ("/org/gnome/DisplayManager/Displays/%lu",
++                                          (gulong) self);
+ 
+         res = register_display (self);
+         if (! res) {
+-- 
+2.15.1
+

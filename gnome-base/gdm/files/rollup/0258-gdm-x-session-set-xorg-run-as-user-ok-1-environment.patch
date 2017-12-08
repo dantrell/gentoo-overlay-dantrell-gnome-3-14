@@ -1,0 +1,28 @@
+From 798a1ad79bdb937c4b0c9008562cd543acaf3206 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Mar 2015 10:10:54 -0400
+Subject: [PATCH 258/315] gdm-x-session: set XORG_RUN_AS_USER_OK=1 environment
+ variable
+
+This lets the X server know that it can safely drop privileges.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746891
+---
+ daemon/gdm-x-session.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/daemon/gdm-x-session.c b/daemon/gdm-x-session.c
+index dfd60166..3cc7d405 100644
+--- a/daemon/gdm-x-session.c
++++ b/daemon/gdm-x-session.c
+@@ -222,6 +222,7 @@ spawn_x_server (State        *state,
+ 
+         arguments = g_ptr_array_new ();
+         launcher = g_subprocess_launcher_new (G_SUBPROCESS_FLAGS_STDIN_INHERIT);
++        g_subprocess_launcher_setenv (launcher, "XORG_RUN_AS_USER_OK", "1", TRUE);
+         g_subprocess_launcher_take_fd (launcher, pipe_fds[1], DISPLAY_FILENO);
+ 
+         if (g_getenv ("XDG_VTNR") != NULL) {
+-- 
+2.15.1
+

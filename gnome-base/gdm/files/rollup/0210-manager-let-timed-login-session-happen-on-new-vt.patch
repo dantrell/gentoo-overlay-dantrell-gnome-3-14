@@ -1,0 +1,33 @@
+From 7b0ff85031cafb28b2332c5a8faa51e712e930bb Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 10 Mar 2015 13:02:38 -0400
+Subject: [PATCH 210/315] manager: let timed login session happen on new VT
+
+Right now we try to timed login into the same VT
+the login screen is running on. This leads to lock ups.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745974
+---
+ daemon/gdm-manager.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 3a1bd860..1dd36054 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2203,8 +2203,10 @@ start_autologin_conversation_if_necessary (GdmManager *manager,
+                 return;
+         }
+ 
+-        g_object_get (G_OBJECT (display), "is-initial", &is_initial, NULL);
+-        g_object_set (G_OBJECT (session), "display-is-initial", is_initial, NULL);
++        if (delay == 0) {
++                g_object_get (G_OBJECT (display), "is-initial", &is_initial, NULL);
++                g_object_set (G_OBJECT (session), "display-is-initial", is_initial, NULL);
++        }
+ 
+         g_debug ("GdmManager: Starting automatic login conversation");
+         gdm_session_start_conversation (session, "gdm-autologin");
+-- 
+2.15.1
+

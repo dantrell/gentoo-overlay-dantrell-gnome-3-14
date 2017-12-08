@@ -1,0 +1,46 @@
+From d870ed4db67bb32f2c1e97677f50894735feef5b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 26 Feb 2015 10:00:21 -0500
+Subject: [PATCH 160/315] manager: quit plymouth later
+
+We don't want to quit plymouth until the display is managed,
+so there's no chance of flicker.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745234
+---
+ daemon/gdm-manager.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 14085827..cfcfa03f 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1549,12 +1549,6 @@ on_display_status_changed (GdmDisplay *display,
+         switch (status) {
+                 case GDM_DISPLAY_PREPARED:
+                 case GDM_DISPLAY_MANAGED:
+-#ifdef WITH_PLYMOUTH
+-                        if (quit_plymouth) {
+-                                plymouth_quit_with_transition ();
+-                                manager->priv->plymouth_is_running = FALSE;
+-                        }
+-#endif
+                         if ((display_number == -1 && status == GDM_DISPLAY_PREPARED) ||
+                             (display_number != -1 && status == GDM_DISPLAY_MANAGED)) {
+                                 char *session_class;
+@@ -1568,6 +1562,12 @@ on_display_status_changed (GdmDisplay *display,
+                         }
+ 
+                         if (status == GDM_DISPLAY_MANAGED) {
++#ifdef WITH_PLYMOUTH
++                                if (quit_plymouth) {
++                                        plymouth_quit_with_transition ();
++                                        manager->priv->plymouth_is_running = FALSE;
++                                }
++#endif
+                                 maybe_start_pending_initial_login (manager, display);
+                         }
+                         break;
+-- 
+2.15.1
+

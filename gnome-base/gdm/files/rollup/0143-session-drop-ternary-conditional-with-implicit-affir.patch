@@ -1,0 +1,35 @@
+From 8c59c0e1dec6148ad8101702cb12258497bfbad0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 23 Feb 2015 10:10:34 -0500
+Subject: [PATCH 143/315] session: drop ternary conditional with implicit
+ affirmative assignment
+
+In practice, it's confusing people who are casually browsing the code.
+---
+ daemon/gdm-session.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index b5d8410b..a7655b23 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2422,9 +2422,15 @@ static void
+ send_session_type (GdmSession *self,
+                    GdmSessionConversation *conversation)
+ {
++        const char *session_type = "x11";
++
++        if (self->priv->session_type != NULL) {
++                session_type = self->priv->session_type;
++        }
++
+         gdm_dbus_worker_call_set_environment_variable (conversation->worker_proxy,
+                                                        "XDG_SESSION_TYPE",
+-                                                       self->priv->session_type? : "x11",
++                                                       session_type,
+                                                        NULL, NULL, NULL);
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,29 @@
+From 263d78abcb28e699d48fe992d5cd09019ceff339 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 10:23:14 -0500
+Subject: [PATCH 119/315] gdm-wayland-session: fix debug message
+
+It says "could not start X server" when failing to start
+the dbus-daemon.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744787
+---
+ daemon/gdm-wayland-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-wayland-session.c b/daemon/gdm-wayland-session.c
+index 14a75a8f..3f2651ac 100644
+--- a/daemon/gdm-wayland-session.c
++++ b/daemon/gdm-wayland-session.c
+@@ -134,7 +134,7 @@ spawn_bus (State        *state,
+         g_ptr_array_free (arguments, TRUE);
+ 
+         if (subprocess == NULL) {
+-                g_debug ("could not start X server: %s", error->message);
++                g_debug ("could not start dbus-daemon: %s", error->message);
+                 goto out;
+         }
+ 
+-- 
+2.15.1
+

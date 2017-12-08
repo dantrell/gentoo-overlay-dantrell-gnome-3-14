@@ -1,0 +1,65 @@
+From 507aefdf561d864d604fac7a7a96c59306ca09f0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 2 Apr 2015 10:01:32 -0400
+Subject: [PATCH 266/315] manager: set display name on session object at
+ registration time
+
+When the X server used at login time registers with GDM, GDM tries
+to write a wtmp session record for it.
+
+Now that the X server is started in the session, we don't know
+the display name of the X server up front and so don't have the
+display name attached to the session object. The wtmp record writing
+code relies on getting the display name from the session object, and
+so it fails.
+
+We do know the display name at registration time, from the details
+passed to the registration function.
+
+This commit makes sure to attach the display name to the session object
+as soon as the display is registered before writing the wtmp record.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747169
+---
+ daemon/gdm-manager.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 4190e119..66cc882c 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1103,6 +1103,10 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+         GDBusConnection *connection;
+         GdmDisplay      *display = NULL;
+         GdmSession      *session;
++        GVariantIter     iter;
++        char            *key = NULL;
++        char            *value = NULL;
++        const char      *x11_display_name = NULL;
+ 
+         g_debug ("GdmManager: trying to register new display");
+ 
+@@ -1119,11 +1123,20 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+                 return TRUE;
+         }
+ 
++        g_variant_iter_init (&iter, details);
++        while (g_variant_iter_loop (&iter, "{ss}", &key, &value)) {
++                if (g_strcmp0 (key, "x11-display-name") == 0)
++                        x11_display_name = value;
++        }
++
+         session = get_user_session_for_display (self, display);
+ 
+         if (session != NULL) {
+                 GPid pid;
+ 
++                if (x11_display_name != NULL)
++                        g_object_set (G_OBJECT (session), "display-name", x11_display_name, NULL);
++
+                 pid = gdm_session_get_pid (session);
+ 
+                 if (pid > 0) {
+-- 
+2.15.1
+

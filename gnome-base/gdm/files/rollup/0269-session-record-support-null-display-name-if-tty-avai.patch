@@ -1,0 +1,45 @@
+From 1edb0e4ae897cb1c53af3f3b2b913d5baf731580 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 2 Apr 2015 11:33:20 -0400
+Subject: [PATCH 269/315] session-record: support NULL display name if tty
+ available
+
+wayland sessions don't necessarily have a display name, so this
+commit just uses the display device instead.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747169
+---
+ daemon/gdm-manager.c        | 2 +-
+ daemon/gdm-session-record.c | 3 +++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 1eadcd4a..0dfce868 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1085,7 +1085,7 @@ add_session_record (GdmManager    *manager,
+                       "display-device", &display_device,
+                       NULL);
+ 
+-        if (display_name == NULL) {
++        if (display_name == NULL && display_device == NULL) {
+                 goto out;
+         }
+ 
+diff --git a/daemon/gdm-session-record.c b/daemon/gdm-session-record.c
+index 1585ef59..da824aaf 100644
+--- a/daemon/gdm-session-record.c
++++ b/daemon/gdm-session-record.c
+@@ -205,6 +205,9 @@ gdm_session_record_login (GPid                  session_pid,
+         UTMP        session_record = { 0 };
+         UTMP       *u;
+ 
++        if (x11_display_name == NULL)
++                x11_display_name = display_device;
++
+         record_set_username (&session_record, user_name);
+ 
+         g_debug ("Writing login record");
+-- 
+2.15.1
+

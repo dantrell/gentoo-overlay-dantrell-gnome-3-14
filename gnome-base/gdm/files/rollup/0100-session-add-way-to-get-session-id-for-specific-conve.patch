@@ -1,0 +1,64 @@
+From c2769f06b55545a7a7c6217eb41ee403ef016b97 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Feb 2015 21:42:54 -0500
+Subject: [PATCH 100/315] session: add way to get session id for specific
+ conversation
+
+Right now, the only way to find out the session id of an opened
+(but not started) session is a parameter in the session-opened
+handler.
+
+This commit adds a new function
+gdm_session_get_conversation_session_id that returns the session-id
+for a specified opened conversation.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 17 +++++++++++++++++
+ daemon/gdm-session.h |  2 ++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index ef5731f6..fed26ba6 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2814,6 +2814,23 @@ gdm_session_get_session_id (GdmSession *self)
+         return conversation->session_id;
+ }
+ 
++const char *
++gdm_session_get_conversation_session_id (GdmSession *self,
++                                         const char *service_name)
++{
++        GdmSessionConversation *conversation;
++
++        g_return_val_if_fail (GDM_IS_SESSION (self), NULL);
++
++        conversation = find_conversation_by_name (self, service_name);
++
++        if (conversation == NULL) {
++                return NULL;
++        }
++
++        return conversation->session_id;
++}
++
+ static char *
+ get_session_filename (GdmSession *self)
+ {
+diff --git a/daemon/gdm-session.h b/daemon/gdm-session.h
+index 4e23301f..6d13f111 100644
+--- a/daemon/gdm-session.h
++++ b/daemon/gdm-session.h
+@@ -141,6 +141,8 @@ gboolean          gdm_session_start_conversation          (GdmSession *session,
+                                                            const char *service_name);
+ void              gdm_session_stop_conversation           (GdmSession *session,
+                                                            const char *service_name);
++const char       *gdm_session_get_conversation_session_id (GdmSession *session,
++                                                           const char *service_name);
+ void              gdm_session_setup                       (GdmSession *session,
+                                                            const char *service_name);
+ void              gdm_session_setup_for_user              (GdmSession *session,
+-- 
+2.15.1
+

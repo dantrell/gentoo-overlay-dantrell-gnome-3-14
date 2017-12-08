@@ -1,0 +1,38 @@
+From 6d8a510c68ac60e6788856802a02c8c24cca3dc3 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 10:26:06 -0500
+Subject: [PATCH 122/315] gdm-x-session: don't hardcode path to dbus-daemon
+
+It's not always in BINDIR, but it is always in the PATH,
+so just let the shell/execvp figure it out.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744787
+---
+ daemon/gdm-x-session.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/daemon/gdm-x-session.c b/daemon/gdm-x-session.c
+index ee02b644..67e236ba 100644
+--- a/daemon/gdm-x-session.c
++++ b/daemon/gdm-x-session.c
+@@ -40,8 +40,6 @@
+ #define DISPLAY_FILENO (STDERR_FILENO + 1)
+ #define BUS_ADDRESS_FILENO (DISPLAY_FILENO + 1)
+ 
+-#define DBUS_DAEMON BINDIR "/dbus-daemon"
+-
+ typedef struct
+ {
+         GdmSettings  *settings;
+@@ -392,7 +390,7 @@ spawn_bus (State        *state,
+ 
+         bus_address_fd_string = g_strdup_printf ("%d", BUS_ADDRESS_FILENO);
+ 
+-        g_ptr_array_add (arguments, DBUS_DAEMON);
++        g_ptr_array_add (arguments, "dbus-daemon");
+ 
+         g_ptr_array_add (arguments, "--print-address");
+         g_ptr_array_add (arguments, bus_address_fd_string);
+-- 
+2.15.1
+

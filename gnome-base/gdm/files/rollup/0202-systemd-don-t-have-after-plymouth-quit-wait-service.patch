@@ -1,0 +1,31 @@
+From e726e082283f9a0317f2c49261c6c6429ff4d487 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 9 Mar 2015 12:46:20 -0400
+Subject: [PATCH 202/315] systemd: don't have After=plymouth-quit-wait.service
+
+plymouth-quit-wait waits for plymouth to quit, we quit plymouth,
+so putting After=plymouth-quit-wait means we'll wait forever.
+
+https://bugs.freedesktop.org/show_bug.cgi?id=89475
+---
+ data/gdm.service.in | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 4a798ac4..3a0b2370 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -11,7 +11,9 @@ After=@PLYMOUTH_QUIT_SERVICE@
+ 
+ # Needs all the dependencies of the services it's replacing
+ # pulled from getty@.service and @PLYMOUTH_QUIT_SERVICE@
+-After=rc-local.service plymouth-start.service plymouth-quit-wait.service systemd-user-sessions.service
++# (except for plymouth-quit-wait.service since it waits until
++# plymouth is quit, which we do)
++After=rc-local.service plymouth-start.service systemd-user-sessions.service
+ 
+ [Service]
+ ExecStart=@sbindir@/gdm
+-- 
+2.15.1
+

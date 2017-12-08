@@ -1,0 +1,58 @@
+From 2e2864ecdde3395919df3ee2e79394631d0c5d38 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Sat, 21 Feb 2015 14:47:30 -0500
+Subject: [PATCH 152/315] local-display: don't use wayland with
+ gnome-initial-setup
+
+We haven't yet decided to use gnome-initial-setup on wayland.
+Before we can, we need to create a wayland based session file
+for it anyway.
+
+This commit makes sure we properly fall back to X11 for
+gnome-initial-setup.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745139
+---
+ daemon/gdm-local-display.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/daemon/gdm-local-display.c b/daemon/gdm-local-display.c
+index 3df6bb7f..b1ed2bc8 100644
+--- a/daemon/gdm-local-display.c
++++ b/daemon/gdm-local-display.c
+@@ -94,6 +94,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+         char          *session_class;
+         char          *session_type;
+         gboolean       doing_initial_setup = FALSE;
++        gboolean       failed = FALSE;
+ 
+         seat_id = NULL;
+ 
+@@ -108,6 +109,13 @@ gdm_local_display_prepare (GdmDisplay *display)
+                 goto out;
+         }
+ 
++        g_debug ("doing initial setup? %s", doing_initial_setup? "yes" : "no");
++        if (doing_initial_setup && g_strcmp0 (session_type, "wayland") == 0) {
++                g_debug ("initial setup doesn't have a wayland session, failing back to X11");
++                failed = TRUE;
++                goto out;
++        }
++
+         if (!doing_initial_setup) {
+                 launch_environment = gdm_create_greeter_launch_environment (NULL,
+                                                                             seat_id,
+@@ -128,6 +136,10 @@ out:
+         g_free (seat_id);
+         g_free (session_class);
+         g_free (session_type);
++
++        if (failed) {
++                return FALSE;
++        }
+         return GDM_DISPLAY_CLASS (gdm_local_display_parent_class)->prepare (display);
+ }
+ 
+-- 
+2.15.1
+

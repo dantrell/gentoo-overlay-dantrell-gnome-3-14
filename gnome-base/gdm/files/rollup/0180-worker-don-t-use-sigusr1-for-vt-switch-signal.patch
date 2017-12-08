@@ -1,0 +1,36 @@
+From 2b02aadfcd4aff9052e425e3292943e99320f4fc Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 2 Mar 2015 09:15:40 -0500
+Subject: [PATCH 180/315] worker: don't use SIGUSR1 for VT switch signal
+
+That signal is blocked when the worker is forked,
+because the main daemon uses it to notice when
+the X server is ready.
+
+This commit changes the worker to use real-time
+signals instead, which are better anyway, since
+they queue.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745465
+---
+ daemon/gdm-session-worker.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 5c881250..ccfa97e6 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -106,8 +106,8 @@
+ #define MAX_FILE_SIZE     65536
+ #define MAX_LOGS          5
+ 
+-#define RELEASE_DISPLAY_SIGNAL SIGUSR1
+-#define ACQUIRE_DISPLAY_SIGNAL SIGUSR2
++#define RELEASE_DISPLAY_SIGNAL (SIGRTMAX)
++#define ACQUIRE_DISPLAY_SIGNAL (SIGRTMAX - 1)
+ 
+ enum {
+         GDM_SESSION_WORKER_STATE_NONE = 0,
+-- 
+2.15.1
+

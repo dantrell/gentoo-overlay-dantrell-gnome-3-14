@@ -1,0 +1,67 @@
+From 8b2ac7e7ac11165187c8314f8c20efec18305863 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 4 Feb 2015 10:28:38 -0500
+Subject: [PATCH 064/315] display: add back manage vfunc
+
+This function will be overridden by GdmLocalDisplay to
+start the X server.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c | 11 ++++++++++-
+ daemon/gdm-display.h |  3 ++-
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 7b06a9d1..f8674c4a 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -626,6 +626,12 @@ on_slave_started (GdmSlave   *slave,
+         _gdm_display_set_status (self, GDM_DISPLAY_MANAGED);
+ }
+ 
++static void
++gdm_display_real_manage (GdmDisplay *self)
++{
++        gdm_slave_start (self->priv->slave);
++}
++
+ static gboolean
+ gdm_display_real_prepare (GdmDisplay *self)
+ {
+@@ -674,7 +680,9 @@ on_list_cached_users_complete (GObject       *proxy,
+                 g_variant_unref (call_result);
+         }
+ 
+-        gdm_slave_start (self->priv->slave);
++        if (GDM_DISPLAY_GET_CLASS (self)->manage != NULL) {
++                GDM_DISPLAY_GET_CLASS (self)->manage (self);
++        }
+ }
+ 
+ static void
+@@ -1390,6 +1398,7 @@ gdm_display_class_init (GdmDisplayClass *klass)
+         object_class->finalize = gdm_display_finalize;
+ 
+         klass->prepare = gdm_display_real_prepare;
++        klass->manage = gdm_display_real_manage;
+ 
+         g_object_class_install_property (object_class,
+                                          PROP_ID,
+diff --git a/daemon/gdm-display.h b/daemon/gdm-display.h
+index 39976b9d..b3685ee7 100644
+--- a/daemon/gdm-display.h
++++ b/daemon/gdm-display.h
+@@ -56,7 +56,8 @@ typedef struct
+         GObjectClass   parent_class;
+ 
+         /* methods */
+-        gboolean (*prepare)                   (GdmDisplay *display);
++        gboolean (*prepare) (GdmDisplay *display);
++        void     (*manage)  (GdmDisplay *self);
+ } GdmDisplayClass;
+ 
+ typedef enum
+-- 
+2.15.1
+

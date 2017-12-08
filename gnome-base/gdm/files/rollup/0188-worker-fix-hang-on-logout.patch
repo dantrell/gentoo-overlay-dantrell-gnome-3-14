@@ -1,0 +1,39 @@
+From f09053dce3bd1530cc3ddc18306bac31c283b1b8 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Mar 2015 08:54:24 -0500
+Subject: [PATCH 188/315] worker: fix hang on logout
+
+We need to retake control of VT switch processing on logout,
+just as we do before login, otherwise we can be left hung
+waiting for the VT to be released.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745217
+---
+ daemon/gdm-session-worker.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 0fe7cce5..4c69da22 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -1052,8 +1052,6 @@ jump_to_vt (GdmSessionWorker  *worker,
+                         g_debug ("GdmSessionWorker: couldn't set graphics mode: %m");
+                 }
+ 
+-                handle_terminal_vt_switches (worker, fd);
+-
+                 /* It's possible that the current VT was left in a broken
+                  * combination of states (KD_GRAPHICS with VT_AUTO), that
+                  * can't be switched away from.  This call makes sure things
+@@ -1065,6 +1063,8 @@ jump_to_vt (GdmSessionWorker  *worker,
+                 fd = active_vt_tty_fd;
+         }
+ 
++        handle_terminal_vt_switches (worker, fd);
++
+         if (ioctl (fd, VT_ACTIVATE, vt_number) < 0) {
+                 g_debug ("GdmSessionWorker: couldn't initiate jump to VT %d: %m",
+                          vt_number);
+-- 
+2.15.1
+

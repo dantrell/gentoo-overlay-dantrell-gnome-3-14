@@ -1,0 +1,33 @@
+From 54723ab99c25a172ae6c0ca30bf7c04697833f6b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 10 Sep 2015 09:36:54 -0400
+Subject: [PATCH 301/315] local-display-factory: spacing clean up
+
+The function declaration for gdm_local_display_factory_sync_seats
+put the return type on the same line as the function name. That
+doesn't follow the GDM codebase's style.
+
+This commit moves the return type to its own line.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-local-display-factory.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index af15617f..e902c3d1 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -445,7 +445,8 @@ delete_display (GdmLocalDisplayFactory *factory,
+         gdm_display_store_foreach_remove (store, lookup_by_seat_id, (gpointer) seat_id);
+ }
+ 
+-static gboolean gdm_local_display_factory_sync_seats (GdmLocalDisplayFactory *factory)
++static gboolean
++gdm_local_display_factory_sync_seats (GdmLocalDisplayFactory *factory)
+ {
+         GError *error = NULL;
+         GVariant *result;
+-- 
+2.15.1
+

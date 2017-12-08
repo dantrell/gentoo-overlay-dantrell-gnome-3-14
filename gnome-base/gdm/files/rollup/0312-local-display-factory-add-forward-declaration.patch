@@ -1,0 +1,25 @@
+From 293b2335d87444ec5cbc185baea8ecb05acfcf03 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 18 Sep 2015 15:36:01 -0400
+Subject: [PATCH 312/315] local-display-factory: add forward declaration
+
+fixes build warning
+---
+ daemon/gdm-local-display-factory.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index 85e3f041..53a30fa3 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -83,6 +83,7 @@ static void     on_display_status_changed               (GdmDisplay
+                                                          GParamSpec                  *arg1,
+                                                          GdmLocalDisplayFactory      *factory);
+ 
++static void gdm_local_display_factory_start_monitor (GdmLocalDisplayFactory *factory);
+ static gboolean gdm_local_display_factory_sync_seats    (GdmLocalDisplayFactory *factory);
+ static gpointer local_display_factory_object = NULL;
+ 
+-- 
+2.15.1
+

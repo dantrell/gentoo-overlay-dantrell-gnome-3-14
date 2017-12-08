@@ -1,0 +1,58 @@
+From 1e10c1594265043c13780adfde3a2e0f2e97283a Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 29 Jan 2015 16:55:23 -0500
+Subject: [PATCH 061/315] simple-slave: get rid of finalize method
+
+We don't do anything in it.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-simple-slave.c | 19 -------------------
+ 1 file changed, 19 deletions(-)
+
+diff --git a/daemon/gdm-simple-slave.c b/daemon/gdm-simple-slave.c
+index 4f0bf3d6..e5969387 100644
+--- a/daemon/gdm-simple-slave.c
++++ b/daemon/gdm-simple-slave.c
+@@ -81,7 +81,6 @@ enum {
+ 
+ static void     gdm_simple_slave_class_init     (GdmSimpleSlaveClass *klass);
+ static void     gdm_simple_slave_init           (GdmSimpleSlave      *simple_slave);
+-static void     gdm_simple_slave_finalize       (GObject             *object);
+ 
+ G_DEFINE_TYPE (GdmSimpleSlave, gdm_simple_slave, GDM_TYPE_SLAVE)
+ 
+@@ -239,11 +238,8 @@ gdm_simple_slave_stop (GdmSlave *slave)
+ static void
+ gdm_simple_slave_class_init (GdmSimpleSlaveClass *klass)
+ {
+-        GObjectClass  *object_class = G_OBJECT_CLASS (klass);
+         GdmSlaveClass *slave_class = GDM_SLAVE_CLASS (klass);
+ 
+-        object_class->finalize = gdm_simple_slave_finalize;
+-
+         slave_class->start = gdm_simple_slave_start;
+         slave_class->stop = gdm_simple_slave_stop;
+ 
+@@ -258,18 +254,3 @@ gdm_simple_slave_init (GdmSimpleSlave *slave)
+         slave->priv->use_logindevperm = FALSE;
+ #endif
+ }
+-
+-static void
+-gdm_simple_slave_finalize (GObject *object)
+-{
+-        GdmSimpleSlave *slave;
+-
+-        g_return_if_fail (object != NULL);
+-        g_return_if_fail (GDM_IS_SIMPLE_SLAVE (object));
+-
+-        slave = GDM_SIMPLE_SLAVE (object);
+-
+-        g_return_if_fail (slave->priv != NULL);
+-
+-        G_OBJECT_CLASS (gdm_simple_slave_parent_class)->finalize (object);
+-}
+-- 
+2.15.1
+

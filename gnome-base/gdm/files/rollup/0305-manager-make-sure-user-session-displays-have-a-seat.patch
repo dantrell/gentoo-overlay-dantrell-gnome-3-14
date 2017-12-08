@@ -1,0 +1,40 @@
+From 0dd2dfcbc8b1987ad72dbb3d898412f5a6b3cfa3 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 9 Sep 2015 15:52:31 -0400
+Subject: [PATCH 305/315] manager: make sure user session displays have a seat
+ assigned
+
+The local display factory expects all displays it tracks to have
+a seat, and we're going to be tracking automatic login displays
+in the display factory in a subsequent commit.
+
+This commit makes sure the seat-id is properly set on automatic
+login display objects.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-manager.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index ee907c5d..4c1af481 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1927,11 +1927,14 @@ create_display_for_user_session (GdmManager *self,
+                                  const char *session_id)
+ {
+         GdmDisplay *display;
++        /* at the moment we only create GdmLocalDisplay objects on seat0 */
++        const char *seat_id = "seat0";
+ 
+         display = gdm_local_display_new ();
+ 
+         g_object_set (G_OBJECT (display),
+                       "session-class", "user",
++                      "seat-id", seat_id,
+                       "session-id", session_id,
+                       NULL);
+         gdm_display_store_add (self->priv->display_store,
+-- 
+2.15.1
+

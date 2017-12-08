@@ -1,0 +1,86 @@
+From 153b150faee22a57454d4ad66fa253204f1dfdd9 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 22 Jan 2015 10:39:00 -0500
+Subject: [PATCH 049/315] session: detect when conversation is started more
+ than once and error out
+
+It's a bug when it happens but this makes the failure happen right away
+instead of leading to a dbus timeout.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 16 ++++++++++------
+ daemon/gdm-session.h |  2 +-
+ 2 files changed, 11 insertions(+), 7 deletions(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 52f7aed3..ec058590 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -1199,11 +1199,14 @@ begin_verification_conversation (GdmSession            *self,
+                                  GDBusMethodInvocation *invocation,
+                                  const char            *service_name)
+ {
+-        GdmSessionConversation *conversation;
++        GdmSessionConversation *conversation = NULL;
++        gboolean conversation_started;
+ 
+-        gdm_session_start_conversation (self, service_name);
++        conversation_started = gdm_session_start_conversation (self, service_name);
+ 
+-        conversation = find_conversation_by_name (self, service_name);
++        if (conversation_started) {
++                conversation = find_conversation_by_name (self, service_name);
++        }
+ 
+         if (conversation == NULL) {
+                 g_dbus_method_invocation_return_error (invocation,
+@@ -1893,13 +1896,13 @@ stop_conversation_now (GdmSessionConversation *conversation)
+         g_clear_object (&conversation->job);
+ }
+ 
+-void
++gboolean
+ gdm_session_start_conversation (GdmSession *self,
+                                 const char *service_name)
+ {
+         GdmSessionConversation *conversation;
+ 
+-        g_return_if_fail (GDM_IS_SESSION (self));
++        g_return_val_if_fail (GDM_IS_SESSION (self), FALSE);
+ 
+         conversation = g_hash_table_lookup (self->priv->conversations,
+                                             service_name);
+@@ -1907,7 +1910,7 @@ gdm_session_start_conversation (GdmSession *self,
+         if (conversation != NULL) {
+                 if (!conversation->is_stopping) {
+                         g_warning ("GdmSession: conversation %s started more than once", service_name);
+-                        return;
++                        return FALSE;
+                 }
+                 g_debug ("GdmSession: stopping old conversation %s", service_name);
+                 gdm_session_worker_job_stop_now (conversation->job);
+@@ -1921,6 +1924,7 @@ gdm_session_start_conversation (GdmSession *self,
+ 
+         g_hash_table_insert (self->priv->conversations,
+                              g_strdup (service_name), conversation);
++        return TRUE;
+ }
+ 
+ void
+diff --git a/daemon/gdm-session.h b/daemon/gdm-session.h
+index 8a2cb1b9..86862b47 100644
+--- a/daemon/gdm-session.h
++++ b/daemon/gdm-session.h
+@@ -134,7 +134,7 @@ const char       *gdm_session_get_session_id              (GdmSession     *sessi
+ gboolean          gdm_session_bypasses_xsession           (GdmSession     *session);
+ GdmSessionDisplayMode gdm_session_get_display_mode  (GdmSession     *session);
+ 
+-void              gdm_session_start_conversation          (GdmSession *session,
++gboolean          gdm_session_start_conversation          (GdmSession *session,
+                                                            const char *service_name);
+ void              gdm_session_stop_conversation           (GdmSession *session,
+                                                            const char *service_name);
+-- 
+2.15.1
+

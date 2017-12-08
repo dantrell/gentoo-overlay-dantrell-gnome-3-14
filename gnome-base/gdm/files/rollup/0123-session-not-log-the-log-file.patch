@@ -1,0 +1,27 @@
+From 7d252b61649e4d869ebe26a6ae62d203e7367150 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 12:52:53 -0500
+Subject: [PATCH 123/315] session: not log the log file
+
+These days we don't use the log file in some common configurations,
+and so logging it's location is wrong.
+---
+ daemon/gdm-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index fed26ba6..b5d8410b 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2107,7 +2107,7 @@ send_setup_for_program (GdmSession *self,
+                 display_x11_authority_file = "";
+         }
+ 
+-        g_debug ("GdmSession: Beginning setup for session for program with log '%s', using PAM service %s", log_file, service_name);
++        g_debug ("GdmSession: Beginning setup for session for program using PAM service %s", service_name);
+ 
+         conversation = find_conversation_by_name (self, service_name);
+         if (conversation != NULL) {
+-- 
+2.15.1
+

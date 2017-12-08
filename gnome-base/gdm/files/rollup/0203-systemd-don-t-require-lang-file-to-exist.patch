@@ -1,0 +1,36 @@
+From 41fdcae9f67bea3c770d42051bbfbb5acbf4108b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 9 Mar 2015 12:54:04 -0400
+Subject: [PATCH 203/315] systemd: don't require lang file to exist
+
+commit fbb922cfcf4e389b0aa416d9a81c45f8f938f104 made sure
+to source /etc/default/locale on debian so that GDM gets
+started with the correct locale.
+
+Unfortunately, now if that file doesn't exist (which is entirely
+legitimate) then GDM won't start.
+
+This commit makes sure to still start GDM, even if the file couldn't
+be sourced.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745868
+---
+ data/gdm.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 3a0b2370..3c86da7b 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -22,7 +22,7 @@ IgnoreSIGPIPE=no
+ BusName=org.gnome.DisplayManager
+ StandardOutput=syslog
+ StandardError=inherit
+-EnvironmentFile=@LANG_CONFIG_FILE@
++EnvironmentFile=-@LANG_CONFIG_FILE@
+ 
+ [Install]
+ Alias=display-manager.service
+-- 
+2.15.1
+

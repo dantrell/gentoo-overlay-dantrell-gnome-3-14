@@ -1,0 +1,30 @@
+From 8a16520fced1633e1408a467162f4ceddaa6371c Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 12:20:40 -0500
+Subject: [PATCH 166/315] display: invert g_warn_if_fail conditionals
+
+I got them inverted in my head when I did
+
+commit 678ac9657d3166dcdeadbccb7ad9427ba0677339
+---
+ daemon/gdm-display.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 08b6ef4b..624e6188 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -1215,8 +1215,8 @@ gdm_display_dispose (GObject *object)
+         }
+         g_clear_object (&self->priv->launch_environment);
+ 
+-        g_warn_if_fail (self->priv->status == GDM_DISPLAY_PREPARED);
+-        g_warn_if_fail (self->priv->status == GDM_DISPLAY_MANAGED);
++        g_warn_if_fail (self->priv->status != GDM_DISPLAY_PREPARED);
++        g_warn_if_fail (self->priv->status != GDM_DISPLAY_MANAGED);
+         g_warn_if_fail (self->priv->user_access_file == NULL);
+         g_warn_if_fail (self->priv->access_file == NULL);
+ 
+-- 
+2.15.1
+

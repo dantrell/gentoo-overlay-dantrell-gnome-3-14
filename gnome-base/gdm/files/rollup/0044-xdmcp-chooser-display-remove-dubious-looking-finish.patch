@@ -1,0 +1,57 @@
+From 9bca76f888d6003df785fb2e94d91d15aa06d352 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 19 Jan 2015 09:09:49 -0500
+Subject: [PATCH 044/315] xdmcp-chooser-display: remove dubious looking finish
+ implementation
+
+This commit drops the finish implementation from the
+xdmcp-chooser-display subclass.  It's mostly just chaining up, but it
+also calls "unmanage" which is strange and probably wrong.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-xdmcp-chooser-display.c | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/daemon/gdm-xdmcp-chooser-display.c b/daemon/gdm-xdmcp-chooser-display.c
+index 72e3d07f..371c2b0a 100644
+--- a/daemon/gdm-xdmcp-chooser-display.c
++++ b/daemon/gdm-xdmcp-chooser-display.c
+@@ -52,7 +52,6 @@ static guint signals [LAST_SIGNAL] = { 0, };
+ static void     gdm_xdmcp_chooser_display_class_init    (GdmXdmcpChooserDisplayClass *klass);
+ static void     gdm_xdmcp_chooser_display_init          (GdmXdmcpChooserDisplay      *xdmcp_chooser_display);
+ static gboolean gdm_xdmcp_chooser_display_prepare       (GdmDisplay *display);
+-static gboolean gdm_xdmcp_chooser_display_finish        (GdmDisplay *display);
+ 
+ G_DEFINE_TYPE (GdmXdmcpChooserDisplay, gdm_xdmcp_chooser_display, GDM_TYPE_XDMCP_DISPLAY)
+ 
+@@ -72,7 +71,6 @@ gdm_xdmcp_chooser_display_class_init (GdmXdmcpChooserDisplayClass *klass)
+         GdmDisplayClass *display_class = GDM_DISPLAY_CLASS (klass);
+ 
+         display_class->prepare = gdm_xdmcp_chooser_display_prepare;
+-        display_class->finish = gdm_xdmcp_chooser_display_finish;
+ 
+         signals [HOSTNAME_SELECTED] =
+                 g_signal_new ("hostname-selected",
+@@ -108,18 +106,6 @@ gdm_xdmcp_chooser_display_prepare (GdmDisplay *display)
+         return TRUE;
+ }
+ 
+-static gboolean
+-gdm_xdmcp_chooser_display_finish (GdmDisplay *display)
+-{
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        GDM_DISPLAY_CLASS (gdm_xdmcp_chooser_display_parent_class)->finish (display);
+-
+-        gdm_display_unmanage (display);
+-
+-        return TRUE;
+-}
+-
+ GdmDisplay *
+ gdm_xdmcp_chooser_display_new (const char              *hostname,
+                                int                      number,
+-- 
+2.15.1
+

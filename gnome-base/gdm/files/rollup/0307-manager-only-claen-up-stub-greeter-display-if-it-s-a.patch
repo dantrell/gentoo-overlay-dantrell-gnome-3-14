@@ -1,0 +1,47 @@
+From 4c02e8e2762af89a047aef5aa2dd7a4ba9d9a02d Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 14 Sep 2015 10:26:52 -0400
+Subject: [PATCH 307/315] manager: only claen up stub greeter display if it's
+ actually a stub
+
+commit 2774c7e43b9fdf5e5e59ef1f53ae7ba29f4aa23c fixed a leak in the
+case we're doing autologin, but it also unconditionally cleans up
+the display in the non-autologin case, too.
+
+At the moment, we don't want to clean up the greeter in that case,
+since it causes unnecessary flicker and slows down fast user switching.
+( though this behavior may get changed again pending the outcome of
+  bug 747339 )
+
+This commit makes sure we only clean up the leaker greeter display, if
+there is a leaked greeter display (namely, the autologin case)
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-manager.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 4c1af481..09efcba2 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2011,10 +2011,12 @@ on_start_user_session (StartUserSessionOperation *operation)
+                 g_object_set_data (G_OBJECT (operation->session), "gdm-display", NULL);
+                 create_embryonic_user_session_for_display (operation->manager, display, allowed_uid);
+ 
+-                /* remove the unused prepared greeter display since we're not going
+-                 * to have a greeter */
+-                gdm_display_store_remove (self->priv->display_store, display);
+-                g_object_unref (display);
++                if (g_strcmp0 (operation->service_name, "gdm-autologin") == 0) {
++                        /* remove the unused prepared greeter display since we're not going
++                         * to have a greeter */
++                        gdm_display_store_remove (self->priv->display_store, display);
++                        g_object_unref (display);
++                }
+ 
+                 /* Give the user session a new display object for bookkeeping purposes */
+                 session_id = gdm_session_get_conversation_session_id (operation->session,
+-- 
+2.15.1
+

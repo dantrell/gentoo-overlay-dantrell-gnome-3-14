@@ -1,0 +1,39 @@
+From 1721403c8c16c62c1c814d5bbf7a01714680a3fd Mon Sep 17 00:00:00 2001
+From: Maxime de Roucy <maxime.deroucy@gmail.com>
+Date: Sat, 24 Jan 2015 15:12:16 +0100
+Subject: [PATCH 031/315] correct ShowLocalGreeter (standalone XDMCP server)
+
+Get the ShowLocalGreeter option from configuration file BEFORE launching
+the gdm manager. In order to let the manager know if it have to launch a
+local X server or not.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=743440
+---
+ daemon/main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/main.c b/daemon/main.c
+index cdb41fa2..848cf3ca 100644
+--- a/daemon/main.c
++++ b/daemon/main.c
+@@ -448,8 +448,6 @@ on_name_acquired (GDBusConnection *bus,
+ 
+         g_debug ("Successfully connected to D-Bus");
+ 
+-        gdm_manager_start (manager);
+-
+         show_local_greeter = TRUE;
+         gdm_settings_direct_get_boolean (GDM_KEY_SHOW_LOCAL_GREETER, &show_local_greeter);
+         gdm_manager_set_show_local_greeter (manager, show_local_greeter);
+@@ -457,6 +455,8 @@ on_name_acquired (GDBusConnection *bus,
+         xdmcp_enabled = FALSE;
+         gdm_settings_direct_get_boolean (GDM_KEY_XDMCP_ENABLE, &xdmcp_enabled);
+         gdm_manager_set_xdmcp_enabled (manager, xdmcp_enabled);
++
++        gdm_manager_start (manager);
+ }
+ 
+ static void
+-- 
+2.15.1
+

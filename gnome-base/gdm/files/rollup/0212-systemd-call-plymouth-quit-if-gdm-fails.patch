@@ -1,0 +1,49 @@
+From 234fbc82f42f73ff20bf81b9e212b7e9df0eeaa2 Mon Sep 17 00:00:00 2001
+From: Simon McVittie <smcv@debian.org>
+Date: Wed, 11 Mar 2015 11:35:40 +0000
+Subject: [PATCH 212/315] systemd: call plymouth-quit if gdm fails
+
+gdm.service Conflicts with plymouth-quit.service, so it does not run
+when it normally would (because GDM wants to handle the handover from
+plymouth to X11 itself). This means that if gdm fails to start for whatever
+reason, plymouth is never stopped, so plymouth-quit-wait.service
+never finishes. This, in turn, means that getty@tty*.service, which is
+After plymouth-wait-quit.service, never starts, and there is no way to
+log in locally and fix the problem (Debian bug #780257, but not
+Debian-specific).
+
+In Debian 8, not all display managers have been migrated to
+participate in managing the display-manager.service symlink yet
+(in particular, kdm and wdm have not), so gdm has a transitional
+ExecStartPre that stops it from running if kdm or wdm is selected
+as the active DM. This has the same effect of preventing plymouth
+from running (Debian-specific bug #766462).
+
+It's easy to avoid both of those situations by scheduling
+plymouth-quit.service to run if gdm fails.
+
+Bug: https://bugzilla.gnome.org/show_bug.cgi?id=746023
+Bug-Debian: https://bugs.debian.org/766462
+Bug-Debian: https://bugs.debian.org/780257
+---
+ data/gdm.service.in | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 3c86da7b..454e52e5 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -15,6 +15,10 @@ After=@PLYMOUTH_QUIT_SERVICE@
+ # plymouth is quit, which we do)
+ After=rc-local.service plymouth-start.service systemd-user-sessions.service
+ 
++# GDM takes responsibility for stopping plymouth, so if it fails
++# for any reason, make sure plymouth still stops
++OnFailure=plymouth-quit.service
++
+ [Service]
+ ExecStart=@sbindir@/gdm
+ Restart=always
+-- 
+2.15.1
+

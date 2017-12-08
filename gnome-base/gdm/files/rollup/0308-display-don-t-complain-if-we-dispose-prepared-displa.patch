@@ -1,0 +1,30 @@
+From 68332491d40380dcfc20ea2eb63669fa2f575117 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 14 Sep 2015 10:44:22 -0400
+Subject: [PATCH 308/315] display: don't complain if we dispose PREPARED
+ display
+
+It's expected now that we may dispose a display when it's
+prepared (if it was prepared but then we determined we were
+going to autologin instead).
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-display.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 20cda938..ab84ba4d 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -1138,7 +1138,6 @@ gdm_display_dispose (GObject *object)
+         }
+         g_clear_object (&self->priv->launch_environment);
+ 
+-        g_warn_if_fail (self->priv->status != GDM_DISPLAY_PREPARED);
+         g_warn_if_fail (self->priv->status != GDM_DISPLAY_MANAGED);
+         g_warn_if_fail (self->priv->user_access_file == NULL);
+         g_warn_if_fail (self->priv->access_file == NULL);
+-- 
+2.15.1
+

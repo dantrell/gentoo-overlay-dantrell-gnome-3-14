@@ -1,0 +1,31 @@
+From f9c438cc5232ad7babff031d3fae6ca405239608 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 4 Mar 2015 11:17:05 -0500
+Subject: [PATCH 208/315] manager: make sure to explicitly close user sessions
+ in dispose
+
+We don't want ref count leaks to lead to unkilled sessions.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745975
+---
+ daemon/gdm-manager.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index ae426196..3a1bd860 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2701,6 +2701,10 @@ gdm_manager_dispose (GObject *object)
+         g_clear_object (&manager->priv->local_factory);
+         g_hash_table_unref (manager->priv->open_reauthentication_requests);
+         g_hash_table_unref (manager->priv->transient_sessions);
++
++        g_list_foreach (manager->priv->user_sessions,
++                        (GFunc) gdm_session_close,
++                        NULL);
+         g_list_free_full (manager->priv->user_sessions, (GDestroyNotify) g_object_unref);
+         manager->priv->user_sessions = NULL;
+ 
+-- 
+2.15.1
+

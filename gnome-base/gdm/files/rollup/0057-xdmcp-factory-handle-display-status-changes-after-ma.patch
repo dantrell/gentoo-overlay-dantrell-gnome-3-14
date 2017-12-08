@@ -1,0 +1,37 @@
+From 0cc8b02f339d7661999a08f9c35cc51d5a2d5531 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 11 Feb 2015 01:17:04 -0500
+Subject: [PATCH 057/315] xdmcp-factory: handle display status changes after
+ manager
+
+The factory removes the display from the display store, so it
+should run last.  Furthermore the manager, sets up the greeter
+session, so it should run first.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-xdmcp-display-factory.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-xdmcp-display-factory.c b/daemon/gdm-xdmcp-display-factory.c
+index 74c07558..dfd825ae 100644
+--- a/daemon/gdm-xdmcp-display-factory.c
++++ b/daemon/gdm-xdmcp-display-factory.c
+@@ -2127,10 +2127,10 @@ gdm_xdmcp_display_create (GdmXdmcpDisplayFactory *factory,
+                 goto out;
+         }
+ 
+-        g_signal_connect (display,
+-                          "notify::status",
+-                          G_CALLBACK (on_display_status_changed),
+-                          factory);
++        g_signal_connect_after (display,
++                                "notify::status",
++                                G_CALLBACK (on_display_status_changed),
++                                factory);
+ 
+         store = gdm_display_factory_get_display_store (GDM_DISPLAY_FACTORY (factory));
+         gdm_display_store_add (store, display);
+-- 
+2.15.1
+

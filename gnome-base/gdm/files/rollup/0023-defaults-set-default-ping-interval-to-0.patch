@@ -1,0 +1,32 @@
+From ed45a1d0763b348bf3a3a71c9bef67dd0545a019 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 19 Dec 2014 09:37:41 -0500
+Subject: [PATCH 023/315] defaults: set default ping interval to 0
+
+We apparently never reset the ping alarm() so a non-0 ping interval
+means the session will unconditionally be killed after the ping
+interval.
+
+For now set the ping interval to 0.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=741766
+---
+ data/gdm.schemas.in.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/gdm.schemas.in.in b/data/gdm.schemas.in.in
+index 4320b716..67a0e045 100644
+--- a/data/gdm.schemas.in.in
++++ b/data/gdm.schemas.in.in
+@@ -117,7 +117,7 @@
+     <schema>
+       <key>xdmcp/PingIntervalSeconds</key>
+       <signature>i</signature>
+-      <default>60</default>
++      <default>0</default>
+     </schema>
+     <schema>
+       <key>xdmcp/Willing</key>
+-- 
+2.15.1
+

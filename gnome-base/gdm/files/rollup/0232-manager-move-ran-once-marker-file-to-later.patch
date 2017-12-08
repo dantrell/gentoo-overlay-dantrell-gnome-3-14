@@ -1,0 +1,38 @@
+From a3260e2cf0796286c42390e2275447f41559ab51 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Mar 2015 08:06:00 -0400
+Subject: [PATCH 232/315] manager: move ran-once-marker file to later
+
+This will let us move automatic login handling later,
+which we need to fix which VT it starts on.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746492
+---
+ daemon/gdm-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index ddab1eb5..31244fd3 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1541,8 +1541,6 @@ set_up_greeter_session (GdmManager *manager,
+         if (!will_autologin) {
+                 gdm_display_start_greeter_session (display);
+         }
+-
+-        touch_ran_once_marker_file (manager);
+ }
+ 
+ static void
+@@ -1588,6 +1586,8 @@ on_display_status_changed (GdmDisplay *display,
+                                 }
+ #endif
+                                 maybe_start_pending_initial_login (manager, display);
++
++                                touch_ran_once_marker_file (manager);
+                         }
+                         break;
+                 case GDM_DISPLAY_FAILED:
+-- 
+2.15.1
+

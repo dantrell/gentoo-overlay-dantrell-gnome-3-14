@@ -1,0 +1,27 @@
+From f856b91e9596196b171ec36bf5d3d8aefe78a5f0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 17:03:27 -0500
+Subject: [PATCH 174/315] manager: fix up spacing
+
+---
+ daemon/gdm-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 9f354796..f31fa05a 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2216,8 +2216,8 @@ clean_embryonic_user_session (GdmSession *session)
+ 
+ static void
+ create_embryonic_user_session_for_display (GdmManager *manager,
+-                                 GdmDisplay *display,
+-                                 uid_t       allowed_user)
++                                           GdmDisplay *display,
++                                           uid_t       allowed_user)
+ {
+         GdmSession *session;
+         gboolean    display_is_local = FALSE;
+-- 
+2.15.1
+

@@ -1,0 +1,37 @@
+From cd0a0babcfdfee90d08b0c09367b3ff477581d6f Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 30 Mar 2015 21:53:33 -0400
+Subject: [PATCH 263/315] =?UTF-8?q?systemd:=20change=20to=20KillMode=3Dpro?=
+ =?UTF-8?q?cess=E2=80=A2?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+By default systemd will kill the entire control-group in one fell
+swoop. The problem is, things don't get shutdown in the right
+order then, and there's a race where GDM will begin restarting
+X servers as soon as they're killed.
+
+This commit tells systemd to just kill the main GDM process, and
+let it handle killing all its children on its own.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747088
+---
+ data/gdm.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 454e52e5..6608c2c3 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -21,6 +21,7 @@ OnFailure=plymouth-quit.service
+ 
+ [Service]
+ ExecStart=@sbindir@/gdm
++KillMode=process
+ Restart=always
+ IgnoreSIGPIPE=no
+ BusName=org.gnome.DisplayManager
+-- 
+2.15.1
+

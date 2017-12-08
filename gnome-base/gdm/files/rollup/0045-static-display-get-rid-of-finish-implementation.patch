@@ -1,0 +1,62 @@
+From f196d21e7f7e865112cdb8e467a463776fd8d250 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Feb 2015 14:24:16 -0500
+Subject: [PATCH 045/315] static-display: get rid of finish implementation
+
+It's there to make sure the display gets recreated after
+it's done, but we already handle that in the local-display-factory.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-static-display.c | 24 ------------------------
+ 1 file changed, 24 deletions(-)
+
+diff --git a/daemon/gdm-static-display.c b/daemon/gdm-static-display.c
+index 32c5b01d..ba767b02 100644
+--- a/daemon/gdm-static-display.c
++++ b/daemon/gdm-static-display.c
+@@ -53,27 +53,6 @@ static void     gdm_static_display_init         (GdmStaticDisplay      *static_d
+ 
+ G_DEFINE_TYPE (GdmStaticDisplay, gdm_static_display, GDM_TYPE_DISPLAY)
+ 
+-static gboolean
+-gdm_static_display_finish (GdmDisplay *display)
+-{
+-        int status;
+-
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        /* Don't call parent's finish since we don't ever
+-           want to be put in the FINISHED state */
+-
+-        /* restart static displays */
+-        gdm_display_unmanage (display);
+-
+-        status = gdm_display_get_status (display);
+-        if (status != GDM_DISPLAY_FAILED) {
+-                gdm_display_manage (display);
+-        }
+-
+-        return TRUE;
+-}
+-
+ static GObject *
+ gdm_static_display_constructor (GType                  type,
+                                    guint                  n_construct_properties,
+@@ -107,13 +86,10 @@ static void
+ gdm_static_display_class_init (GdmStaticDisplayClass *klass)
+ {
+         GObjectClass *object_class = G_OBJECT_CLASS (klass);
+-        GdmDisplayClass *display_class = GDM_DISPLAY_CLASS (klass);
+ 
+         object_class->constructor = gdm_static_display_constructor;
+         object_class->finalize = gdm_static_display_finalize;
+ 
+-        display_class->finish = gdm_static_display_finish;
+-
+         g_type_class_add_private (klass, sizeof (GdmStaticDisplayPrivate));
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,32 @@
+From 911495f189d72e1a3e755cd659af2cced3f30254 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 20 Jan 2015 09:10:05 -0500
+Subject: [PATCH 069/315] session: add #ifdef ENABLE_WAYLAND_SUPPORT guard
+
+I just noticed there's a forward declaration that's not protected
+by the enable wayland support definition.
+
+This probably fixes a compiler warning in some configurations.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 627796aa..4c2a8db1 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -164,7 +164,9 @@ enum {
+         LAST_SIGNAL
+ };
+ 
++#ifdef ENABLE_WAYLAND_SUPPORT
+ static gboolean gdm_session_is_wayland_session (GdmSession *self);
++#endif
+ static guint signals [LAST_SIGNAL] = { 0, };
+ 
+ G_DEFINE_TYPE (GdmSession,
+-- 
+2.15.1
+

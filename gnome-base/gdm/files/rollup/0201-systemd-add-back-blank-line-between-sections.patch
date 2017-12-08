@@ -1,0 +1,25 @@
+From 4adfd572d12778658130de00e555d3f037d51836 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 9 Mar 2015 10:28:43 -0400
+Subject: [PATCH 201/315] systemd: add back blank line between sections
+
+This looks cleaner. Suggested by Daniel Drake
+---
+ data/gdm.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 79988bbb..4a798ac4 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -12,6 +12,7 @@ After=@PLYMOUTH_QUIT_SERVICE@
+ # Needs all the dependencies of the services it's replacing
+ # pulled from getty@.service and @PLYMOUTH_QUIT_SERVICE@
+ After=rc-local.service plymouth-start.service plymouth-quit-wait.service systemd-user-sessions.service
++
+ [Service]
+ ExecStart=@sbindir@/gdm
+ Restart=always
+-- 
+2.15.1
+

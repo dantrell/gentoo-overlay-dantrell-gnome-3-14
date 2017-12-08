@@ -1,0 +1,108 @@
+From e699b438e64289c79f690e613399d935d9aac11c Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 07:43:39 -0500
+Subject: [PATCH 165/315] worker: force KD_GRAPHICS mode before doing VT switch
+
+If we switch VTs when in KD_TEXT mode there's obvious flicker.
+This commit addresses that problem by going to KD_GRAPHICS mode
+before switching VTs.  Ideally, we wouldn't switch VTs at all,
+and instead leave it up to the display servers to manage via
+logind. At the moment, the display servers don't use logind
+properly, though, so do this as a stop gap.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745031
+---
+ daemon/gdm-session-worker.c | 50 +++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 48 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index a5c684c6..470428ba 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -31,6 +31,7 @@
+ #ifdef WITH_SYSTEMD
+ #include <sys/ioctl.h>
+ #include <sys/vt.h>
++#include <sys/kd.h>
+ #endif
+ #include <errno.h>
+ #include <grp.h>
+@@ -105,6 +106,9 @@
+ #define MAX_FILE_SIZE     65536
+ #define MAX_LOGS          5
+ 
++#define RELEASE_DISPLAY_SIGNAL SIGUSR1
++#define ACQUIRE_DISPLAY_SIGNAL SIGUSR2
++
+ enum {
+         GDM_SESSION_WORKER_STATE_NONE = 0,
+         GDM_SESSION_WORKER_STATE_SETUP_COMPLETE,
+@@ -958,13 +962,52 @@ gdm_session_worker_stop_auditor (GdmSessionWorker *worker)
+ }
+ 
+ #ifdef WITH_SYSTEMD
++static void
++on_release_display (int signal)
++{
++        int fd;
++
++        fd = open ("/dev/tty0", O_RDWR | O_NOCTTY);
++        ioctl(fd, VT_RELDISP, 1);
++        close(fd);
++}
++
++static void
++on_acquire_display (int signal)
++{
++        int fd;
++
++        fd = open ("/dev/tty0", O_RDWR | O_NOCTTY);
++        ioctl(fd, VT_RELDISP, VT_ACKACQ);
++        close(fd);
++}
++
+ static void
+ jump_to_vt (GdmSessionWorker  *worker,
+             int                vt_number)
+ {
+         int fd;
++        gboolean just_opened_tty = FALSE;
++
++        if (worker->priv->session_tty_fd != -1) {
++                struct vt_mode setmode_request = { 0 };
++
++                fd = worker->priv->session_tty_fd;
++
++                ioctl (fd, KDSETMODE, KD_GRAPHICS);
++
++                setmode_request.mode = VT_PROCESS;
++                setmode_request.relsig = RELEASE_DISPLAY_SIGNAL;
++                setmode_request.acqsig = ACQUIRE_DISPLAY_SIGNAL;
++                ioctl (fd, VT_SETMODE, &setmode_request);
++
++                signal (RELEASE_DISPLAY_SIGNAL, on_release_display);
++                signal (ACQUIRE_DISPLAY_SIGNAL, on_acquire_display);
++        } else {
++                fd = open ("/dev/tty0", O_RDWR | O_NOCTTY);
++                just_opened_tty = TRUE;
++        }
+ 
+-        fd = open ("/dev/tty0", O_RDWR | O_NOCTTY);
+         if (ioctl (fd, VT_ACTIVATE, vt_number) < 0) {
+                 g_debug ("GdmSessionWorker: couldn't initiate jump to VT %d: %m",
+                          vt_number);
+@@ -972,7 +1015,10 @@ jump_to_vt (GdmSessionWorker  *worker,
+                 g_debug ("GdmSessionWorker: couldn't finalize jump to VT %d: %m",
+                          vt_number);
+         }
+-        close(fd);
++
++        if (just_opened_tty) {
++                close(fd);
++        }
+ }
+ #endif
+ 
+-- 
+2.15.1
+

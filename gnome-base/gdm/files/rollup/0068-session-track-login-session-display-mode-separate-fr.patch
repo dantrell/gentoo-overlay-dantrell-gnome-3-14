@@ -1,0 +1,65 @@
+From e29372cedc5acaca24b61d7a4ca4606a31ccc962 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 20 Jan 2015 09:05:35 -0500
+Subject: [PATCH 068/315] session: track login session display mode separate
+ from user sessions
+
+In the future X based user sessions will get their own VT just like
+wayland sessions do. For the time being, the login screen still needs
+to use the VT and X server set up by the slave code though.
+
+This commit makes sure that the two cases are handled distinctly, so
+down the line they can be given different values.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index ec058590..627796aa 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -124,6 +124,8 @@ struct _GdmSessionPrivate
+         GDBusServer         *worker_server;
+         GDBusServer         *outside_server;
+         GHashTable          *environment;
++
++        gboolean             is_program_session : 1;
+ };
+ 
+ enum {
+@@ -2194,6 +2196,7 @@ gdm_session_setup_for_user (GdmSession *self,
+ 
+         gdm_session_select_user (self, username);
+ 
++        self->priv->is_program_session = FALSE;
+         send_setup_for_user (self, service_name);
+         gdm_session_defaults_changed (self);
+ }
+@@ -2207,6 +2210,7 @@ gdm_session_setup_for_program (GdmSession *self,
+ 
+         g_return_if_fail (GDM_IS_SESSION (self));
+ 
++        self->priv->is_program_session = TRUE;
+         send_setup_for_program (self, service_name, username, log_file);
+ }
+ 
+@@ -2916,6 +2920,14 @@ gdm_session_get_display_mode (GdmSession *self)
+         }
+ #endif
+ 
++        /* The X session used for the login screen uses the
++         * X server started up by the slave, so it should be
++         * reuse VT
++         */
++        if (self->priv->is_program_session) {
++                return GDM_SESSION_DISPLAY_MODE_REUSE_VT;
++        }
++
+         /* X sessions are for now ran in classic mode where
+          * we reuse the existing greeter. */
+         return GDM_SESSION_DISPLAY_MODE_REUSE_VT;
+-- 
+2.15.1
+

@@ -1,0 +1,46 @@
+From a48ea6c5fa682ef1c83662da6a813f7b2486c551 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 2 Apr 2015 11:33:20 -0400
+Subject: [PATCH 296/315] session-record: support NULL display name if tty
+ available (for logout/failed)
+
+wayland sessions don't necessarily have a display name, so this
+commit just uses the display device instead.
+
+It's like commit 1edb0e4ae897cb1c53af3f3b2b913d5baf731580 but for
+logout and failed records.
+
+Discovered by Sinclair Yeh <syeh@vmware.com>
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749404
+---
+ daemon/gdm-session-record.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/daemon/gdm-session-record.c b/daemon/gdm-session-record.c
+index da824aaf..33232526 100644
+--- a/daemon/gdm-session-record.c
++++ b/daemon/gdm-session-record.c
+@@ -279,6 +279,9 @@ gdm_session_record_logout (GPid                  session_pid,
+         UTMP        session_record = { 0 };
+         UTMP       *u;
+ 
++        if (x11_display_name == NULL)
++                x11_display_name = display_device;
++
+         g_debug ("Writing logout record");
+ 
+ #if defined(HAVE_UT_UT_TYPE)
+@@ -350,6 +353,9 @@ gdm_session_record_failed (GPid                  session_pid,
+ {
+         UTMP        session_record = { 0 };
+ 
++        if (x11_display_name == NULL)
++                x11_display_name = display_device;
++
+         record_set_username (&session_record, user_name);
+ 
+         g_debug ("Writing failed session attempt record");
+-- 
+2.15.1
+

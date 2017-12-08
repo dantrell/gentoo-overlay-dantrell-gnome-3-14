@@ -1,0 +1,44 @@
+From 0dd0001b8398dbd26e2e8437a4fdefa9b0e64334 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 6 Mar 2015 15:36:29 -0500
+Subject: [PATCH 200/315] systemd: make sure to only start plymouth is started
+
+This commit makes sure gdm doesn't start in parallel with plymouth,
+which could lead to plymouth activating after X is started.
+
+Furthermore, GDM is replacing getty@tty1.service and
+plymouth-quit.service, so it needs to have the same dependencies
+as them.
+
+https://bugs.freedesktop.org/show_bug.cgi?id=89475
+---
+ data/gdm.service.in | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index ed74f219..79988bbb 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -1,8 +1,17 @@
+ [Unit]
+ Description=GNOME Display Manager
+-Conflicts=getty@tty@GDM_INITIAL_VT@.service @PLYMOUTH_QUIT_SERVICE@
+-After=systemd-user-sessions.service getty@tty@GDM_INITIAL_VT@.service @PLYMOUTH_QUIT_SERVICE@
+ 
++# replaces the getty
++Conflicts=getty@tty@GDM_INITIAL_VT@.service
++After=getty@tty@GDM_INITIAL_VT@.service
++
++# replaces plymouth-quit since it quits plymouth on its own
++Conflicts=@PLYMOUTH_QUIT_SERVICE@
++After=@PLYMOUTH_QUIT_SERVICE@
++
++# Needs all the dependencies of the services it's replacing
++# pulled from getty@.service and @PLYMOUTH_QUIT_SERVICE@
++After=rc-local.service plymouth-start.service plymouth-quit-wait.service systemd-user-sessions.service
+ [Service]
+ ExecStart=@sbindir@/gdm
+ Restart=always
+-- 
+2.15.1
+

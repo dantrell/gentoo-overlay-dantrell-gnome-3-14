@@ -1,0 +1,39 @@
+From 62b7f6d2d27f7c4045219f946007681d30d551d8 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 6 Mar 2015 08:54:19 -0500
+Subject: [PATCH 198/315] settings: print custom.conf at startup
+
+This makes it clear what settings gdm is using.
+---
+ common/gdm-settings-desktop-backend.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/common/gdm-settings-desktop-backend.c b/common/gdm-settings-desktop-backend.c
+index f91a45b4..a469f30e 100644
+--- a/common/gdm-settings-desktop-backend.c
++++ b/common/gdm-settings-desktop-backend.c
+@@ -321,6 +321,7 @@ gdm_settings_desktop_backend_init (GdmSettingsDesktopBackend *backend)
+ {
+         gboolean res;
+         GError  *error;
++        char *contents;
+ 
+         backend->priv = GDM_SETTINGS_DESKTOP_BACKEND_GET_PRIVATE (backend);
+ 
+@@ -335,6 +336,13 @@ gdm_settings_desktop_backend_init (GdmSettingsDesktopBackend *backend)
+         if (! res) {
+                 g_warning ("Unable to load file '%s': %s", backend->priv->filename, error->message);
+         }
++
++        contents = g_key_file_to_data (backend->priv->key_file, NULL, NULL);
++
++        if (contents != NULL) {
++                g_debug ("GdmSettings: %s is:\n%s\n", backend->priv->filename, contents);
++                g_free (contents);
++        }
+ }
+ 
+ static void
+-- 
+2.15.1
+

@@ -1,0 +1,40 @@
+From f349c6c9b13775f249cbf7f5cb2f5d30af3dd00e Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Mar 2015 22:37:24 -0400
+Subject: [PATCH 243/315] manager: don't block on plymouth quitting
+
+plymouth can quit in the background, the only thing we need to block
+synchronously on is it deactivating.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746498
+---
+ daemon/gdm-manager.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 902810b3..8c36e064 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -189,8 +189,7 @@ plymouth_quit_with_transition (void)
+         GError  *error;
+ 
+         error = NULL;
+-        res = g_spawn_command_line_sync ("/bin/plymouth quit --retain-splash",
+-                                         NULL, NULL, NULL, &error);
++        res = g_spawn_command_line_async ("/bin/plymouth quit --retain-splash", &error);
+         if (! res) {
+                 g_warning ("Could not quit plymouth: %s", error->message);
+                 g_error_free (error);
+@@ -204,8 +203,7 @@ plymouth_quit_without_transition (void)
+         GError  *error;
+ 
+         error = NULL;
+-        res = g_spawn_command_line_sync ("/bin/plymouth quit",
+-                                         NULL, NULL, NULL, &error);
++        res = g_spawn_command_line_async ("/bin/plymouth quit", &error);
+         if (! res) {
+                 g_warning ("Could not quit plymouth: %s", error->message);
+                 g_error_free (error);
+-- 
+2.15.1
+

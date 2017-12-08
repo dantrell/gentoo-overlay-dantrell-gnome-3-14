@@ -1,0 +1,39 @@
+From ba8a1aa71eae24eef98430db602957bc8eedbaa4 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 6 Mar 2015 08:32:30 -0500
+Subject: [PATCH 195/315] display: include seat in debug message
+
+This will help make it more clear why autologin goes
+one way or the other.
+---
+ daemon/gdm-display.c | 10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 171938be..f890bc02 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -474,14 +474,16 @@ gdm_display_get_timed_login_details (GdmDisplay *self,
+         }
+ 
+         if (enabled) {
+-                g_debug ("GdmDisplay: Got timed login details for display %s: %d %s %d",
+-                         self->priv->x11_display_name,
++                g_debug ("GdmDisplay: Got timed login details for display %s (seat %s): %d %s %d",
++                         self->priv->x11_display_name? self->priv->x11_display_name : "",
++                         self->priv->seat_id,
+                          enabled,
+                          username,
+                          delay);
+         } else {
+-                g_debug ("GdmDisplay: Got timed login details for display %s: 0",
+-                         self->priv->x11_display_name);
++                g_debug ("GdmDisplay: Got timed login details for display %s (seat %s): 0",
++                         self->priv->x11_display_name? self->priv->x11_display_name : "",
++                         self->priv->seat_id);
+         }
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,28 @@
+From 972e242c643e2e8a90909b22839b555d46df85ea Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Feb 2015 14:20:54 -0500
+Subject: [PATCH 035/315] manager: always call gdm_display_unmanage before
+ finish
+
+We need to clean up various resources before finishing the display.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-manager.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index a54931d1..112ce71b 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1256,6 +1256,7 @@ set_up_greeter_session (GdmManager *manager,
+         if (!gdm_get_pwent_for_name (allowed_user, &passwd_entry)) {
+                 g_warning ("GdmManager: couldn't look up username %s",
+                            allowed_user);
++                gdm_display_unmanage (display);
+                 gdm_display_finish (display);
+                 return;
+         }
+-- 
+2.15.1
+

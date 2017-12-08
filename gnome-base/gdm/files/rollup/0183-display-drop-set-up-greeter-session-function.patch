@@ -1,0 +1,121 @@
+From 1ba239a617ac4657cce89e08522400c9320e2eb2 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 2 Mar 2015 14:36:53 -0500
+Subject: [PATCH 183/315] display: drop set_up_greeter_session function
+
+The function is ill named and ill placed. It really
+just returns the username of the client that's allowed
+to connect to the display.
+
+This commit moves the function to gdm-manager.c
+---
+ daemon/gdm-display.c | 13 -------------
+ daemon/gdm-display.h |  3 ---
+ daemon/gdm-manager.c | 26 ++++++++++++++++++++++----
+ 3 files changed, 22 insertions(+), 20 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 36c15c5c..171938be 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -1533,19 +1533,6 @@ wants_initial_setup (GdmDisplay *self)
+         return enabled;
+ }
+ 
+-void
+-gdm_display_set_up_greeter_session (GdmDisplay  *self,
+-                                    char       **username)
+-{
+-        g_return_if_fail (g_strcmp0 (self->priv->session_class, "greeter") == 0);
+-
+-        if (self->priv->doing_initial_setup) {
+-                *username = g_strdup (INITIAL_SETUP_USERNAME);
+-        } else {
+-                *username = g_strdup (GDM_USERNAME);
+-        }
+-}
+-
+ void
+ gdm_display_start_greeter_session (GdmDisplay *self)
+ {
+diff --git a/daemon/gdm-display.h b/daemon/gdm-display.h
+index 472d2b7d..e95dd8f3 100644
+--- a/daemon/gdm-display.h
++++ b/daemon/gdm-display.h
+@@ -135,9 +135,6 @@ gboolean            gdm_display_add_user_authorization         (GdmDisplay *disp
+ gboolean            gdm_display_remove_user_authorization      (GdmDisplay *display,
+                                                                 const char *username,
+                                                                 GError    **error);
+-
+-void                gdm_display_set_up_greeter_session         (GdmDisplay  *display,
+-                                                                char       **username);
+ void                gdm_display_start_greeter_session          (GdmDisplay  *display);
+ void                gdm_display_stop_greeter_session           (GdmDisplay  *display);
+ 
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index f31fa05a..318c0c92 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -66,6 +66,8 @@
+ #define CK_SEAT_INTERFACE    "org.freedesktop.ConsoleKit.Seat"
+ #define CK_SESSION_INTERFACE "org.freedesktop.ConsoleKit.Session"
+ 
++#define INITIAL_SETUP_USERNAME "gnome-initial-setup"
++
+ typedef struct
+ {
+         GdmManager *manager;
+@@ -1491,22 +1493,39 @@ maybe_start_pending_initial_login (GdmManager *manager,
+         g_free (user_session_seat_id);
+ }
+ 
++static const char *
++get_username_for_greeter_display (GdmManager *manager,
++                                  GdmDisplay *display)
++{
++        gboolean doing_initial_setup = FALSE;
++
++        g_object_get (G_OBJECT (display),
++                      "doing-initial-setup", &doing_initial_setup,
++                      NULL);
++
++        if (doing_initial_setup) {
++                return INITIAL_SETUP_USERNAME;
++        } else {
++                return GDM_USERNAME;
++        }
++}
++
+ static void
+ set_up_greeter_session (GdmManager *manager,
+                         GdmDisplay *display)
+ {
+-        char *allowed_user;
++        const char *allowed_user;
+         struct passwd *passwd_entry;
+         gboolean will_autologin;
+ 
+         will_autologin = display_should_autologin (manager, display);
+ 
+         if (!will_autologin) {
+-                 gdm_display_set_up_greeter_session (display, &allowed_user);
++                 allowed_user = get_username_for_greeter_display (manager, display);
+         } else {
+                  g_object_set (G_OBJECT (display), "session-class", "user", NULL);
+                  g_object_set (G_OBJECT (display), "session-type", NULL, NULL);
+-                 allowed_user = g_strdup ("root");
++                 allowed_user = "root";
+         }
+ 
+         if (!gdm_get_pwent_for_name (allowed_user, &passwd_entry)) {
+@@ -1518,7 +1537,6 @@ set_up_greeter_session (GdmManager *manager,
+         }
+ 
+         create_embryonic_user_session_for_display (manager, display, passwd_entry->pw_uid);
+-        g_free (allowed_user);
+ 
+         if (!will_autologin) {
+                 gdm_display_start_greeter_session (display);
+-- 
+2.15.1
+

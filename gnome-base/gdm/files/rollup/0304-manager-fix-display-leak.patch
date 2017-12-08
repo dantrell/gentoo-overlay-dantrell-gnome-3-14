@@ -1,0 +1,33 @@
+From 575ed30021b50599582e699a0b00c5b718962a86 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 10 Sep 2015 09:35:52 -0400
+Subject: [PATCH 304/315] manager: fix display leak
+
+If we're doing autologin then we prepare a stub greeter display that
+we don't actually end up using.  This commit makes sure the greeter
+display gets cleaned up so it doesn't stick around in the display
+store forever.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-manager.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index bfd55883..ee907c5d 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2007,6 +2007,10 @@ on_start_user_session (StartUserSessionOperation *operation)
+                 g_object_set_data (G_OBJECT (display), "gdm-embryonic-user-session", NULL);
+                 g_object_set_data (G_OBJECT (operation->session), "gdm-display", NULL);
+                 create_embryonic_user_session_for_display (operation->manager, display, allowed_uid);
++
++                /* remove the unused prepared greeter display since we're not going
++                 * to have a greeter */
++                gdm_display_store_remove (self->priv->display_store, display);
+                 g_object_unref (display);
+ 
+                 /* Give the user session a new display object for bookkeeping purposes */
+-- 
+2.15.1
+

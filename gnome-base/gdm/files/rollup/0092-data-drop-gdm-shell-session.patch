@@ -1,0 +1,74 @@
+From f66cdfcb29482bb3267f19de7c57394fe8189f39 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Feb 2015 11:56:36 -0500
+Subject: [PATCH 092/315] data: drop gdm-shell.session
+
+It's identical to gnome.session these days.  All GDMification comes
+from the overriden gnome-shell.desktop file.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ data/Makefile.am                         | 11 -----------
+ data/dconf/defaults/00-upstream-settings |  3 ---
+ data/gdm-shell.session.in                |  3 ---
+ 3 files changed, 17 deletions(-)
+ delete mode 100644 data/gdm-shell.session.in
+
+diff --git a/data/Makefile.am b/data/Makefile.am
+index b2a18e70..cb59954f 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -91,19 +91,9 @@ gdm.schemas.in: $(srcdir)/gdm.schemas.in.in
+ 		-e 's,[@]sbindir[@],$(sbindir),g' \
+ 		<$(srcdir)/gdm.schemas.in.in >gdm.schemas.in
+ 
+-EXTRA_DIST += gdm-shell.session.in
+-
+-gdm-shell.session: $(srcdir)/gdm-shell.session.in
+-	sed	-e 's,[@]libexecdir[@],$(libexecdir),g' \
+-		-e 's,[@]CHECK_ACCELERATED_DIR[@],$(CHECK_ACCELERATED_DIR),g' \
+-		< $< > $@.tmp && mv $@.tmp $@
+-
+ localealiasdir = $(datadir)/gdm
+ localealias_DATA = locale.alias
+ 
+-sessiondir = $(datadir)/gnome-session/sessions
+-session_DATA =  gdm-shell.session
+-
+ pam_redhat_files = pam-redhat/gdm.pam		\
+ 	pam-redhat/gdm-autologin.pam		\
+ 	pam-redhat/gdm-launch-environment.pam	\
+@@ -181,7 +171,6 @@ CLEANFILES = 				\
+ 
+ DISTCLEANFILES =			\
+ 	$(dbusconf_DATA)		\
+-	gdm-shell.session		\
+ 	gdm.schemas			\
+ 	$(NULL)
+ 
+diff --git a/data/dconf/defaults/00-upstream-settings b/data/dconf/defaults/00-upstream-settings
+index 24a7715e..fa81c262 100644
+--- a/data/dconf/defaults/00-upstream-settings
++++ b/data/dconf/defaults/00-upstream-settings
+@@ -28,9 +28,6 @@ disable-print-setup=true
+ disable-save-to-disk=true
+ disable-user-switching=true
+ 
+-[org/gnome/desktop/session]
+-session-name='gdm-shell'
+-
+ [org/gnome/desktop/sound]
+ event-sounds=true
+ 
+diff --git a/data/gdm-shell.session.in b/data/gdm-shell.session.in
+deleted file mode 100644
+index 585c45da..00000000
+--- a/data/gdm-shell.session.in
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[GNOME Session]
+-Name=Display Manager
+-RequiredComponents=gnome-shell;gnome-settings-daemon;
+-- 
+2.15.1
+

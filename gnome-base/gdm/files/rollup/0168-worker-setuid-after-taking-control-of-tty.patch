@@ -1,0 +1,58 @@
+From 12abebdee723a62e09b52f88c84d76bd6d3f6590 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 12:31:12 -0500
+Subject: [PATCH 168/315] worker: setuid after taking control of tty
+
+This ensures we the session is always given
+the tty.
+---
+ daemon/gdm-session-worker.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 90c9245a..671a95a4 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -1912,19 +1912,6 @@ gdm_session_worker_start_session (GdmSessionWorker  *worker,
+                         stderr_fd = dup (stdout_fd);
+                 }
+ 
+-#ifdef HAVE_LOGINCAP
+-                if (setusercontext (NULL, passwd_entry, passwd_entry->pw_uid, LOGIN_SETALL) < 0) {
+-                        g_debug ("GdmSessionWorker: setusercontext() failed for user %s: %s",
+-                                 passwd_entry->pw_name, g_strerror (errno));
+-                        _exit (1);
+-                }	
+-#else
+-                if (setuid (worker->priv->uid) < 0) {
+-                        g_debug ("GdmSessionWorker: could not reset uid: %s", g_strerror (errno));
+-                        _exit (1);
+-                }
+-#endif
+-
+                 if (setsid () < 0) {
+                         g_debug ("GdmSessionWorker: could not set pid '%u' as leader of new session and process group: %s",
+                                  (guint) getpid (), g_strerror (errno));
+@@ -1941,6 +1928,19 @@ gdm_session_worker_start_session (GdmSessionWorker  *worker,
+                 }
+ #endif
+ 
++#ifdef HAVE_LOGINCAP
++                if (setusercontext (NULL, passwd_entry, passwd_entry->pw_uid, LOGIN_SETALL) < 0) {
++                        g_debug ("GdmSessionWorker: setusercontext() failed for user %s: %s",
++                                 passwd_entry->pw_name, g_strerror (errno));
++                        _exit (1);
++                }
++#else
++                if (setuid (worker->priv->uid) < 0) {
++                        g_debug ("GdmSessionWorker: could not reset uid: %s", g_strerror (errno));
++                        _exit (1);
++                }
++#endif
++
+                 environment = gdm_session_worker_get_environment (worker);
+ 
+                 g_assert (geteuid () == getuid ());
+-- 
+2.15.1
+

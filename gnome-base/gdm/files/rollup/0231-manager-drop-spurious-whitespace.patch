@@ -1,0 +1,25 @@
+From 301c2aa735985838aa48e0218c1663d61f3ac579 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Mar 2015 07:54:40 -0400
+Subject: [PATCH 231/315] manager: drop spurious whitespace
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746492
+---
+ daemon/gdm-manager.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 1dd36054..ddab1eb5 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1600,7 +1600,6 @@ on_display_status_changed (GdmDisplay *display,
+                         }
+ #endif
+ 
+-
+                         maybe_start_pending_initial_login (manager, display);
+                         break;
+                 default:
+-- 
+2.15.1
+

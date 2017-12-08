@@ -1,0 +1,321 @@
+From 33bb9cfd9bac812338a5fdd1f7351f8e7606dcd1 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 19 Jan 2015 09:09:49 -0500
+Subject: [PATCH 043/315] xdmcp-greeter-display: drop class
+
+GdmXdmcpGreeterDisplay doesn't do anything that it's parent
+class does (except call unmanage from finalize which is strange
+and probably wrong).
+
+This commit drops the file and instead just uses GdmXdmcpDisplay
+directly, instead.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/Makefile.am                 |   2 -
+ daemon/gdm-xdmcp-display-factory.c |   9 ++-
+ daemon/gdm-xdmcp-display.c         |  23 +++++++
+ daemon/gdm-xdmcp-display.h         |   4 ++
+ daemon/gdm-xdmcp-greeter-display.c | 132 -------------------------------------
+ daemon/gdm-xdmcp-greeter-display.h |  64 ------------------
+ 6 files changed, 31 insertions(+), 203 deletions(-)
+ delete mode 100644 daemon/gdm-xdmcp-greeter-display.c
+ delete mode 100644 daemon/gdm-xdmcp-greeter-display.h
+
+diff --git a/daemon/Makefile.am b/daemon/Makefile.am
+index 691c9391..6b809729 100644
+--- a/daemon/Makefile.am
++++ b/daemon/Makefile.am
+@@ -238,8 +238,6 @@ XDMCP_SOURCES =				\
+ 	gdm-xdmcp-display-factory.h	\
+ 	gdm-xdmcp-display.c		\
+ 	gdm-xdmcp-display.h		\
+-	gdm-xdmcp-greeter-display.c	\
+-	gdm-xdmcp-greeter-display.h	\
+ 	gdm-xdmcp-chooser-display.c	\
+ 	gdm-xdmcp-chooser-display.h	\
+ 	gdm-xdmcp-chooser-slave.c	\
+diff --git a/daemon/gdm-xdmcp-display-factory.c b/daemon/gdm-xdmcp-display-factory.c
+index 7fb26d6a..74c07558 100644
+--- a/daemon/gdm-xdmcp-display-factory.c
++++ b/daemon/gdm-xdmcp-display-factory.c
+@@ -53,7 +53,6 @@
+ #include <X11/Xdmcp.h>
+ 
+ #include "gdm-common.h"
+-#include "gdm-xdmcp-greeter-display.h"
+ #include "gdm-xdmcp-chooser-display.h"
+ #include "gdm-display-factory.h"
+ #include "gdm-xdmcp-display-factory.h"
+@@ -2111,10 +2110,10 @@ gdm_xdmcp_display_create (GdmXdmcpDisplayFactory *factory,
+                                                          get_next_session_serial (factory));
+                 g_signal_connect (display, "hostname-selected", G_CALLBACK (on_hostname_selected), factory);
+         } else {
+-                display = gdm_xdmcp_greeter_display_new (hostname,
+-                                                         displaynum,
+-                                                         address,
+-                                                         get_next_session_serial (factory));
++                display = gdm_xdmcp_display_new (hostname,
++                                                 displaynum,
++                                                 address,
++                                                 get_next_session_serial (factory));
+         }
+ 
+         if (display == NULL) {
+diff --git a/daemon/gdm-xdmcp-display.c b/daemon/gdm-xdmcp-display.c
+index 9b929fae..27ea00d1 100644
+--- a/daemon/gdm-xdmcp-display.c
++++ b/daemon/gdm-xdmcp-display.c
+@@ -198,3 +198,26 @@ gdm_xdmcp_display_init (GdmXdmcpDisplay *xdmcp_display)
+ 
+         xdmcp_display->priv = GDM_XDMCP_DISPLAY_GET_PRIVATE (xdmcp_display);
+ }
++
++GdmDisplay *
++gdm_xdmcp_display_new (const char *hostname,
++                       int         number,
++                       GdmAddress *address,
++                       gint32      session_number)
++{
++        GObject *object;
++        char    *x11_display;
++
++        x11_display = g_strdup_printf ("%s:%d", hostname, number);
++        object = g_object_new (GDM_TYPE_XDMCP_DISPLAY,
++                               "remote-hostname", hostname,
++                               "x11-display-number", number,
++                               "x11-display-name", x11_display,
++                               "is-local", FALSE,
++                               "remote-address", address,
++                               "session-number", session_number,
++                               NULL);
++        g_free (x11_display);
++
++        return GDM_DISPLAY (object);
++}
+diff --git a/daemon/gdm-xdmcp-display.h b/daemon/gdm-xdmcp-display.h
+index 10b85a89..e127614e 100644
+--- a/daemon/gdm-xdmcp-display.h
++++ b/daemon/gdm-xdmcp-display.h
+@@ -57,6 +57,10 @@ GType                     gdm_xdmcp_display_get_type                 (void);
+ gint32                    gdm_xdmcp_display_get_session_number       (GdmXdmcpDisplay         *display);
+ GdmAddress              * gdm_xdmcp_display_get_remote_address       (GdmXdmcpDisplay         *display);
+ 
++GdmDisplay              * gdm_xdmcp_display_new                      (const char              *hostname,
++                                                                      int                      number,
++                                                                      GdmAddress              *address,
++                                                                      gint32                   session_number);
+ 
+ G_END_DECLS
+ 
+diff --git a/daemon/gdm-xdmcp-greeter-display.c b/daemon/gdm-xdmcp-greeter-display.c
+deleted file mode 100644
+index 7818a0e5..00000000
+--- a/daemon/gdm-xdmcp-greeter-display.c
++++ /dev/null
+@@ -1,132 +0,0 @@
+-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
+- *
+- * Copyright (C) 2007 William Jon McCann <mccann@jhu.edu>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+- *
+- */
+-
+-#include "config.h"
+-
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <fcntl.h>
+-#include <unistd.h>
+-#include <string.h>
+-#include <signal.h>
+-#include <sys/stat.h>
+-#include <sys/types.h>
+-#include <sys/socket.h>
+-#include <errno.h>
+-
+-#include <glib.h>
+-#include <glib/gi18n.h>
+-#include <glib-object.h>
+-
+-#include "gdm-xdmcp-display.h"
+-#include "gdm-xdmcp-greeter-display.h"
+-
+-#include "gdm-common.h"
+-#include "gdm-address.h"
+-
+-#define GDM_XDMCP_GREETER_DISPLAY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GDM_TYPE_XDMCP_GREETER_DISPLAY, GdmXdmcpGreeterDisplayPrivate))
+-
+-struct GdmXdmcpGreeterDisplayPrivate
+-{
+-        GdmAddress             *remote_address;
+-        gint32                  session_number;
+-};
+-
+-enum {
+-        PROP_0,
+-        PROP_REMOTE_ADDRESS,
+-        PROP_SESSION_NUMBER,
+-};
+-
+-static void     gdm_xdmcp_greeter_display_class_init    (GdmXdmcpGreeterDisplayClass *klass);
+-static void     gdm_xdmcp_greeter_display_init          (GdmXdmcpGreeterDisplay      *xdmcp_greeter_display);
+-static void     gdm_xdmcp_greeter_display_finalize      (GObject                     *object);
+-static gboolean gdm_xdmcp_greeter_display_finish (GdmDisplay *display);
+-
+-G_DEFINE_TYPE (GdmXdmcpGreeterDisplay, gdm_xdmcp_greeter_display, GDM_TYPE_XDMCP_DISPLAY)
+-
+-static void
+-gdm_xdmcp_greeter_display_class_init (GdmXdmcpGreeterDisplayClass *klass)
+-{
+-        GObjectClass    *object_class = G_OBJECT_CLASS (klass);
+-        GdmDisplayClass *display_class = GDM_DISPLAY_CLASS (klass);
+-
+-        object_class->finalize = gdm_xdmcp_greeter_display_finalize;
+-        display_class->finish = gdm_xdmcp_greeter_display_finish;
+-
+-        g_type_class_add_private (klass, sizeof (GdmXdmcpGreeterDisplayPrivate));
+-}
+-
+-static void
+-gdm_xdmcp_greeter_display_init (GdmXdmcpGreeterDisplay *xdmcp_greeter_display)
+-{
+-
+-        xdmcp_greeter_display->priv = GDM_XDMCP_GREETER_DISPLAY_GET_PRIVATE (xdmcp_greeter_display);
+-}
+-
+-static void
+-gdm_xdmcp_greeter_display_finalize (GObject *object)
+-{
+-        GdmXdmcpGreeterDisplay *xdmcp_greeter_display;
+-
+-        g_return_if_fail (object != NULL);
+-        g_return_if_fail (GDM_IS_XDMCP_GREETER_DISPLAY (object));
+-
+-        xdmcp_greeter_display = GDM_XDMCP_GREETER_DISPLAY (object);
+-
+-        g_return_if_fail (xdmcp_greeter_display->priv != NULL);
+-
+-        G_OBJECT_CLASS (gdm_xdmcp_greeter_display_parent_class)->finalize (object);
+-}
+-
+-static gboolean
+-gdm_xdmcp_greeter_display_finish (GdmDisplay *display)
+-{
+-        g_return_val_if_fail (GDM_IS_DISPLAY (display), FALSE);
+-
+-        GDM_DISPLAY_CLASS (gdm_xdmcp_greeter_display_parent_class)->finish (display);
+-
+-        gdm_display_unmanage (display);
+-
+-        return TRUE;
+-}
+-
+-GdmDisplay *
+-gdm_xdmcp_greeter_display_new (const char              *hostname,
+-                               int                      number,
+-                               GdmAddress              *address,
+-                               gint32                   session_number)
+-{
+-        GObject *object;
+-        char    *x11_display;
+-
+-        x11_display = g_strdup_printf ("%s:%d", hostname, number);
+-        object = g_object_new (GDM_TYPE_XDMCP_GREETER_DISPLAY,
+-                               "remote-hostname", hostname,
+-                               "x11-display-number", number,
+-                               "x11-display-name", x11_display,
+-                               "is-local", FALSE,
+-                               "remote-address", address,
+-                               "session-number", session_number,
+-                               NULL);
+-        g_free (x11_display);
+-
+-        return GDM_DISPLAY (object);
+-}
+diff --git a/daemon/gdm-xdmcp-greeter-display.h b/daemon/gdm-xdmcp-greeter-display.h
+deleted file mode 100644
+index a65b1551..00000000
+--- a/daemon/gdm-xdmcp-greeter-display.h
++++ /dev/null
+@@ -1,64 +0,0 @@
+-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
+- *
+- * Copyright (C) 2007 William Jon McCann <mccann@jhu.edu>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+- *
+- */
+-
+-#ifndef __GDM_XDMCP_GREETER_DISPLAY_H
+-#define __GDM_XDMCP_GREETER_DISPLAY_H
+-
+-#include <sys/types.h>
+-#include <sys/socket.h>
+-#include <glib-object.h>
+-
+-#include "gdm-xdmcp-display.h"
+-#include "gdm-address.h"
+-
+-G_BEGIN_DECLS
+-
+-#define GDM_TYPE_XDMCP_GREETER_DISPLAY         (gdm_xdmcp_greeter_display_get_type ())
+-#define GDM_XDMCP_GREETER_DISPLAY(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), GDM_TYPE_XDMCP_GREETER_DISPLAY, GdmXdmcpGreeterDisplay))
+-#define GDM_XDMCP_GREETER_DISPLAY_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), GDM_TYPE_XDMCP_GREETER_DISPLAY, GdmXdmcpGreeterDisplayClass))
+-#define GDM_IS_XDMCP_GREETER_DISPLAY(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), GDM_TYPE_XDMCP_GREETER_DISPLAY))
+-#define GDM_IS_XDMCP_GREETER_DISPLAY_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), GDM_TYPE_XDMCP_GREETER_DISPLAY))
+-#define GDM_XDMCP_GREETER_DISPLAY_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), GDM_TYPE_XDMCP_GREETER_DISPLAY, GdmXdmcpGreeterDisplayClass))
+-
+-typedef struct GdmXdmcpGreeterDisplayPrivate GdmXdmcpGreeterDisplayPrivate;
+-
+-typedef struct
+-{
+-        GdmXdmcpDisplay                parent;
+-        GdmXdmcpGreeterDisplayPrivate *priv;
+-} GdmXdmcpGreeterDisplay;
+-
+-typedef struct
+-{
+-        GdmXdmcpDisplayClass           parent_class;
+-
+-} GdmXdmcpGreeterDisplayClass;
+-
+-GType                     gdm_xdmcp_greeter_display_get_type         (void);
+-
+-
+-GdmDisplay *              gdm_xdmcp_greeter_display_new              (const char              *hostname,
+-                                                                      int                      number,
+-                                                                      GdmAddress              *addr,
+-                                                                      gint32                   serial_number);
+-
+-G_END_DECLS
+-
+-#endif /* __GDM_XDMCP_GREETER_DISPLAY_H */
+-- 
+2.15.1
+

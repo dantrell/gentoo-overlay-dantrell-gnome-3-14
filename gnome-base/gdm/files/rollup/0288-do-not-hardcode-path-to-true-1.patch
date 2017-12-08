@@ -1,0 +1,39 @@
+From ec51fa369bf3012357c9349a35152e82b0d3b80d Mon Sep 17 00:00:00 2001
+From: Antoine Jacoutot <ajacoutot@gnome.org>
+Date: Thu, 16 Apr 2015 13:30:39 +0200
+Subject: [PATCH 288/315] Do not hardcode path to true(1).
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747987
+---
+ data/applications/mime-dummy-handler.desktop | 2 +-
+ data/dconf/defaults/00-upstream-settings     | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/data/applications/mime-dummy-handler.desktop b/data/applications/mime-dummy-handler.desktop
+index c94779c6..8f6623eb 100644
+--- a/data/applications/mime-dummy-handler.desktop
++++ b/data/applications/mime-dummy-handler.desktop
+@@ -1,6 +1,6 @@
+ [Desktop Entry]
+ Type=Application
+ Name=Dummy URI Handler
+-Exec=/bin/true %U
++Exec=true %U
+ Terminal=false
+ StartupNotify=false
+diff --git a/data/dconf/defaults/00-upstream-settings b/data/dconf/defaults/00-upstream-settings
+index fa81c262..e2745fc1 100644
+--- a/data/dconf/defaults/00-upstream-settings
++++ b/data/dconf/defaults/00-upstream-settings
+@@ -13,7 +13,7 @@ enable=true
+ show-desktop-icons=false
+ 
+ [org/gnome/desktop/default-applications/terminal]
+-exec='/bin/true'
++exec='true'
+ 
+ [org/gnome/desktop/interface]
+ toolkit-accessibility=true
+-- 
+2.15.1
+

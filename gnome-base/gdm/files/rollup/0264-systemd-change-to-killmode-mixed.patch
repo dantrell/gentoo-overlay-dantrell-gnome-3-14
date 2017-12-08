@@ -1,0 +1,30 @@
+From 7074f2a54124b54f8e85a19f6fecdb8232782a60 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 30 Mar 2015 21:53:33 -0400
+Subject: [PATCH 264/315] systemd: change to KillMode=mixed
+
+This is like the previous commit, but a slightly better choice,
+because it's more fault tolerant; if GDM fails to kill a child,
+systemd will help out.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747088
+---
+ data/gdm.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index 6608c2c3..fb0ffdcf 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -21,7 +21,7 @@ OnFailure=plymouth-quit.service
+ 
+ [Service]
+ ExecStart=@sbindir@/gdm
+-KillMode=process
++KillMode=mixed
+ Restart=always
+ IgnoreSIGPIPE=no
+ BusName=org.gnome.DisplayManager
+-- 
+2.15.1
+

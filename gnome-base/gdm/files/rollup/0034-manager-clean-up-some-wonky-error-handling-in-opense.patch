@@ -1,0 +1,69 @@
+From be3118589c4f3bfc75fada09aebca46e8e2e3595 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 13 Feb 2015 13:31:41 -0500
+Subject: [PATCH 034/315] manager: clean up some wonky error handling in
+ OpenSession
+
+We're leaking errors without sending them back to the caller.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-manager.c | 25 ++++++++++++++-----------
+ 1 file changed, 14 insertions(+), 11 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 684e462e..a54931d1 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -921,7 +921,6 @@ gdm_manager_handle_open_session (GdmDBusManager        *manager,
+ {
+         GdmManager       *self = GDM_MANAGER (manager);
+         const char       *sender;
+-        GError           *error = NULL;
+         GDBusConnection  *connection;
+         GdmDisplay       *display = NULL;
+         GdmSession       *session;
+@@ -948,26 +947,30 @@ gdm_manager_handle_open_session (GdmDBusManager        *manager,
+         session = get_seed_session_for_display (display);
+ 
+         if (gdm_session_is_running (session)) {
+-                error = g_error_new (G_DBUS_ERROR,
+-                                     G_DBUS_ERROR_ACCESS_DENIED,
+-                                     _("Can only be called before user is logged in"));
+-                return FALSE;
++                g_dbus_method_invocation_return_error_literal (invocation,
++                                                               G_DBUS_ERROR,
++                                                               G_DBUS_ERROR_ACCESS_DENIED,
++                                                               _("Can only be called before user is logged in"));
++                return TRUE;
+         }
+ 
+         allowed_user = gdm_session_get_allowed_user (session);
+ 
+         if (uid != allowed_user) {
+-                error = g_error_new (G_DBUS_ERROR,
+-                                     G_DBUS_ERROR_ACCESS_DENIED,
+-                                     _("Caller not GDM"));
+-                return FALSE;
++                g_dbus_method_invocation_return_error_literal (invocation,
++                                                               G_DBUS_ERROR,
++                                                               G_DBUS_ERROR_ACCESS_DENIED,
++                                                               _("Caller not GDM"));
++                return TRUE;
+         }
+ 
+         address = gdm_session_get_server_address (session);
+ 
+         if (address == NULL) {
+-                g_dbus_method_invocation_return_gerror (invocation, error);
+-                g_error_free (error);
++                g_dbus_method_invocation_return_error_literal (invocation,
++                                                               G_DBUS_ERROR,
++                                                               G_DBUS_ERROR_ACCESS_DENIED,
++                                                               _("Unable to open private communication channel"));
+                 return TRUE;
+         }
+ 
+-- 
+2.15.1
+

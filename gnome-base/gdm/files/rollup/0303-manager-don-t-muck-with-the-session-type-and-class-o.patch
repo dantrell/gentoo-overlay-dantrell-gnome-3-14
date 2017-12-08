@@ -1,0 +1,38 @@
+From 931154ba97e2a37d2580b9aeb59c160e131edfcb Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 10 Sep 2015 09:41:18 -0400
+Subject: [PATCH 303/315] manager: don't muck with the session type and class
+ of stub display (autologin)
+
+Normally at startup a display is created of class "greeter" for the
+login screen to use.  That display isn't used in the case automatic
+login is enabled.  There's some iffy code to try to change the class
+from "greeter" to "user" in the automatic login case.  That code is
+wrong, because in the automatic login case a new display is created
+specifically for the user session.  The greeter session is abandoned,
+instead of used, so mucking with it's class and type is wrong.
+
+This commit removes the code that does that mucking.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-manager.c | 3 ---
+ 1 file changed, 3 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 5e496f70..bfd55883 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1742,9 +1742,6 @@ set_up_automatic_login_session (GdmManager *manager,
+         GdmSession *session;
+         gboolean is_initial;
+ 
+-        g_object_set (G_OBJECT (display), "session-class", "user", NULL);
+-        g_object_set (G_OBJECT (display), "session-type", NULL, NULL);
+-
+         /* 0 is root user; since the daemon talks to the session object
+          * directly, itself, for automatic login
+          */
+-- 
+2.15.1
+

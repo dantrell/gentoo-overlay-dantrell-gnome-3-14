@@ -1,0 +1,78 @@
+From 340063f9a587e6b1bb04d3fde26979e4452ca76f Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 13 Nov 2014 10:57:05 -0500
+Subject: [PATCH 005/315] worker: make sure SavedSessionNameRead is emitted for
+ conversations without initial username
+
+We emit SavedSessionNameRead when we know the session associated with a
+user account. Unfortunately, we don't emit the signal in the case we
+don't know the username up front (such as with a smartcard).
+
+This commit fixes it to be emitted in that case.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=740139
+---
+ daemon/gdm-session-worker.c | 33 +++++++++++++++++++++------------
+ 1 file changed, 21 insertions(+), 12 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 89505c2f..12753bf9 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -2399,18 +2399,6 @@ do_setup (GdmSessionWorker *worker)
+                 g_dbus_method_invocation_take_error (worker->priv->pending_invocation, error);
+         }
+         worker->priv->pending_invocation = NULL;
+-
+-        /* These singal handlers should be disconnected after the loading,
+-         * so that gdm_session_settings_set_* APIs don't cause the emitting
+-         * of Saved*NameRead D-Bus signals any more.
+-         */
+-        g_signal_handlers_disconnect_by_func (worker->priv->user_settings,
+-                                              G_CALLBACK (on_saved_session_name_read),
+-                                              worker);
+-
+-        g_signal_handlers_disconnect_by_func (worker->priv->user_settings,
+-                                              G_CALLBACK (on_saved_language_name_read),
+-                                              worker);
+ }
+ 
+ static void
+@@ -2504,6 +2492,18 @@ on_settings_is_loaded_changed (GdmSessionSettings *user_settings,
+                 return;
+         }
+ 
++        /* These singal handlers should be disconnected after the loading,
++         * so that gdm_session_settings_set_* APIs don't cause the emitting
++         * of Saved*NameRead D-Bus signals any more.
++         */
++        g_signal_handlers_disconnect_by_func (worker->priv->user_settings,
++                                              G_CALLBACK (on_saved_session_name_read),
++                                              worker);
++
++        g_signal_handlers_disconnect_by_func (worker->priv->user_settings,
++                                              G_CALLBACK (on_saved_language_name_read),
++                                              worker);
++
+         if (worker->priv->state == GDM_SESSION_WORKER_STATE_NONE) {
+                 g_debug ("GdmSessionWorker: queuing setup for user: %s %s",
+                          worker->priv->username, worker->priv->display_device);
+@@ -2773,6 +2773,15 @@ gdm_session_worker_handle_setup (GdmDBusWorker         *object,
+         worker->priv->display_is_local = display_is_local;
+         worker->priv->username = NULL;
+ 
++        g_signal_connect_swapped (worker->priv->user_settings,
++                                  "notify::language-name",
++                                  G_CALLBACK (on_saved_language_name_read),
++                                  worker);
++
++        g_signal_connect_swapped (worker->priv->user_settings,
++                                  "notify::session-name",
++                                  G_CALLBACK (on_saved_session_name_read),
++                                  worker);
+         return TRUE;
+ }
+ 
+-- 
+2.15.1
+

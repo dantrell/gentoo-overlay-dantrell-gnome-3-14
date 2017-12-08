@@ -1,0 +1,35 @@
+From 0950c62478a338189f3e50d3dd6e19c2b9d4de3b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 19 Dec 2014 08:52:40 -0500
+Subject: [PATCH 019/315] configure: require --without-plymouth to disable
+ plymouth support
+
+Plymouth is used pretty widely these days, and we're getting bugs
+from people who didn't have the buildrequires, didn't get plymouth
+support and were left with a broken setup.
+
+Instead, just just let the distros that don't use plymouth opt out.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=740802
+---
+ configure.ac | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index a567a821..e2ec4e25 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -263,8 +263,8 @@ AC_ARG_ENABLE(wayland-support,
+ 
+ AC_ARG_WITH(plymouth,
+             AS_HELP_STRING([--with-plymouth],
+-                           [Add plymouth support @<:@default=auto@:>@]),
+-            [with_plymouth=$withval], [with_plymouth=auto])
++                           [Add plymouth support @<:@default=yes@:>@]),,
++                           [with_plymouth=yes])
+ 
+ AC_ARG_WITH(at-spi-registryd-directory,
+             AS_HELP_STRING([--with-at-spi-registryd-directory],
+-- 
+2.15.1
+

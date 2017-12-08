@@ -1,0 +1,37 @@
+From 172534d4a803d7905c10a76dc7bd6652cebc5f81 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 7 Apr 2015 10:57:36 -0400
+Subject: [PATCH 279/315] manager: properly query display number when built
+ without plymouth
+
+The code to query the display number of the display object is
+erroneously tucked away in
+
+guards. This leads to the display device getting queried prematurely.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747351
+---
+ daemon/gdm-manager.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 0dfce868..fc357d3b 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1803,11 +1803,12 @@ on_display_status_changed (GdmDisplay *display,
+ 
+         g_object_get (display,
+                       "is-local", &display_is_local,
+-                      "x11-display-number", &display_number,
+                       NULL);
+         quit_plymouth = display_is_local && manager->priv->plymouth_is_running;
+ #endif
+ 
++        g_object_get (display, "x11-display-number", &display_number, NULL);
++
+         status = gdm_display_get_status (display);
+ 
+         switch (status) {
+-- 
+2.15.1
+

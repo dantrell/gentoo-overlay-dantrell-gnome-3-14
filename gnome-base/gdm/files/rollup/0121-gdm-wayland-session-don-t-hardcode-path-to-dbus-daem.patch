@@ -1,0 +1,38 @@
+From 462cb489d33654012c70d12c76e4de8c323cbfe0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 10:26:06 -0500
+Subject: [PATCH 121/315] gdm-wayland-session: don't hardcode path to
+ dbus-daemon
+
+It's not always in BINDIR, but it is always in the PATH,
+so just let the shell/execvp figure it out.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744787
+---
+ daemon/gdm-wayland-session.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-wayland-session.c b/daemon/gdm-wayland-session.c
+index 3f2651ac..b2f38088 100644
+--- a/daemon/gdm-wayland-session.c
++++ b/daemon/gdm-wayland-session.c
+@@ -37,7 +37,6 @@
+ #include <gio/gunixinputstream.h>
+ 
+ #define BUS_ADDRESS_FILENO (STDERR_FILENO + 1)
+-#define DBUS_DAEMON BINDIR "/dbus-daemon"
+ 
+ typedef struct
+ {
+@@ -119,7 +118,7 @@ spawn_bus (State        *state,
+ 
+         bus_address_fd_string = g_strdup_printf ("%d", BUS_ADDRESS_FILENO);
+ 
+-        g_ptr_array_add (arguments, DBUS_DAEMON);
++        g_ptr_array_add (arguments, "dbus-daemon");
+ 
+         g_ptr_array_add (arguments, "--print-address");
+         g_ptr_array_add (arguments, bus_address_fd_string);
+-- 
+2.15.1
+

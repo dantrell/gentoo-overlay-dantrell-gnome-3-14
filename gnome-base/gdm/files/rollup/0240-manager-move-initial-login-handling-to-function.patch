@@ -1,0 +1,55 @@
+From 63b0ce137248fb210b22227bb85956540e02bae3 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Mar 2015 13:46:21 -0400
+Subject: [PATCH 240/315] manager: move initial login handling to function
+
+After the greeter is started, we may start any pending initial-setup
+login from the user.  Right now we do that directly from
+on_display_status_changed.
+
+This commit moves the code off to a subroutine, since it's only going
+to get more complicated in the future.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746492
+---
+ daemon/gdm-manager.c | 17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index a0a95f3f..902810b3 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1679,6 +1679,19 @@ set_up_greeter_session (GdmManager *manager,
+         gdm_display_start_greeter_session (display);
+ }
+ 
++static void
++greeter_display_started (GdmManager *manager,
++                         GdmDisplay *display)
++{
++        if (manager->priv->ran_once) {
++                return;
++        }
++
++        maybe_start_pending_initial_login (manager, display);
++
++        manager->priv->ran_once = TRUE;
++}
++
+ static void
+ on_display_status_changed (GdmDisplay *display,
+                            GParamSpec *arg1,
+@@ -1729,9 +1742,7 @@ on_display_status_changed (GdmDisplay *display,
+                                         manager->priv->plymouth_is_running = FALSE;
+                                 }
+ #endif
+-                                maybe_start_pending_initial_login (manager, display);
+-
+-                                manager->priv->ran_once = TRUE;
++                                greeter_display_started (manager, display);
+                         }
+                         break;
+                 case GDM_DISPLAY_FAILED:
+-- 
+2.15.1
+

@@ -12,7 +12,11 @@ LICENSE="GPL-2+"
 SLOT="2"
 KEYWORDS="*"
 
-IUSE="+bluetooth +colord +cups debug +deprecated +gnome-online-accounts +ibus input_devices_wacom kerberos networkmanager systemd v4l vanilla-datetime vanilla-hostname"
+IUSE="+bluetooth ck +colord +cups debug elogind +gnome-online-accounts +ibus input_devices_wacom kerberos libinput networkmanager systemd v4l vanilla-datetime vanilla-hostname wayland"
+REQUIRED_USE="
+	?? ( ck elogind systemd )
+	wayland? ( || ( elogind systemd ) )
+"
 
 # False positives caused by nested configure scripts
 QA_CONFIGURE_OPTIONS=".*"
@@ -23,7 +27,7 @@ QA_CONFIGURE_OPTIONS=".*"
 COMMON_DEPEND="
 	>=dev-libs/glib-2.39.91:2[dbus]
 	>=x11-libs/gdk-pixbuf-2.23.0:2
-	>=x11-libs/gtk+-3.13:3[X]
+	>=x11-libs/gtk+-3.13:3[X,wayland?]
 	>=gnome-base/gsettings-desktop-schemas-3.13.91
 	>=gnome-base/gnome-desktop-3.11.3:3=
 	>=gnome-base/gnome-settings-daemon-3.8.3[colord?,policykit]
@@ -40,7 +44,6 @@ COMMON_DEPEND="
 	>=sys-power/upower-0.99:=
 	>=x11-libs/libnotify-0.7.3:0=
 
-	virtual/opengl
 	x11-apps/xmodmap
 	x11-libs/cairo
 	x11-libs/libX11
@@ -78,6 +81,10 @@ COMMON_DEPEND="
 # <gnome-color-manager-3.1.2 has file collisions with g-c-c-3.1.x
 # libgnomekbd needed only for gkbd-keyboard-display tool
 #
+# mouse panel needs a concrete set of X11 drivers at runtime, bug #580474
+# Also we need newer driver versions to allow wacom and libinput drivers to
+# not collide
+#
 # system-config-printer provides org.fedoraproject.Config.Printing service and interface
 # cups-pk-helper provides org.opensuse.cupspkhelper.mechanism.all-edit policykit helper policy
 RDEPEND="${COMMON_DEPEND}
@@ -88,6 +95,10 @@ RDEPEND="${COMMON_DEPEND}
 		net-print/cups-pk-helper )
 	input_devices_wacom? ( gnome-base/gnome-settings-daemon[input_devices_wacom] )
 	ibus? ( >=gnome-base/libgnomekbd-3 )
+	wayland? ( libinput? ( dev-libs/libinput ) )
+	!wayland? (
+		libinput? ( >=x11-drivers/xf86-input-libinput-0.19.0 )
+		input_devices_wacom? ( >=x11-drivers/xf86-input-wacom-0.33.0 ) )
 
 	!<gnome-base/gdm-2.91.94
 	!<gnome-extra/gnome-color-manager-3.1.2
@@ -95,15 +106,10 @@ RDEPEND="${COMMON_DEPEND}
 	!<gnome-extra/gnome-media-2.32.0-r300
 	!<net-wireless/gnome-bluetooth-3.3.2
 
-	!deprecated? (
-		systemd? ( >=sys-apps/systemd-186:0= )
-	)
-	!systemd? (
-		app-admin/openrc-settingsd
-		sys-auth/consolekit
-
-		deprecated? ( >=sys-power/upower-0.99:=[deprecated] )
-	)
+	ck? ( >=sys-power/upower-0.99:=[ck] )
+	elogind? ( sys-auth/elogind )
+	systemd? ( >=sys-apps/systemd-186:0= )
+	!systemd? ( app-admin/openrc-settingsd )
 "
 # PDEPEND to avoid circular dependency
 PDEPEND=">=gnome-base/gnome-session-2.91.6-r1"
@@ -137,7 +143,7 @@ src_prepare() {
 	cp "${FILESDIR}"/timezones/*.png panels/datetime/data/ || die
 	eapply "${FILESDIR}"/${PN}-3.17.3-datetime-update-timezones-for-new-pyongyang-time.patch
 
-	if use deprecated; then
+	if use ck; then
 		# From Funtoo:
 		# 	https://bugs.funtoo.org/browse/FL-1329
 		eapply "${FILESDIR}"/${PN}-3.14.5-restore-deprecated-code.patch
@@ -165,10 +171,10 @@ src_configure() {
 		--disable-static \
 		--enable-documentation \
 		$(use_enable bluetooth) \
+		$(use_enable ck deprecated) \
 		$(use_enable colord color) \
 		$(use_enable cups) \
 		$(usex debug --enable-debug=yes ' ') \
-		$(use_enable deprecated) \
 		$(use_enable gnome-online-accounts goa) \
 		$(use_enable ibus) \
 		$(use_enable kerberos) \

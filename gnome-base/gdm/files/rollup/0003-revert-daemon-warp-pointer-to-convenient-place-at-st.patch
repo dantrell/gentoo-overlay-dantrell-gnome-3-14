@@ -1,0 +1,170 @@
+From 306674a99fa27ad8990f287845143493dec43fb6 Mon Sep 17 00:00:00 2001
+From: Cosimo Cecchi <cosimo@endlessm.com>
+Date: Mon, 20 Oct 2014 15:21:35 -0700
+Subject: [PATCH 003/315] Revert "daemon: warp pointer to convenient place at
+ startup"
+
+This reverts commit 90ab791544d676629800e80fcf7a28a628f94e94.
+
+Conflicts:
+	configure.ac
+	daemon/gdm-simple-slave.c
+	daemon/gdm-slave.c
+	daemon/gdm-slave.h
+
+https://bugzilla.gnome.org/show_bug.cgi?id=738904
+---
+ configure.ac              |  4 +--
+ daemon/gdm-simple-slave.c |  3 --
+ daemon/gdm-slave.c        | 81 -----------------------------------------------
+ daemon/gdm-slave.h        |  2 --
+ 4 files changed, 2 insertions(+), 88 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index cbf7a00f..924543b5 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -90,12 +90,12 @@ AC_SUBST(DAEMON_LIBS)
+ 
+ GLIB_GSETTINGS
+ 
+-PKG_CHECK_MODULES(XLIB, x11 xau xrandr, ,
++PKG_CHECK_MODULES(XLIB, x11 xau, ,
+   [AC_PATH_XTRA
+     if test "x$no_x" = xyes; then
+       AC_MSG_ERROR("no (requires X development libraries)")
+     else
+-      XLIB_LIBS="$X_PRE_LIBS $X_LIBS -lXau -lX11 -lXext -lXrandr $X_EXTRA_LIBS"
++      XLIB_LIBS="$X_PRE_LIBS $X_LIBS -lXau -lX11 -lXext $X_EXTRA_LIBS"
+       XLIB_CFLAGS=$X_CFLAGS
+     fi])
+ AC_SUBST(XLIB_CFLAGS)
+diff --git a/daemon/gdm-simple-slave.c b/daemon/gdm-simple-slave.c
+index 04212d2c..6cedb52b 100644
+--- a/daemon/gdm-simple-slave.c
++++ b/daemon/gdm-simple-slave.c
+@@ -408,9 +408,6 @@ plymouth_quit_without_transition (GdmSimpleSlave *slave)
+ static void
+ setup_server (GdmSimpleSlave *slave)
+ {
+-        /* Put cursor out of the way on first head */
+-        gdm_slave_set_initial_cursor_position (GDM_SLAVE (slave));
+-
+ #ifdef WITH_PLYMOUTH
+         /* Plymouth is waiting for the go-ahead to exit */
+         if (slave->priv->plymouth_is_running) {
+diff --git a/daemon/gdm-slave.c b/daemon/gdm-slave.c
+index a6d54ba7..907e7f8e 100644
+--- a/daemon/gdm-slave.c
++++ b/daemon/gdm-slave.c
+@@ -40,7 +40,6 @@
+ #include <X11/Xlib.h> /* for Display */
+ #include <X11/Xatom.h> /* for XA_PIXMAP */
+ #include <X11/cursorfont.h> /* for watch cursor */
+-#include <X11/extensions/Xrandr.h>
+ #include <X11/Xatom.h>
+ 
+ #ifdef WITH_SYSTEMD
+@@ -122,86 +121,6 @@ gdm_slave_error_quark (void)
+         return ret;
+ }
+ 
+-static void
+-determine_initial_cursor_position (GdmSlave *slave,
+-                                   int      *x,
+-                                   int      *y)
+-{
+-        XRRScreenResources *resources;
+-        RROutput primary_output;
+-        int i;
+-
+-        /* If this function fails for whatever reason,
+-         * put the pointer in the lower right corner of the screen.
+-         */
+-        *x = .9 * DisplayWidth (slave->priv->server_display,
+-                                DefaultScreen (slave->priv->server_display));
+-        *y = .9 * DisplayHeight (slave->priv->server_display,
+-                                 DefaultScreen (slave->priv->server_display));
+-
+-        gdm_error_trap_push ();
+-        resources = XRRGetScreenResources (slave->priv->server_display,
+-                                           DefaultRootWindow (slave->priv->server_display));
+-        primary_output = XRRGetOutputPrimary (slave->priv->server_display,
+-                                              DefaultRootWindow (slave->priv->server_display));
+-        gdm_error_trap_pop ();
+-
+-        if (resources == NULL) {
+-                return;
+-        }
+-
+-        for (i = 0; i < resources->noutput; i++) {
+-                XRROutputInfo *output_info;
+-
+-                if (primary_output == None) {
+-                        primary_output = resources->outputs[0];
+-                }
+-
+-                if (resources->outputs[i] != primary_output) {
+-                        continue;
+-                }
+-
+-                output_info = XRRGetOutputInfo (slave->priv->server_display,
+-                                                resources,
+-                                                resources->outputs[i]);
+-
+-                if (output_info->connection != RR_Disconnected &&
+-                    output_info->crtc != 0) {
+-                        XRRCrtcInfo *crtc_info;
+-
+-                        crtc_info = XRRGetCrtcInfo (slave->priv->server_display,
+-                                                    resources,
+-                                                    output_info->crtc);
+-                        /* position it sort of in the lower right
+-                         */
+-                        *x = crtc_info->x + .9 * crtc_info->width;
+-                        *y = crtc_info->y + .9 * crtc_info->height;
+-                        XRRFreeCrtcInfo (crtc_info);
+-                }
+-
+-                XRRFreeOutputInfo (output_info);
+-                break;
+-        }
+-
+-        XRRFreeScreenResources (resources);
+-}
+-
+-void
+-gdm_slave_set_initial_cursor_position (GdmSlave *slave)
+-{
+-        if (slave->priv->server_display != NULL) {
+-                int x, y;
+-
+-                determine_initial_cursor_position (slave, &x, &y);
+-                XWarpPointer(slave->priv->server_display,
+-                             None,
+-                             DefaultRootWindow (slave->priv->server_display),
+-                             0, 0,
+-                             0, 0,
+-                             x, y);
+-        }
+-}
+-
+ static void
+ gdm_slave_setup_xhost_auth (XHostAddress *host_entries, XServerInterpretedAddress *si_entries)
+ {
+diff --git a/daemon/gdm-slave.h b/daemon/gdm-slave.h
+index 0db182f0..20b1cf32 100644
+--- a/daemon/gdm-slave.h
++++ b/daemon/gdm-slave.h
+@@ -83,8 +83,6 @@ gboolean            gdm_slave_add_user_authorization (GdmSlave   *slave,
+ 
+ gboolean            gdm_slave_connect_to_x11_display (GdmSlave   *slave);
+ 
+-void                gdm_slave_set_initial_cursor_position (GdmSlave *slave);
+-
+ void                gdm_slave_set_up_greeter_session (GdmSlave  *slave,
+                                                       char     **username);
+ void                gdm_slave_start_greeter_session  (GdmSlave  *slave);
+-- 
+2.15.1
+

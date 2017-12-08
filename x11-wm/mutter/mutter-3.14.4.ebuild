@@ -11,7 +11,11 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="debug +deprecated-background +introspection test wayland"
+IUSE="ck debug +deprecated-background elogind +introspection systemd test wayland"
+REQUIRED_USE="
+	?? ( ck elogind systemd )
+	wayland? ( || ( elogind systemd ) )
+"
 
 # libXi-1.7.4 or newer needed per:
 # https://bugzilla.gnome.org/show_bug.cgi?id=738944
@@ -54,8 +58,8 @@ COMMON_DEPEND="
 		>=dev-libs/wayland-1.5.90
 		>=media-libs/clutter-1.20[egl,wayland]
 		>=media-libs/mesa-10.3[egl,gbm,wayland]
-		media-libs/cogl:1.0=[kms]
-		sys-apps/systemd
+		media-libs/cogl:1.0=[wayland]
+		|| ( sys-auth/elogind sys-apps/systemd )
 		virtual/libgudev:=
 		x11-base/xorg-server[wayland]
 		x11-libs/libdrm:=
@@ -80,8 +84,13 @@ src_prepare() {
 	# Compat with Ubuntu metacity themes (e.g. x11-themes/light-themes)
 	eapply "${FILESDIR}"/${PN}-3.2.1-ignore-shadow-and-padding.patch
 
-	# Automagic fixes, upstream bug #746929
-	eapply "${FILESDIR}"/${PN}-3.14.2-automagic.patch
+	# From GNOME:
+	# 	https://bugzilla.gnome.org/show_bug.cgi?id=746929
+	eapply "${FILESDIR}"/${PN}-3.15.3-configure-add-explicit-disable-flags-for-native-backend-wayland.patch
+
+	if use elogind; then
+		eapply "${FILESDIR}"/${PN}-3.14.4-support-elogind.patch
+	fi
 
 	if use deprecated-background; then
 		eapply "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch

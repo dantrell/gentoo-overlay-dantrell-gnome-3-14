@@ -1,0 +1,35 @@
+From c27d48ba5b265a46e06ecdd2e398fb0e0b49823d Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 17:02:50 -0500
+Subject: [PATCH 173/315] daemon: make sure autologin display starts on initial
+ vt
+
+---
+ daemon/gdm-manager.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 9bdfb15f..9f354796 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2171,6 +2171,7 @@ start_autologin_conversation_if_necessary (GdmManager *manager,
+ {
+         gboolean enabled;
+         int delay = 0;
++        gboolean is_initial = FALSE;
+ 
+         gdm_display_get_timed_login_details (display, &enabled, NULL, &delay);
+ 
+@@ -2182,7 +2183,8 @@ start_autologin_conversation_if_necessary (GdmManager *manager,
+                 return;
+         }
+ 
+-        g_object_set (G_OBJECT (session), "display-is-initial", TRUE, NULL);
++        g_object_get (G_OBJECT (display), "is-initial", &is_initial, NULL);
++        g_object_set (G_OBJECT (session), "display-is-initial", is_initial, NULL);
+ 
+         g_debug ("GdmManager: Starting automatic login conversation");
+         gdm_session_start_conversation (session, "gdm-autologin");
+-- 
+2.15.1
+

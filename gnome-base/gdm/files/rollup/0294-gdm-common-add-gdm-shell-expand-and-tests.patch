@@ -1,0 +1,336 @@
+From c1ac955974955fd506890cd8948304cf9a669909 Mon Sep 17 00:00:00 2001
+From: Alexander Larsson <alexl@redhat.com>
+Date: Thu, 18 Jun 2015 11:57:12 +0200
+Subject: [PATCH 294/315] gdm-common: Add gdm_shell_expand() and tests
+
+This allows shell-like expansion of strings. It will be later
+used to allow configuring the environment via config files.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=751158
+---
+ common/gdm-common.c |  87 +++++++++++++++++++++++++++++++++++++++++
+ common/gdm-common.h |   9 +++++
+ tests/Makefile.am   |   2 +
+ tests/m-common.c    |  11 ++++++
+ tests/s-common.c    | 110 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ tests/s-common.h    |  28 +++++++++++++
+ 6 files changed, 247 insertions(+)
+ create mode 100644 tests/s-common.c
+ create mode 100644 tests/s-common.h
+
+diff --git a/common/gdm-common.c b/common/gdm-common.c
+index effd4bc7..d344c1f8 100644
+--- a/common/gdm-common.c
++++ b/common/gdm-common.c
+@@ -1025,3 +1025,90 @@ gdm_run_script (const char *dir,
+ 
+         return ret;
+ }
++
++gboolean
++gdm_shell_var_is_valid_char (gchar c, gboolean first)
++{
++        return (!first && g_ascii_isdigit (c)) ||
++                c == '_' ||
++                g_ascii_isalpha (c);
++}
++
++/* This expands a string somewhat similar to how a shell would do it
++   if it was enclosed inside double quotes.  It handles variable
++   expansion like $FOO and ${FOO}, single-char escapes using \, and
++   non-escaped # at the begining of a word is taken as a comment and ignored */
++char *
++gdm_shell_expand (const char *str,
++                  GdmExpandVarFunc expand_var_func,
++                  gpointer user_data)
++{
++        GString *s = g_string_new("");
++        const gchar *p, *start;
++        gchar c;
++        gboolean at_new_word;
++
++        p = str;
++        at_new_word = TRUE;
++        while (*p) {
++                c = *p;
++                if (c == '\\') {
++                        p++;
++                        c = *p;
++                        if (c != '\0') {
++                                p++;
++                                switch (c) {
++                                case '\\':
++                                        g_string_append_c (s, '\\');
++                                        break;
++                                case '$':
++                                        g_string_append_c (s, '$');
++                                        break;
++                                case '#':
++                                        g_string_append_c (s, '#');
++                                        break;
++                                default:
++                                        g_string_append_c (s, '\\');
++                                        g_string_append_c (s, c);
++                                        break;
++                                }
++                        }
++                } else if (c == '#' && at_new_word) {
++                        break;
++                } else if (c == '$') {
++                        gboolean brackets = FALSE;
++                        p++;
++                        if (*p == '{') {
++                                brackets = TRUE;
++                                p++;
++                        }
++                        start = p;
++                        while (*p != '\0' &&
++                               gdm_shell_var_is_valid_char (*p, p == start))
++                                p++;
++                        if (p == start || (brackets && *p != '}')) {
++                                /* Invalid variable, use as-is */
++                                g_string_append_c (s, '$');
++                                if (brackets)
++                                        g_string_append_c (s, '{');
++                                g_string_append_len (s, start, p - start);
++                        } else {
++                                gchar *expanded;
++                                gchar *var = g_strndup (start, p - start);
++                                if (brackets && *p == '}')
++                                        p++;
++
++                                expanded = expand_var_func (var, user_data);
++                                if (expanded)
++                                        g_string_append (s, expanded);
++                                g_free (var);
++                                g_free (expanded);
++                        }
++                } else {
++                        p++;
++                        g_string_append_c (s, c);
++                        at_new_word = g_ascii_isspace (c);
++                }
++        }
++        return g_string_free (s, FALSE);
++}
+diff --git a/common/gdm-common.h b/common/gdm-common.h
+index d876b66e..19dbbbb5 100644
+--- a/common/gdm-common.h
++++ b/common/gdm-common.h
+@@ -39,6 +39,9 @@
+ GQuark gdm_common_error_quark (void);
+ #define GDM_COMMON_ERROR gdm_common_error_quark()
+ 
++typedef char * (*GdmExpandVarFunc) (const char *var,
++                                    gpointer user_data);
++
+ G_BEGIN_DECLS
+ 
+ int            gdm_wait_on_pid           (int pid);
+@@ -67,6 +70,12 @@ gboolean       gdm_run_script             (const char *dir,
+                                            const char *display_hostname,
+                                            const char *display_x11_authority_file);
+ 
++gboolean      gdm_shell_var_is_valid_char (char c,
++                                           gboolean first);
++char *        gdm_shell_expand            (const char *str,
++                                           GdmExpandVarFunc expand_func,
++                                           gpointer user_data);
++
+ G_END_DECLS
+ 
+ #endif /* _GDM_COMMON_H */
+diff --git a/tests/Makefile.am b/tests/Makefile.am
+index 63fc198c..c6475af8 100644
+--- a/tests/Makefile.am
++++ b/tests/Makefile.am
+@@ -21,6 +21,8 @@ m_common_SOURCES =		\
+ 	m-common.c		\
+ 	s-common-address.c	\
+ 	s-common-address.h	\
++	s-common.c		\
++	s-common.h		\
+ 	$(NULL)
+ 
+ m_common_CFLAGS =		\
+diff --git a/tests/m-common.c b/tests/m-common.c
+index c5ff2f4a..62f1f44a 100644
+--- a/tests/m-common.c
++++ b/tests/m-common.c
+@@ -24,6 +24,7 @@
+ #include <glib-object.h>
+ 
+ #include "s-common-address.h"
++#include "s-common.h"
+ 
+ static gboolean no_fork = FALSE;
+ static gboolean verbose = FALSE;
+@@ -66,5 +67,15 @@ main (int argc, char **argv)
+         failed = srunner_ntests_failed (r);
+         srunner_free (r);
+ 
++        r = srunner_create (suite_common ());
++
++        if (no_fork) {
++                srunner_set_fork_status (r, CK_NOFORK);
++        }
++
++        srunner_run_all (r, verbose ? CK_VERBOSE : CK_NORMAL);
++        failed |= srunner_ntests_failed (r);
++        srunner_free (r);
++
+         return failed != 0;
+ }
+diff --git a/tests/s-common.c b/tests/s-common.c
+new file mode 100644
+index 00000000..c91306fe
+--- /dev/null
++++ b/tests/s-common.c
+@@ -0,0 +1,110 @@
++/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
++ *
++ * Copyright (C) 2007 Andrew Ziem <ahz001@gmail.com>
++ * Copyright (C) 2007 William Jon McCann <mccann@jhu.edu>
++ * Copyright (C) 2015 Alexander Larsson <alexl@redhat.com>
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#include <stdlib.h>
++#include <string.h>
++#include <stdio.h>
++#include <glib.h>
++#include <check.h>
++
++#include "gdm-common.h"
++#include "s-common.h"
++
++static void
++setup (void)
++{
++}
++
++static void
++teardown (void)
++{
++}
++
++static char *
++expand_fn (const char *var, gpointer data)
++{
++        if (strcmp (var, "FOO") == 0)
++                return g_strdup ("BAR");
++        if (strcmp (var, "FOO9") == 0)
++                return g_strdup ("XXX");
++        if (strcmp (var, "_FOO") == 0)
++                return g_strdup ("YYY");
++        if (strcmp (var, "FOO_FOO") == 0)
++                return g_strdup ("ZZZ");
++        return NULL;
++}
++
++static gboolean expands_to (const char *to_expand, const char *expanded)
++{
++        return strcmp (gdm_shell_expand (to_expand, expand_fn, NULL), expanded) == 0;
++}
++
++START_TEST (test_gdm_shell_expand)
++{
++        fail_unless (expands_to ("foo", "foo"));
++        fail_unless (expands_to ("foo ", "foo "));
++        fail_unless (expands_to ("foo#bar", "foo#bar"));
++        fail_unless (expands_to ("foo #bar", "foo "));
++        fail_unless (expands_to ("#bar", ""));
++        fail_unless (expands_to ("foo #bar gazonk", "foo "));
++        fail_unless (expands_to ("foo #bar gazonk", "foo "));
++        fail_unless (expands_to ("foo #bar gazonk", "foo "));
++        fail_unless (expands_to ("$FOO", "BAR"));
++        fail_unless (expands_to ("$9FOO", "$9FOO"));
++        fail_unless (expands_to ("$FOO9", "XXX"));
++        fail_unless (expands_to ("${FOO}9", "BAR9"));
++        fail_unless (expands_to ("$_FOO", "YYY"));
++        fail_unless (expands_to ("$FOO_FOO", "ZZZ"));
++        fail_unless (expands_to ("${FOO}", "BAR"));
++        fail_unless (expands_to ("$FOO$FOO", "BARBAR"));
++        fail_unless (expands_to ("${FOO}${FOO}", "BARBAR"));
++        fail_unless (expands_to ("$FOO${FOO}", "BARBAR"));
++        fail_unless (expands_to ("$foo", ""));
++        fail_unless (expands_to ("$FOOBAR", ""));
++        fail_unless (expands_to ("$FOO/BAR", "BAR/BAR"));
++        fail_unless (expands_to ("${FOO}BAR", "BARBAR"));
++        fail_unless (expands_to ("$/BAR", "$/BAR"));
++        fail_unless (expands_to ("${FOO BAR}BAR", "${FOO BAR}BAR"));
++        fail_unless (expands_to ("${}BAR", "${}BAR"));
++        fail_unless (expands_to ("${$FOO}BAR", "${BAR}BAR"));
++        fail_unless (expands_to ("\\$foo", "$foo"));
++        fail_unless (expands_to ("a\\\\b", "a\\b"));
++        fail_unless (expands_to ("a\\b", "a\\b"));
++        fail_unless (expands_to ("a\\#b", "a#b"));
++}
++END_TEST
++
++Suite *
++suite_common (void)
++{
++        Suite *s;
++        TCase *tc_core;
++
++        s = suite_create ("gdm-common");
++        tc_core = tcase_create ("core");
++
++        tcase_add_checked_fixture (tc_core, setup, teardown);
++        tcase_add_test (tc_core, test_gdm_shell_expand);
++        suite_add_tcase (s, tc_core);
++
++        return s;
++}
+diff --git a/tests/s-common.h b/tests/s-common.h
+new file mode 100644
+index 00000000..561186f3
+--- /dev/null
++++ b/tests/s-common.h
+@@ -0,0 +1,28 @@
++/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
++ *
++ * Copyright (C) 2015 Alexander Larsson <alexl@redhat.com>
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Library General Public
++ * License as published by the Free Software Foundation; either
++ * version 2 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Library General Public License for more details.
++ *
++ * You should have received a copy of the GNU Library General Public
++ * License along with this library; if not, write to the
++ * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
++ * Boston, MA 02110-1301, USA.
++ */
++
++#ifndef __S_COMMON_H
++#define __S_COMMON_H
++
++#include <check.h>
++
++Suite   *suite_common                 (void);
++
++#endif /* __S_COMMON_H */
+-- 
+2.15.1
+

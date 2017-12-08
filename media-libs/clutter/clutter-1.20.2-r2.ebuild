@@ -29,12 +29,11 @@ RDEPEND="
 	>=x11-libs/cairo-1.12:=[aqua?,glib]
 	>=x11-libs/pango-1.30[introspection?]
 
-	virtual/opengl
 	x11-libs/libdrm:=
 
 	egl? (
 		>=dev-libs/libinput-0.8
-		media-libs/cogl[gles2,kms]
+		media-libs/cogl[gles2,wayland]
 		>=virtual/libgudev-136
 		x11-libs/libxkbcommon
 	)
@@ -64,12 +63,16 @@ DEPEND="${RDEPEND}
 "
 
 src_prepare() {
+	if ! use wayland; then
+		# From GNOME:
+		# 	https://git.gnome.org/browse/clutter/commit/?id=be8602fbb491c30c1e2febb92553375b2f4ce584
+		eapply "${FILESDIR}"/${PN}-1.20.2-reorganize-backends.patch
+	fi
+
 	# From GNOME:
-	# 	https://git.gnome.org/browse/clutter/commit/?id=be8602fbb491c30c1e2febb92553375b2f4ce584
 	# 	https://git.gnome.org/browse/clutter/commit/?id=c1987a5c06d912e8ff7d2541fc266f93c1d65477
 	# 	https://git.gnome.org/browse/clutter/commit/?id=96abbf38bc9d048ab8b0ad51a99f47cbb05c01ad
 	# 	https://git.gnome.org/browse/clutter/commit/?id=ede13b11d72a310e535f9a6f0b7e3f774f5529dc
-	eapply "${FILESDIR}"/${PN}-1.20.2-reorganize-backends.patch
 	eapply "${FILESDIR}"/${PN}-1.20.3-clutter-stage-cogl-match-egls-behavior-of-eglswapbufferswithdamage.patch
 	eapply "${FILESDIR}"/${PN}-1.20.3-actor-use-the-real-opacity-when-clearing-the-stage.patch
 	eapply "${FILESDIR}"/${PN}-1.21.3-evdev-use-libinputs-new-merged-scroll-events.patch
@@ -86,7 +89,7 @@ src_prepare() {
 src_configure() {
 	# XXX: Conformance test suite (and clutter itself) does not work under Xvfb
 	# (GLX error blabla)
-	# XXX: Profiling, coverage disabled for now
+	# XXX: Profiling and coverage disabled for now
 	# XXX: What about cex100/win32 backends?
 	gnome2_src_configure \
 		--disable-profile \

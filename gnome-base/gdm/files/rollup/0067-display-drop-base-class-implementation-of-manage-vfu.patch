@@ -1,0 +1,56 @@
+From 804f7786a2ed2800a6c0fb72f4ce69f8e2d91d07 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 08:52:05 -0500
+Subject: [PATCH 067/315] display: drop base class implementation of manage
+ vfunc
+
+All it does is set the managed state, which the subclasses
+can do just as easily, so cut out some code.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c       | 7 -------
+ daemon/gdm-xdmcp-display.c | 2 +-
+ 2 files changed, 1 insertion(+), 8 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 3867deb0..36bfc9d0 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -607,12 +607,6 @@ _gdm_display_set_status (GdmDisplay *self,
+         }
+ }
+ 
+-static void
+-gdm_display_real_manage (GdmDisplay *self)
+-{
+-        _gdm_display_set_status (self, GDM_DISPLAY_MANAGED);
+-}
+-
+ static gboolean
+ gdm_display_real_prepare (GdmDisplay *self)
+ {
+@@ -1338,7 +1332,6 @@ gdm_display_class_init (GdmDisplayClass *klass)
+         object_class->finalize = gdm_display_finalize;
+ 
+         klass->prepare = gdm_display_real_prepare;
+-        klass->manage = gdm_display_real_manage;
+ 
+         g_object_class_install_property (object_class,
+                                          PROP_ID,
+diff --git a/daemon/gdm-xdmcp-display.c b/daemon/gdm-xdmcp-display.c
+index 7241cafe..be2f0d58 100644
+--- a/daemon/gdm-xdmcp-display.c
++++ b/daemon/gdm-xdmcp-display.c
+@@ -205,7 +205,7 @@ gdm_xdmcp_display_manage (GdmDisplay *display)
+ 
+         g_timeout_add (500, (GSourceFunc)idle_connect_to_display, self);
+ 
+-        GDM_DISPLAY_CLASS (gdm_xdmcp_display_parent_class)->manage (display);
++        g_object_set (G_OBJECT (self), "status", GDM_DISPLAY_MANAGED, NULL);
+ }
+ 
+ static void
+-- 
+2.15.1
+

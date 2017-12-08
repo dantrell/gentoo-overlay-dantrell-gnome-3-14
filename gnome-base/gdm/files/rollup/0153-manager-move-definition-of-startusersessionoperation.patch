@@ -1,0 +1,60 @@
+From 1844bea100cd20046eb01c4a4d8f1b5071c58a7a Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 24 Feb 2015 21:06:55 -0500
+Subject: [PATCH 153/315] manager: move definition of StartUserSessionOperation
+ up
+
+We're going to call it higher in the code, so move it up a bit
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745139
+---
+ daemon/gdm-manager.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 297129b6..34028663 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -66,6 +66,14 @@
+ #define CK_SEAT_INTERFACE    "org.freedesktop.ConsoleKit.Seat"
+ #define CK_SESSION_INTERFACE "org.freedesktop.ConsoleKit.Session"
+ 
++typedef struct
++{
++        GdmManager *manager;
++        GdmSession *session;
++        char *service_name;
++        guint idle_id;
++} StartUserSessionOperation;
++
+ struct GdmManagerPrivate
+ {
+         GdmDisplayStore        *display_store;
+@@ -117,6 +125,9 @@ static void     gdm_manager_finalize    (GObject         *object);
+ static void     create_embryonic_user_session_for_display (GdmManager *manager,
+                                                            GdmDisplay *display,
+                                                            uid_t       allowed_user);
++
++static void     start_user_session (GdmManager                *manager,
++                                    StartUserSessionOperation *operation);
+ static void     touch_ran_once_marker_file  (GdmManager *manager);
+ 
+ static gpointer manager_object = NULL;
+@@ -1551,14 +1562,6 @@ on_display_removed (GdmDisplayStore *display_store,
+         }
+ }
+ 
+-typedef struct
+-{
+-        GdmManager *manager;
+-        GdmSession *session;
+-        char *service_name;
+-        guint idle_id;
+-} StartUserSessionOperation;
+-
+ static void
+ destroy_start_user_session_operation (StartUserSessionOperation *operation)
+ {
+-- 
+2.15.1
+

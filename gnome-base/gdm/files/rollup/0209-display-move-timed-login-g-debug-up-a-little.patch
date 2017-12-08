@@ -1,0 +1,56 @@
+From 188b5422eaf9b3cee3b30f98f93be5c8db8bfb21 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 10 Mar 2015 07:39:18 -0400
+Subject: [PATCH 209/315] display: move timed login g_debug up a little
+
+This way we aren't printing gibberish from the already
+freed username.
+---
+ daemon/gdm-display.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index a0b38990..b2a53a2d 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -461,18 +461,6 @@ gdm_display_get_timed_login_details (GdmDisplay *self,
+         }
+ 
+  out:
+-        if (enabledp != NULL) {
+-                *enabledp = enabled;
+-        }
+-        if (usernamep != NULL) {
+-                *usernamep = username;
+-        } else {
+-                g_free (username);
+-        }
+-        if (delayp != NULL) {
+-                *delayp = delay;
+-        }
+-
+         if (enabled) {
+                 g_debug ("GdmDisplay: Got timed login details for display %s (seat %s): %d %s %d",
+                          self->priv->x11_display_name? self->priv->x11_display_name : "",
+@@ -485,6 +473,18 @@ gdm_display_get_timed_login_details (GdmDisplay *self,
+                          self->priv->x11_display_name? self->priv->x11_display_name : "",
+                          self->priv->seat_id);
+         }
++
++        if (enabledp != NULL) {
++                *enabledp = enabled;
++        }
++        if (usernamep != NULL) {
++                *usernamep = username;
++        } else {
++                g_free (username);
++        }
++        if (delayp != NULL) {
++                *delayp = delay;
++        }
+ }
+ 
+ gboolean
+-- 
+2.15.1
+

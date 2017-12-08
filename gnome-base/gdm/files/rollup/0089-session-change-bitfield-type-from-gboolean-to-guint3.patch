@@ -1,0 +1,30 @@
+From b9ecaa20c26c977736688f8271f3fa44a1f053bf Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 20:20:26 -0500
+Subject: [PATCH 089/315] session: change bitfield type from gboolean to
+ guint32
+
+gboolean is signed, so it's not a good idea to make it
+a bitfield.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 4cd1e17f..725f6f8a 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -127,7 +127,7 @@ struct _GdmSessionPrivate
+         GDBusServer         *outside_server;
+         GHashTable          *environment;
+ 
+-        gboolean             is_program_session : 1;
++        guint32              is_program_session : 1;
+ };
+ 
+ enum {
+-- 
+2.15.1
+

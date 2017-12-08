@@ -1,0 +1,34 @@
+From df206e78cc13d410d5f148a91428244ebd2e5511 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Sat, 21 Feb 2015 16:09:57 -0500
+Subject: [PATCH 135/315] gdm-x-session: set session bus address properly
+
+We weren't setting it in the session environment, but the X server
+environment.
+---
+ daemon/gdm-x-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-x-session.c b/daemon/gdm-x-session.c
+index 67e236ba..c3c638ef 100644
+--- a/daemon/gdm-x-session.c
++++ b/daemon/gdm-x-session.c
+@@ -222,7 +222,6 @@ spawn_x_server (State        *state,
+ 
+         arguments = g_ptr_array_new ();
+         launcher = g_subprocess_launcher_new (G_SUBPROCESS_FLAGS_STDIN_INHERIT);
+-        g_subprocess_launcher_setenv (launcher, "DBUS_SESSION_BUS_ADDRESS", state->bus_address, TRUE);
+         g_subprocess_launcher_take_fd (launcher, pipe_fds[1], DISPLAY_FILENO);
+ 
+         if (g_getenv ("XDG_VTNR") != NULL) {
+@@ -499,6 +498,7 @@ spawn_session (State        *state,
+ 
+         g_subprocess_launcher_setenv (launcher, "DISPLAY", state->display_name, TRUE);
+         g_subprocess_launcher_setenv (launcher, "XAUTHORITY", state->auth_file, TRUE);
++        g_subprocess_launcher_setenv (launcher, "DBUS_SESSION_BUS_ADDRESS", state->bus_address, TRUE);
+ 
+         vt = g_getenv ("XDG_VTNR");
+ 
+-- 
+2.15.1
+

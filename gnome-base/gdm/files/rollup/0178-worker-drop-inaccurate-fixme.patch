@@ -1,0 +1,37 @@
+From 19f169e7a7c35f221728d291c7d12e5138aedaa6 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Sun, 1 Mar 2015 13:43:09 -0500
+Subject: [PATCH 178/315] worker: drop inaccurate FIXME
+
+I think the problem is really just the terminal getting
+stuck in KD_GRAPHICS/VT_AUTO mode by plymouth.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745465
+---
+ daemon/gdm-session-worker.c | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 8ecd425b..671a95a4 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -995,16 +995,6 @@ jump_to_vt (GdmSessionWorker  *worker,
+ 
+                 fd = worker->priv->session_tty_fd;
+ 
+-                /* FIXME: I don't think this is quite right.
+-                 * If the current VT is KD_TEXT/VT_AUTO mode, setting
+-                 * KD_GRAPHICS here can cause deadlocks.
+-                 *
+-                 * We probably need to set the current vt to VT_PROCESS
+-                 * mode, (in addition to the new vt)  only if it's in
+-                 * KD_TEXT mode.
+-                 *
+-                 * This is yucky, we really should get the display managers to use logind
+-                 */
+                 g_debug ("GdmSessionWorker: first setting graphics mode to prevent flicker");
+                 if (ioctl (fd, KDSETMODE, KD_GRAPHICS) < 0) {
+                         g_debug ("GdmSessionWorker: couldn't set graphics mode: %m");
+-- 
+2.15.1
+

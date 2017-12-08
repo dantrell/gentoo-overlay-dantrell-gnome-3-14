@@ -1,0 +1,51 @@
+From 48ec7a3f715bad29f9257263cf3e3190994dda29 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 18 Feb 2015 21:47:02 -0500
+Subject: [PATCH 105/315] configure: disable ConsoleKit support by default
+
+This commit requires users to explicitly --with-console-kit
+
+It also adds a message pointing out ConsoleKit is deprecated and
+links to a wiki page with more information. See:
+
+https://mail.gnome.org/archives/desktop-devel-list/2015-January/msg00108.html
+
+for discussion. A future commit will remove ConsoleKit support entirely.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=743940
+---
+ configure.ac | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+diff --git a/configure.ac b/configure.ac
+index c6490ba9..8b0c8f6e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -241,7 +241,7 @@ AC_ARG_WITH(tcp-wrappers,
+ AC_ARG_WITH(console-kit,
+             AS_HELP_STRING([--with-console-kit],
+                            [Add ConsoleKit support @<:@default=auto@:>@]),,
+-            with_console_kit=auto)
++            with_console_kit=no)
+ 
+ AC_ARG_WITH(systemd,
+             AS_HELP_STRING([--with-systemd],
+@@ -1643,3 +1643,15 @@ echo \
+         Initial VT:               ${GDM_INITIAL_VT}
+         Enable documentation:     ${enable_documentation}
+ "
++
++if test x"${use_console_kit}" = x"yes"; then
++        echo \
++"       WARNING:
++        ConsoleKit support is deprecated and is going to be removed before
++        the next major release.  More details, and patches to add back in
++        ConsoleKit support can be found here:
++
++                https://wiki.gnome.org/wiki/Projects/ConsoleKit
++"
++fi
++
+-- 
+2.15.1
+

@@ -1,0 +1,30 @@
+From 783b559ed9754962e6803b228350ba5dff1a6557 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 13:29:17 -0500
+Subject: [PATCH 169/315] session: more debug spew
+
+This time explain why the display mode that's getting picked,
+is getting picked.
+---
+ daemon/gdm-session.c | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 27eb531a..51bd5c4a 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2922,6 +2922,11 @@ out:
+ GdmSessionDisplayMode
+ gdm_session_get_display_mode (GdmSession *self)
+ {
++        g_debug ("GdmSession: type %s, program? %s, seat %s",
++                 self->priv->session_type,
++                 self->priv->is_program_session? "yes" : "no",
++                 self->priv->display_seat_id);
++
+ #ifdef ENABLE_WAYLAND_SUPPORT
+         /* Wayland sessions are for now assumed to run in a
+          * mutter-launch-like environment, so we allocate
+-- 
+2.15.1
+

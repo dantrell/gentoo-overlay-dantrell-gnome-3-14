@@ -1,0 +1,47 @@
+From 259ef2d7d7acc4e7bb0602eea835b9585997413b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 23 Jan 2015 14:25:05 -0500
+Subject: [PATCH 028/315] manager: clean seed session when its display goes
+ away
+
+If the display goes away right before the session exits, then we
+can crash because we'll try to finish the already finished display.
+
+This commit corrects the problem by making sure to dissociate the
+display from the seed session when the display is finished.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=719418
+---
+ daemon/gdm-manager.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 02785126..684e462e 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1846,6 +1846,13 @@ touch_ran_once_marker_file (GdmManager *manager)
+         close (fd);
+ }
+ 
++static void
++clean_seed_session (GdmSession *session)
++{
++        g_object_set_data (G_OBJECT (session), "gdm-display", NULL);
++        g_object_unref (session);
++}
++
+ static void
+ create_seed_session_for_display (GdmManager *manager,
+                                  GdmDisplay *display,
+@@ -1933,7 +1940,7 @@ create_seed_session_for_display (GdmManager *manager,
+                           G_CALLBACK (on_user_session_died),
+                           manager);
+         g_object_set_data (G_OBJECT (session), "gdm-display", display);
+-        g_object_set_data_full (G_OBJECT (display), "gdm-seed-session", g_object_ref (session), (GDestroyNotify) g_object_unref);
++        g_object_set_data_full (G_OBJECT (display), "gdm-seed-session", g_object_ref (session), (GDestroyNotify) clean_seed_session);
+ 
+         start_autologin_conversation_if_necessary (manager, display, session);
+ }
+-- 
+2.15.1
+

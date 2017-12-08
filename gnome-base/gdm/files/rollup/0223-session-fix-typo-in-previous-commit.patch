@@ -1,0 +1,31 @@
+From 3caf50c24fcc457fed28c74c2fe9190a6621e436 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Mar 2015 10:12:11 -0400
+Subject: [PATCH 223/315] session: fix typo in previous commit
+
+<krnowak> halfline: "if (g_strcmp0 (session_type, session_type) != 0) {" ?
+<halfline> ahhhhh
+<halfline> thank you
+<krnowak> No problem.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746348
+---
+ daemon/gdm-session.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index f8522eb8..16734a8b 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -3124,7 +3124,7 @@ set_session_type (GdmSession *self,
+                   const char *session_type)
+ {
+ 
+-        if (g_strcmp0 (session_type, session_type) != 0) {
++        if (g_strcmp0 (self->priv->session_type, session_type) != 0) {
+                 g_debug ("GdmSession: setting session to type '%s'", session_type? session_type : "");
+                 g_free (self->priv->session_type);
+                 self->priv->session_type = g_strdup (session_type);
+-- 
+2.15.1
+

@@ -1,0 +1,32 @@
+From 9bac8121debeefe3ec25a8fb0a005e0cd4c7a394 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Mantas=20Mikul=C4=97nas?= <grawity@gmail.com>
+Date: Sun, 22 Feb 2015 22:19:37 +0200
+Subject: [PATCH 139/315] gdm-x-session: pass display location to dbus-daemon
+
+The DISPLAY and XAUTHORITY environment variables need to be
+set in the bus daemon environment so that programs activated via
+the session bus can access the display.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744946
+---
+ daemon/gdm-x-session.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/gdm-x-session.c b/daemon/gdm-x-session.c
+index c3c638ef..dfd60166 100644
+--- a/daemon/gdm-x-session.c
++++ b/daemon/gdm-x-session.c
+@@ -385,6 +385,10 @@ spawn_bus (State        *state,
+ 
+         arguments = g_ptr_array_new ();
+         launcher = g_subprocess_launcher_new (G_SUBPROCESS_FLAGS_NONE);
++
++        g_subprocess_launcher_setenv (launcher, "DISPLAY", state->display_name, TRUE);
++        g_subprocess_launcher_setenv (launcher, "XAUTHORITY", state->auth_file, TRUE);
++
+         g_subprocess_launcher_take_fd (launcher, pipe_fds[1], BUS_ADDRESS_FILENO);
+ 
+         bus_address_fd_string = g_strdup_printf ("%d", BUS_ADDRESS_FILENO);
+-- 
+2.15.1
+

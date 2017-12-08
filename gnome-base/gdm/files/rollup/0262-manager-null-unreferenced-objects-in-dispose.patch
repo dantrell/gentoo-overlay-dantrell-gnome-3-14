@@ -1,0 +1,45 @@
+From b48e39e0dc7623ae728bbf4a928e150e0138d673 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 30 Mar 2015 19:17:21 -0400
+Subject: [PATCH 262/315] manager: NULL unreferenced objects in dispose
+
+Now that we're using a dispose handler instead of a finalize handler,
+we need to make sure we nullify our objects after unrefing them.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745975
+---
+ daemon/gdm-manager.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 7b2cf65b..db008c0d 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2823,8 +2823,12 @@ gdm_manager_dispose (GObject *object)
+         g_clear_object (&manager->priv->xdmcp_factory);
+ #endif
+         g_clear_object (&manager->priv->local_factory);
+-        g_hash_table_unref (manager->priv->open_reauthentication_requests);
+-        g_hash_table_unref (manager->priv->transient_sessions);
++        g_clear_pointer (&manager->priv->open_reauthentication_requests,
++                         (GDestroyNotify)
++                         g_hash_table_unref);
++        g_clear_pointer (&manager->priv->transient_sessions,
++                         (GDestroyNotify)
++                         g_hash_table_unref);
+ 
+         g_list_foreach (manager->priv->user_sessions,
+                         (GFunc) gdm_session_close,
+@@ -2856,8 +2860,7 @@ gdm_manager_dispose (GObject *object)
+ 
+         g_clear_object (&manager->priv->connection);
+         g_clear_object (&manager->priv->object_manager);
+-
+-        g_object_unref (manager->priv->display_store);
++        g_clear_object (&manager->priv->display_store);
+ 
+         G_OBJECT_CLASS (gdm_manager_parent_class)->dispose (object);
+ }
+-- 
+2.15.1
+

@@ -1,0 +1,67 @@
+From 8a3b7cf1452fb63a2c5b0e9b18848e293330bf44 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 19:36:47 -0500
+Subject: [PATCH 088/315] local-display-factory: only set is-initial on first
+ seat0 display
+
+is-initial is for hardcoding vt1 on the X server command line. VTs
+only make sense on seat0, so GdmServer as ignoring is-initial on
+auxilliary seats.
+
+This commit makes sure that is-initial never gets set in the first
+place for auxilliary seats, and deletes the code the overrides
+its value.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-local-display-factory.c | 13 +++++++++++--
+ daemon/gdm-server.c                |  9 ---------
+ 2 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index 07a02b44..f76af735 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -452,8 +452,17 @@ static gboolean gdm_local_display_factory_sync_seats (GdmLocalDisplayFactory *fa
+         array = g_variant_get_child_value (result, 0);
+         g_variant_iter_init (&iter, array);
+ 
+-        while (g_variant_iter_loop (&iter, "(&so)", &seat, NULL))
+-                create_display (factory, seat, TRUE);
++        while (g_variant_iter_loop (&iter, "(&so)", &seat, NULL)) {
++                gboolean is_initial;
++
++                if (g_strcmp0 (seat, "seat0") == 0) {
++                        is_initial = TRUE;
++                } else {
++                        is_initial = FALSE;
++                }
++
++                create_display (factory, seat, is_initial);
++        }
+ 
+         g_variant_unref (result);
+         g_variant_unref (array);
+diff --git a/daemon/gdm-server.c b/daemon/gdm-server.c
+index ccb26a34..bacc0800 100644
+--- a/daemon/gdm-server.c
++++ b/daemon/gdm-server.c
+@@ -808,15 +808,6 @@ gdm_server_start (GdmServer *server)
+         /* Hardcode the VT for the initial X server, but nothing else */
+         if (server->priv->is_initial) {
+                 vtarg = "vt" GDM_INITIAL_VT;
+-
+-#ifdef WITH_SYSTEMD
+-                /* undo the hardcoding if we are an auxillary seat */
+-                if (LOGIND_RUNNING()) {
+-                     if (strcmp (server->priv->display_seat_id, "seat0") != 0) {
+-                         vtarg = NULL;
+-                     }
+-                }
+-#endif
+         }
+ 
+         /* fork X server process */
+-- 
+2.15.1
+

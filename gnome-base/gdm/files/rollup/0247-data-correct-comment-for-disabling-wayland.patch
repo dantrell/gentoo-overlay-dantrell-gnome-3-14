@@ -1,0 +1,31 @@
+From ea7cc3187d057cf755ad98a398579a1c3a2acb98 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Mar 2015 08:42:16 -0400
+Subject: [PATCH 247/315] data: correct comment for disabling wayland
+
+The comment incorrectly says to put WaylandEnable=true to
+disable wayland.
+
+This commit flips it to say WaylandEnable=false
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746523
+---
+ data/gdm.conf-custom.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/data/gdm.conf-custom.in b/data/gdm.conf-custom.in
+index f38571e2..c9e28648 100644
+--- a/data/gdm.conf-custom.in
++++ b/data/gdm.conf-custom.in
+@@ -2,7 +2,7 @@
+ 
+ [daemon]
+ # Uncoment the line below to force the login screen to use Xorg
+-#WaylandEnable=true
++#WaylandEnable=false
+ 
+ [security]
+ 
+-- 
+2.15.1
+

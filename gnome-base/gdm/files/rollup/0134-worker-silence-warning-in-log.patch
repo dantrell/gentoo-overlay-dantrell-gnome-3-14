@@ -1,0 +1,27 @@
+From c60b26bce4ce0a82d64934e66d36ae3d96e4516f Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Sat, 21 Feb 2015 15:49:54 -0500
+Subject: [PATCH 134/315] worker: silence warning in log
+
+This commit silences a harmless warning about the main loop
+being unable to remove a source.
+---
+ daemon/gdm-session-worker.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 58f3977b..39e97b5e 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -1632,7 +1632,7 @@ session_worker_child_watch (GPid              pid,
+                                              status);
+ 
+         worker->priv->child_pid = -1;
+-
++        worker->priv->child_watch_id = 0;
+         run_script (worker, GDMCONFDIR "/PostSession");
+ }
+ 
+-- 
+2.15.1
+

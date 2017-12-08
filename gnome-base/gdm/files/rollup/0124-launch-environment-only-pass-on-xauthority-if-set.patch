@@ -1,0 +1,30 @@
+From 5b50d76d2ddf454f297653a392b2cffdb077d795 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 14:47:30 -0500
+Subject: [PATCH 124/315] launch-environment: only pass on XAUTHORITY if set
+
+It's not set in a number cases now, so trying to
+send it along, leads to log spew.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-launch-environment.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-launch-environment.c b/daemon/gdm-launch-environment.c
+index d35e1256..dc73ffc0 100644
+--- a/daemon/gdm-launch-environment.c
++++ b/daemon/gdm-launch-environment.c
+@@ -254,7 +254,8 @@ build_launch_environment (GdmLaunchEnvironment *launch_environment,
+                                               system_data_dirs));
+         g_free (system_data_dirs);
+ 
+-        g_hash_table_insert (hash, g_strdup ("XAUTHORITY"), g_strdup (launch_environment->priv->x11_authority_file));
++        if (launch_environment->priv->x11_authority_file != NULL)
++                g_hash_table_insert (hash, g_strdup ("XAUTHORITY"), g_strdup (launch_environment->priv->x11_authority_file));
+ 
+         g_hash_table_insert (hash, g_strdup ("LOGNAME"), g_strdup (launch_environment->priv->user_name));
+         g_hash_table_insert (hash, g_strdup ("USER"), g_strdup (launch_environment->priv->user_name));
+-- 
+2.15.1
+

@@ -1,0 +1,44 @@
+From 56c983785a709f50065a3670f0884fd27f40ff81 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 23:49:24 -0500
+Subject: [PATCH 093/315] data: add a gnome-shell-wayland.desktop file
+
+This is like gnome-shell.desktop but for wayland. It adds
+the --mode=gdm argument.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ data/applications/Makefile.am                    | 1 +
+ data/applications/gnome-shell-wayland.desktop.in | 8 ++++++++
+ 2 files changed, 9 insertions(+)
+ create mode 100644 data/applications/gnome-shell-wayland.desktop.in
+
+diff --git a/data/applications/Makefile.am b/data/applications/Makefile.am
+index 2f68b5d8..c458d820 100644
+--- a/data/applications/Makefile.am
++++ b/data/applications/Makefile.am
+@@ -14,6 +14,7 @@ edit = sed \
+ desktopdir = $(pkgdatadir)/greeter/applications
+ desktop_in_files = 							\
+ 	gnome-shell.desktop.in						\
++	gnome-shell-wayland.desktop.in					\
+ 	$(NULL)
+ desktop_DATA = $(desktop_in_files:.desktop.in=.desktop)			\
+ 	       mime-dummy-handler.desktop				\
+diff --git a/data/applications/gnome-shell-wayland.desktop.in b/data/applications/gnome-shell-wayland.desktop.in
+new file mode 100644
+index 00000000..179bbd1b
+--- /dev/null
++++ b/data/applications/gnome-shell-wayland.desktop.in
+@@ -0,0 +1,8 @@
++[Desktop Entry]
++Type=Application
++_Name=GNOME Shell
++_Comment=Window management and compositing
++Exec=gnome-shell --mode=gdm --wayland --display-server
++X-GNOME-Autostart-Phase=DisplayServer
++X-GNOME-Autostart-Notify=true
++X-GNOME-AutoRestart=true
+-- 
+2.15.1
+

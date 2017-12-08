@@ -1,0 +1,70 @@
+From b58b60affe05334df19c5d6bb0a4e9b3706b6a7b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 18 Dec 2014 13:35:49 -0500
+Subject: [PATCH 016/315] session: send display made in
+ gdm_session_open_session
+
+It's more appropriate there then in in establish credentials
+callback. Also, we're going to need to add more pre-open code,
+so having it all in one gdm_session_open_session is a good idea.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=741658
+---
+ daemon/gdm-session.c | 20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 319b3633..d0f64923 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -338,8 +338,6 @@ on_establish_credentials_cb (GdmDBusWorker *proxy,
+         service_name = conversation->service_name;
+ 
+         if (worked) {
+-                GdmSessionDisplayMode mode;
+-
+                 switch (self->priv->verification_mode) {
+                 case GDM_SESSION_VERIFICATION_MODE_REAUTHENTICATE:
+                         if (self->priv->user_verifier_interface != NULL) {
+@@ -351,10 +349,6 @@ on_establish_credentials_cb (GdmDBusWorker *proxy,
+ 
+                 case GDM_SESSION_VERIFICATION_MODE_LOGIN:
+                 case GDM_SESSION_VERIFICATION_MODE_CHOOSER:
+-                        mode = gdm_session_get_display_mode (self);
+-                        gdm_dbus_worker_call_set_session_display_mode (conversation->worker_proxy,
+-                                                                       gdm_session_display_mode_to_string (mode),
+-                                                                       NULL, NULL, NULL);
+                         gdm_session_open_session (self, service_name);
+                         break;
+                 default:
+@@ -2448,6 +2442,18 @@ set_up_session_environment (GdmSession *self)
+         g_free (desktop_names);
+ }
+ 
++static void
++send_display_mode (GdmSession *self,
++                   GdmSessionConversation *conversation)
++{
++        GdmSessionDisplayMode mode;
++
++        mode = gdm_session_get_display_mode (self);
++        gdm_dbus_worker_call_set_session_display_mode (conversation->worker_proxy,
++                                                       gdm_session_display_mode_to_string (mode),
++                                                       NULL, NULL, NULL);
++}
++
+ void
+ gdm_session_open_session (GdmSession *self,
+                           const char *service_name)
+@@ -2459,6 +2465,8 @@ gdm_session_open_session (GdmSession *self,
+         conversation = find_conversation_by_name (self, service_name);
+ 
+         if (conversation != NULL) {
++                send_display_mode (self, conversation);
++
+                 gdm_dbus_worker_call_open (conversation->worker_proxy,
+                                            NULL,
+                                            (GAsyncReadyCallback) on_opened, conversation);
+-- 
+2.15.1
+

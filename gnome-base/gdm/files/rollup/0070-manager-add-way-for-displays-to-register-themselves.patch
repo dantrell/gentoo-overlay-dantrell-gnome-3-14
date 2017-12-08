@@ -1,0 +1,88 @@
+From ad9b9ff17f1814433241660d94ef6b3b5ef1a8fd Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 13 Feb 2015 13:41:16 -0500
+Subject: [PATCH 070/315] manager: add way for displays to register themselves
+
+The plan is to start the X server implicitly as part
+of starting the session. Once we do that, we'll need
+some way to communicate that the X server started
+successfully.
+
+This commit adds a RegisterX11Display method to GdmManager
+to handle that.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-manager.c   | 34 ++++++++++++++++++++++++++++++++++
+ daemon/gdm-manager.xml |  3 +++
+ 2 files changed, 37 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 5e4bbf28..4735194d 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -984,6 +984,39 @@ get_seed_session_for_display (GdmDisplay *display)
+         return g_object_get_data (G_OBJECT (display), "gdm-seed-session");
+ }
+ 
++static gboolean
++gdm_manager_handle_register_display (GdmDBusManager        *manager,
++                                     GDBusMethodInvocation *invocation,
++                                     GVariant              *details)
++{
++        GdmManager      *self = GDM_MANAGER (manager);
++        const char      *sender;
++        GDBusConnection *connection;
++        GdmDisplay      *display = NULL;
++
++        g_debug ("GdmManager: trying to register new display");
++
++        sender = g_dbus_method_invocation_get_sender (invocation);
++        connection = g_dbus_method_invocation_get_connection (invocation);
++        get_display_and_details_for_bus_sender (self, connection, sender, &display, NULL, NULL, NULL, NULL, NULL, NULL);
++
++        if (display == NULL) {
++                g_dbus_method_invocation_return_error_literal (invocation,
++                                                               G_DBUS_ERROR,
++                                                               G_DBUS_ERROR_ACCESS_DENIED,
++                                                               _("No display available"));
++
++                return TRUE;
++        }
++
++        g_object_set (G_OBJECT (display), "status", GDM_DISPLAY_MANAGED, NULL);
++
++        gdm_dbus_manager_complete_register_display (GDM_DBUS_MANAGER (manager),
++                                                    invocation);
++
++        return TRUE;
++}
++
+ static gboolean
+ gdm_manager_handle_open_session (GdmDBusManager        *manager,
+                                  GDBusMethodInvocation *invocation)
+@@ -1309,6 +1342,7 @@ gdm_manager_handle_open_reauthentication_channel (GdmDBusManager        *manager
+ static void
+ manager_interface_init (GdmDBusManagerIface *interface)
+ {
++        interface->handle_register_display = gdm_manager_handle_register_display;
+         interface->handle_open_session = gdm_manager_handle_open_session;
+         interface->handle_open_reauthentication_channel = gdm_manager_handle_open_reauthentication_channel;
+ }
+diff --git a/daemon/gdm-manager.xml b/daemon/gdm-manager.xml
+index d3bb3b2e..f11f3fb7 100644
+--- a/daemon/gdm-manager.xml
++++ b/daemon/gdm-manager.xml
+@@ -1,6 +1,9 @@
+ <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+ <node name="/org/gnome/DisplayManager/Manager">
+   <interface name="org.gnome.DisplayManager.Manager">
++    <method name="RegisterDisplay">
++      <arg name="details" direction="in" type="a{ss}"/>
++    </method>
+     <method name="OpenSession">
+       <arg name="address" direction="out" type="s"/>
+     </method>
+-- 
+2.15.1
+

@@ -1,0 +1,39 @@
+From 7b9dfd7a0156faf081b0a02db99dd0ffc526076b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 29 Jan 2015 16:54:37 -0500
+Subject: [PATCH 062/315] slave: drop some dead code
+
+There is a random smattering of vestigial code
+in gdm-simple-slave.c.  This commit expunges it.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-simple-slave.c | 7 -------
+ 1 file changed, 7 deletions(-)
+
+diff --git a/daemon/gdm-simple-slave.c b/daemon/gdm-simple-slave.c
+index e5969387..693f7236 100644
+--- a/daemon/gdm-simple-slave.c
++++ b/daemon/gdm-simple-slave.c
+@@ -29,10 +29,6 @@
+ #include <sys/wait.h>
+ #include <errno.h>
+ 
+-#ifdef  HAVE_LOGINDEVPERM
+-#include <libdevinfo.h>
+-#endif  /* HAVE_LOGINDEVPERM */
+-
+ #include <glib.h>
+ #include <glib/gi18n.h>
+ #include <glib/gstdio.h>
+@@ -250,7 +246,4 @@ static void
+ gdm_simple_slave_init (GdmSimpleSlave *slave)
+ {
+         slave->priv = GDM_SIMPLE_SLAVE_GET_PRIVATE (slave);
+-#ifdef  HAVE_LOGINDEVPERM
+-        slave->priv->use_logindevperm = FALSE;
+-#endif
+ }
+-- 
+2.15.1
+

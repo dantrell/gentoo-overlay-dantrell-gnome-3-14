@@ -1,0 +1,38 @@
+From 35538c5ffcdcca90023ede87aac03b74c29ab836 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 6 Mar 2015 08:49:53 -0500
+Subject: [PATCH 197/315] manager: add more debug spew
+
+---
+ daemon/gdm-manager.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 318c0c92..a47db55d 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2194,10 +2194,12 @@ start_autologin_conversation_if_necessary (GdmManager *manager,
+         gdm_display_get_timed_login_details (display, &enabled, NULL, &delay);
+ 
+         if (delay == 0 && g_file_test (GDM_RAN_ONCE_MARKER_FILE, G_FILE_TEST_EXISTS)) {
++                g_debug ("GdmManager: not starting automatic login conversation because we already did autologin once");
+                 return;
+         }
+ 
+         if (!enabled) {
++                g_debug ("GdmManager: not starting automatic login conversation because autologin is not enabled");
+                 return;
+         }
+ 
+@@ -2213,6 +2215,8 @@ touch_ran_once_marker_file (GdmManager *manager)
+ {
+         int fd;
+ 
++        g_debug ("GdmManager: touching marker file %s", GDM_RAN_ONCE_MARKER_FILE);
++
+         fd = g_creat (GDM_RAN_ONCE_MARKER_FILE, 0644);
+ 
+         if (fd < 0 && errno != EEXIST) {
+-- 
+2.15.1
+

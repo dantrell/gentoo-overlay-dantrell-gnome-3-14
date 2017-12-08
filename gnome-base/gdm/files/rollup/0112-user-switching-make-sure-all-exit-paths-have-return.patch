@@ -1,0 +1,51 @@
+From d3cd493a2d8e694c291917290553611a9ff3bbe1 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Feb 2015 10:07:24 -0500
+Subject: [PATCH 112/315] user-switching: Make sure all exit paths have return
+ values
+
+The openSUSE Build Service raises a flag for
+
+[   55s] I: Program returns random data in a function
+[   55s] E: gdm no-return-in-nonvoid-function gdm-common.c:850
+[   55s] E: gdm no-return-in-nonvoid-function gdm-user-switching.c:597
+
+This can happen when CONSOLEKIT is disabled (As is newly the case) and
+LOGING_RUNNING would return false.
+
+Based on a patch by Dominique Leuenberger
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744787
+---
+ common/gdm-common.c         | 2 ++
+ libgdm/gdm-user-switching.c | 2 ++
+ 2 files changed, 4 insertions(+)
+
+diff --git a/common/gdm-common.c b/common/gdm-common.c
+index 4017313b..effd4bc7 100644
+--- a/common/gdm-common.c
++++ b/common/gdm-common.c
+@@ -846,6 +846,8 @@ gdm_goto_login_session (GError **error)
+ 
+ #ifdef WITH_CONSOLE_KIT
+         return goto_login_session_for_ck (connection, error);
++#else
++        return FALSE;
+ #endif
+ }
+ 
+diff --git a/libgdm/gdm-user-switching.c b/libgdm/gdm-user-switching.c
+index ebfef1c3..a195d052 100644
+--- a/libgdm/gdm-user-switching.c
++++ b/libgdm/gdm-user-switching.c
+@@ -593,5 +593,7 @@ gdm_goto_login_session_sync (GCancellable  *cancellable,
+ 
+         g_object_unref (connection);
+         return retval;
++#else
++        return FALSE;
+ #endif
+ }
+-- 
+2.15.1
+

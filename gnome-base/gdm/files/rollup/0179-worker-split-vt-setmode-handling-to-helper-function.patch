@@ -1,0 +1,70 @@
+From 69847b9d92b2135fca9947b3ce17a15d2f5c7420 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Sun, 1 Mar 2015 13:45:03 -0500
+Subject: [PATCH 179/315] worker: split VT_SETMODE handling to helper function
+
+We're going to call it in more than one place in the code,
+so it's better to keep it in a separate function.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745465
+---
+ daemon/gdm-session-worker.c | 28 +++++++++++++++++++---------
+ 1 file changed, 19 insertions(+), 9 deletions(-)
+
+diff --git a/daemon/gdm-session-worker.c b/daemon/gdm-session-worker.c
+index 671a95a4..5c881250 100644
+--- a/daemon/gdm-session-worker.c
++++ b/daemon/gdm-session-worker.c
+@@ -982,6 +982,24 @@ on_acquire_display (int signal)
+         close(fd);
+ }
+ 
++static void
++handle_terminal_vt_switches (GdmSessionWorker *worker,
++                             int               tty_fd)
++{
++        struct vt_mode setmode_request = { 0 };
++
++        setmode_request.mode = VT_PROCESS;
++        setmode_request.relsig = RELEASE_DISPLAY_SIGNAL;
++        setmode_request.acqsig = ACQUIRE_DISPLAY_SIGNAL;
++
++        if (ioctl (tty_fd, VT_SETMODE, &setmode_request) < 0) {
++                g_debug ("GdmSessionWorker: couldn't manage VTs manually: %m");
++        }
++
++        signal (RELEASE_DISPLAY_SIGNAL, on_release_display);
++        signal (ACQUIRE_DISPLAY_SIGNAL, on_acquire_display);
++}
++
+ static void
+ jump_to_vt (GdmSessionWorker  *worker,
+             int                vt_number)
+@@ -991,7 +1009,6 @@ jump_to_vt (GdmSessionWorker  *worker,
+ 
+         g_debug ("GdmSessionWorker: jumping to VT %d", vt_number);
+         if (worker->priv->session_tty_fd != -1) {
+-                struct vt_mode setmode_request = { 0 };
+ 
+                 fd = worker->priv->session_tty_fd;
+ 
+@@ -1000,15 +1017,8 @@ jump_to_vt (GdmSessionWorker  *worker,
+                         g_debug ("GdmSessionWorker: couldn't set graphics mode: %m");
+                 }
+ 
+-                setmode_request.mode = VT_PROCESS;
+-                setmode_request.relsig = RELEASE_DISPLAY_SIGNAL;
+-                setmode_request.acqsig = ACQUIRE_DISPLAY_SIGNAL;
+-                if (ioctl (fd, VT_SETMODE, &setmode_request) < 0) {
+-                        g_debug ("GdmSessionWorker: couldn't manage VTs manually: %m");
+-                }
++                handle_terminal_vt_switches (worker, fd);
+ 
+-                signal (RELEASE_DISPLAY_SIGNAL, on_release_display);
+-                signal (ACQUIRE_DISPLAY_SIGNAL, on_acquire_display);
+         } else {
+                 fd = open ("/dev/tty0", O_RDWR | O_NOCTTY);
+                 just_opened_tty = TRUE;
+-- 
+2.15.1
+

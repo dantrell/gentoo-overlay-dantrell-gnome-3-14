@@ -1,0 +1,328 @@
+From 185db2f61d360a793439ba385dae2fd560789fac Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Feb 2015 15:12:49 -0500
+Subject: [PATCH 048/315] display: get rid of get_timed_login_details vfunc
+
+Instead introduce an "allow-timed-login" property that
+subclasses can set to FALSE to disable timed login.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c           | 66 ++++++++++++++++++++----------------------
+ daemon/gdm-display.h           |  4 ---
+ daemon/gdm-slave.c             | 22 +++++---------
+ daemon/gdm-transient-display.c | 15 +---------
+ daemon/gdm-xdmcp-display.c     | 29 +++++--------------
+ 5 files changed, 47 insertions(+), 89 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index db83dfcf..cab096bb 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -75,6 +75,7 @@ struct GdmDisplayPrivate
+         GDBusObjectSkeleton  *object_skeleton;
+ 
+         gboolean              is_initial;
++        gboolean              allow_timed_login;
+ };
+ 
+ enum {
+@@ -90,7 +91,8 @@ enum {
+         PROP_X11_AUTHORITY_FILE,
+         PROP_IS_LOCAL,
+         PROP_SLAVE_TYPE,
+-        PROP_IS_INITIAL
++        PROP_IS_INITIAL,
++        PROP_ALLOW_TIMED_LOGIN,
+ };
+ 
+ static void     gdm_display_class_init  (GdmDisplayClass *klass);
+@@ -254,11 +256,11 @@ gdm_display_add_user_authorization (GdmDisplay *display,
+         return TRUE;
+ }
+ 
+-static void
+-gdm_display_real_get_timed_login_details (GdmDisplay *display,
+-                                          gboolean   *enabledp,
+-                                          char      **usernamep,
+-                                          int        *delayp)
++void
++gdm_display_get_timed_login_details (GdmDisplay *display,
++                                     gboolean   *enabledp,
++                                     char      **usernamep,
++                                     int        *delayp)
+ {
+         gboolean res;
+         gboolean enabled;
+@@ -269,6 +271,10 @@ gdm_display_real_get_timed_login_details (GdmDisplay *display,
+         username = NULL;
+         delay = 0;
+ 
++        if (!display->priv->allow_timed_login) {
++                goto out;
++        }
++
+ #ifdef WITH_SYSTEMD
+         /* FIXME: More careful thought needs to happen before we
+          * can support auto/timed login on auxilliary seats in the
+@@ -327,39 +333,12 @@ gdm_display_real_get_timed_login_details (GdmDisplay *display,
+         if (delayp != NULL) {
+                 *delayp = delay;
+         }
+-}
+-
+-void
+-gdm_display_get_timed_login_details (GdmDisplay *display,
+-                                     gboolean   *out_enabled,
+-                                     char      **out_username,
+-                                     int        *out_delay)
+-{
+-        gboolean enabled;
+-        char *username;
+-        int delay;
+-
+-        GDM_DISPLAY_GET_CLASS (display)->get_timed_login_details (display, &enabled, &username, &delay);
+ 
+         g_debug ("GdmDisplay: Got timed login details for display %s: %d '%s' %d",
+                  display->priv->x11_display_name,
+                  enabled,
+                  username,
+                  delay);
+-
+-        if (out_enabled) {
+-                *out_enabled = enabled;
+-        }
+-
+-        if (out_username) {
+-                *out_username = username;
+-        } else {
+-                g_free (username);
+-        }
+-
+-        if (out_delay) {
+-                *out_delay = delay;
+-        }
+ }
+ 
+ gboolean
+@@ -756,6 +735,13 @@ _gdm_display_set_is_initial (GdmDisplay     *display,
+         display->priv->is_initial = initial;
+ }
+ 
++static void
++_gdm_display_set_allow_timed_login (GdmDisplay     *display,
++                                    gboolean        allow_timed_login)
++{
++        display->priv->allow_timed_login = allow_timed_login;
++}
++
+ static void
+ gdm_display_set_property (GObject        *object,
+                           guint           prop_id,
+@@ -794,6 +780,9 @@ gdm_display_set_property (GObject        *object,
+         case PROP_IS_LOCAL:
+                 _gdm_display_set_is_local (self, g_value_get_boolean (value));
+                 break;
++        case PROP_ALLOW_TIMED_LOGIN:
++                _gdm_display_set_allow_timed_login (self, g_value_get_boolean (value));
++                break;
+         case PROP_SLAVE_TYPE:
+                 _gdm_display_set_slave_type (self, g_value_get_gtype (value));
+                 break;
+@@ -854,6 +843,9 @@ gdm_display_get_property (GObject        *object,
+         case PROP_IS_INITIAL:
+                 g_value_set_boolean (value, self->priv->is_initial);
+                 break;
++        case PROP_ALLOW_TIMED_LOGIN:
++                g_value_set_boolean (value, self->priv->allow_timed_login);
++                break;
+         default:
+                 G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+                 break;
+@@ -1174,7 +1166,6 @@ gdm_display_class_init (GdmDisplayClass *klass)
+         object_class->dispose = gdm_display_dispose;
+         object_class->finalize = gdm_display_finalize;
+ 
+-        klass->get_timed_login_details = gdm_display_real_get_timed_login_details;
+         klass->prepare = gdm_display_real_prepare;
+ 
+         g_object_class_install_property (object_class,
+@@ -1228,6 +1219,13 @@ gdm_display_class_init (GdmDisplayClass *klass)
+                                                                NULL,
+                                                                FALSE,
+                                                                G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
++        g_object_class_install_property (object_class,
++                                         PROP_ALLOW_TIMED_LOGIN,
++                                         g_param_spec_boolean ("allow-timed-login",
++                                                               NULL,
++                                                               NULL,
++                                                               TRUE,
++                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+         g_object_class_install_property (object_class,
+                                          PROP_X11_COOKIE,
+                                          g_param_spec_string ("x11-cookie",
+diff --git a/daemon/gdm-display.h b/daemon/gdm-display.h
+index 8242b0f7..a99fee5c 100644
+--- a/daemon/gdm-display.h
++++ b/daemon/gdm-display.h
+@@ -57,10 +57,6 @@ typedef struct
+ 
+         /* methods */
+         gboolean (*prepare)                   (GdmDisplay *display);
+-        void     (*get_timed_login_details)   (GdmDisplay *display,
+-                                               gboolean   *enabled,
+-                                               char      **username,
+-                                               int        *delay);
+ } GdmDisplayClass;
+ 
+ typedef enum
+diff --git a/daemon/gdm-slave.c b/daemon/gdm-slave.c
+index 907e7f8e..84954f8b 100644
+--- a/daemon/gdm-slave.c
++++ b/daemon/gdm-slave.c
+@@ -565,8 +565,6 @@ gdm_slave_get_timed_login_details (GdmSlave   *slave,
+                                    int        *delayp)
+ {
+         struct passwd *pwent;
+-        GError        *error;
+-        gboolean       res;
+         gboolean       enabled;
+         char          *username;
+         int            delay;
+@@ -577,18 +575,12 @@ gdm_slave_get_timed_login_details (GdmSlave   *slave,
+ 
+         g_debug ("GdmSlave: Requesting timed login details");
+ 
+-        error = NULL;
+-        res = gdm_display_get_timed_login_details (slave->priv->display,
+-                                                   &enabled,
+-                                                   &username,
+-                                                   &delay,
+-                                                   &error);
+-        if (! res) {
+-                g_warning ("Failed to get timed login details: %s", error->message);
+-                g_error_free (error);
+-        } else {
+-                g_debug ("GdmSlave: Got timed login details: %d %s %d", enabled, username, delay);
+-        }
++        gdm_display_get_timed_login_details (slave->priv->display,
++                                             &enabled,
++                                             &username,
++                                             &delay);
++
++        g_debug ("GdmSlave: Got timed login details: %d %s %d", enabled, username, delay);
+ 
+         if (usernamep != NULL) {
+                 *usernamep = gdm_slave_parse_enriched_login (slave, username);
+@@ -627,7 +619,7 @@ gdm_slave_get_timed_login_details (GdmSlave   *slave,
+                 g_debug ("Invalid NULL username for auto/timed login");
+         }
+ 
+-        return res;
++        return TRUE;
+ }
+ 
+ static void
+diff --git a/daemon/gdm-transient-display.c b/daemon/gdm-transient-display.c
+index 580b87fb..21d7ebf6 100644
+--- a/daemon/gdm-transient-display.c
++++ b/daemon/gdm-transient-display.c
+@@ -54,17 +54,6 @@ static void     gdm_transient_display_init         (GdmTransientDisplay      *di
+ 
+ G_DEFINE_TYPE (GdmTransientDisplay, gdm_transient_display, GDM_TYPE_DISPLAY)
+ 
+-static void
+-gdm_transient_display_get_timed_login_details (GdmDisplay *display,
+-                                               gboolean   *enabledp,
+-                                               char      **usernamep,
+-                                               int        *delayp)
+-{
+-        *enabledp = FALSE;
+-        *usernamep = g_strdup ("");
+-        *delayp = 0;
+-}
+-
+ static GObject *
+ gdm_transient_display_constructor (GType                  type,
+                                    guint                  n_construct_properties,
+@@ -98,13 +87,10 @@ static void
+ gdm_transient_display_class_init (GdmTransientDisplayClass *klass)
+ {
+         GObjectClass *object_class = G_OBJECT_CLASS (klass);
+-        GdmDisplayClass *display_class = GDM_DISPLAY_CLASS (klass);
+ 
+         object_class->constructor = gdm_transient_display_constructor;
+         object_class->finalize = gdm_transient_display_finalize;
+ 
+-        display_class->get_timed_login_details = gdm_transient_display_get_timed_login_details;
+-
+         g_type_class_add_private (klass, sizeof (GdmTransientDisplayPrivate));
+ }
+ 
+@@ -125,6 +111,7 @@ gdm_transient_display_new (int display_number)
+         object = g_object_new (GDM_TYPE_TRANSIENT_DISPLAY,
+                                "x11-display-number", display_number,
+                                "x11-display-name", x11_display,
++                               "allow-timed-login", FALSE,
+                                NULL);
+         g_free (x11_display);
+ 
+diff --git a/daemon/gdm-xdmcp-display.c b/daemon/gdm-xdmcp-display.c
+index 27ea00d1..e09a2fdf 100644
+--- a/daemon/gdm-xdmcp-display.c
++++ b/daemon/gdm-xdmcp-display.c
+@@ -140,36 +140,14 @@ gdm_xdmcp_display_get_property (GObject    *object,
+         }
+ }
+ 
+-static void
+-gdm_xdmcp_display_get_timed_login_details (GdmDisplay *display,
+-                                           gboolean   *enabledp,
+-                                           char      **usernamep,
+-                                           int        *delayp)
+-{
+-        *enabledp = FALSE;
+-        *usernamep = g_strdup ("");
+-        *delayp = 0;
+-        gboolean allow_remote_autologin;
+-
+-        allow_remote_autologin = FALSE;
+-        gdm_settings_direct_get_boolean (GDM_KEY_ALLOW_REMOTE_AUTOLOGIN, &allow_remote_autologin);
+-
+-        if ( allow_remote_autologin ) {
+-                GDM_DISPLAY_CLASS (gdm_xdmcp_display_parent_class)->get_timed_login_details (display, enabledp, usernamep, delayp);
+-        }
+-}
+-
+ static void
+ gdm_xdmcp_display_class_init (GdmXdmcpDisplayClass *klass)
+ {
+         GObjectClass    *object_class = G_OBJECT_CLASS (klass);
+-        GdmDisplayClass *display_class = GDM_DISPLAY_CLASS (klass);
+ 
+         object_class->get_property = gdm_xdmcp_display_get_property;
+         object_class->set_property = gdm_xdmcp_display_set_property;
+ 
+-        display_class->get_timed_login_details = gdm_xdmcp_display_get_timed_login_details;
+-
+         g_type_class_add_private (klass, sizeof (GdmXdmcpDisplayPrivate));
+ 
+         g_object_class_install_property (object_class,
+@@ -196,7 +174,14 @@ static void
+ gdm_xdmcp_display_init (GdmXdmcpDisplay *xdmcp_display)
+ {
+ 
++        gboolean allow_remote_autologin;
++
+         xdmcp_display->priv = GDM_XDMCP_DISPLAY_GET_PRIVATE (xdmcp_display);
++
++        allow_remote_autologin = FALSE;
++        gdm_settings_direct_get_boolean (GDM_KEY_ALLOW_REMOTE_AUTOLOGIN, &allow_remote_autologin);
++
++        g_object_set (G_OBJECT (xdmcp_display), "allow-timed-login", allow_remote_autologin, NULL);
+ }
+ 
+ GdmDisplay *
+-- 
+2.15.1
+

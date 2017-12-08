@@ -1,0 +1,69 @@
+From 68259e09488281efb7905934e12286e4a1320856 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 19 Dec 2014 09:03:08 -0500
+Subject: [PATCH 020/315] systemd: strip plymouth bits from unit file if built
+ --without-plymouth
+
+Otherwise, if you have plymouth, but build --without-plymouth then boot
+will screw up
+
+https://bugzilla.gnome.org/show_bug.cgi?id=740802
+---
+ configure.ac        | 3 +++
+ data/Makefile.am    | 2 ++
+ data/gdm.service.in | 4 ++--
+ 3 files changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index e2ec4e25..236bfa31 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -980,15 +980,18 @@ else
+         use_plymouth="$with_plymouth"
+ fi
+ 
++PLYMOUTH_QUIT_SERVICE=""
+ if test "x$use_plymouth" != "xno" ; then
+         if test "x$have_plymouth" = "xno"; then
+                 AC_MSG_ERROR([Plymouth support explicitly required, but plymouth not found])
+         fi
+ 
+         AC_DEFINE(WITH_PLYMOUTH, 1, [Define to enable plymouth support])
++        PLYMOUTH_QUIT_SERVICE="plymouth-quit.service"
+ fi
+ AC_SUBST(PLYMOUTH_CFLAGS)
+ AC_SUBST(PLYMOUTH_LIBS)
++AC_SUBST(PLYMOUTH_QUIT_SERVICE)
+ 
+ dnl ---------------------------------------------------------------------------
+ dnl - Check for D-Bus
+diff --git a/data/Makefile.am b/data/Makefile.am
+index 1b79bc3b..b2a18e70 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -197,6 +197,8 @@ gdm.service: $(srcdir)/gdm.service.in
+ 	$(AM_V_GEN)sed \
+ 		-e 's,[@]sbindir[@],$(sbindir),g' \
+ 		-e 's,[@]GDM_INITIAL_VT[@],$(GDM_INITIAL_VT),g' \
++		-e 's,[@]PLYMOUTH_QUIT_SERVICE[@],$(PLYMOUTH_QUIT_SERVICE),g' \
++		-e 's, *$$,,g' \
+ 		< $< > $@
+ systemdsystemunit += gdm.service
+ CLEANFILES += gdm.service
+diff --git a/data/gdm.service.in b/data/gdm.service.in
+index df8bc090..f7876e9c 100644
+--- a/data/gdm.service.in
++++ b/data/gdm.service.in
+@@ -1,7 +1,7 @@
+ [Unit]
+ Description=GNOME Display Manager
+-Conflicts=getty@tty@GDM_INITIAL_VT@.service plymouth-quit.service
+-After=systemd-user-sessions.service getty@tty@GDM_INITIAL_VT@.service plymouth-quit.service
++Conflicts=getty@tty@GDM_INITIAL_VT@.service @PLYMOUTH_QUIT_SERVICE@
++After=systemd-user-sessions.service getty@tty@GDM_INITIAL_VT@.service @PLYMOUTH_QUIT_SERVICE@
+ 
+ [Service]
+ ExecStart=@sbindir@/gdm
+-- 
+2.15.1
+

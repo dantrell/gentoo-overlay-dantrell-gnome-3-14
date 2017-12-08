@@ -1,0 +1,33 @@
+From 4e68490ff423cf27c0a00176ba4f75b17406d2a5 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 26 Feb 2015 10:07:53 -0500
+Subject: [PATCH 163/315] session: reset session type to default when selecting
+ non-wayland session
+
+If we select a non-wayland session we need to clear the session type,
+or it will linger as a wayland session if it was one previously.
+
+Prevents users from getting logged into an X session when with
+XDG_SESSION_TYPE=wayland.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745235
+---
+ daemon/gdm-session.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index ad42b5b8..c66a6ff3 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2999,6 +2999,8 @@ gdm_session_select_session (GdmSession *self,
+         is_wayland_session = gdm_session_is_wayland_session (self);
+         if (is_wayland_session) {
+                 set_session_type (self, "wayland");
++        } else {
++                set_session_type (self, NULL);
+         }
+ #endif
+ 
+-- 
+2.15.1
+

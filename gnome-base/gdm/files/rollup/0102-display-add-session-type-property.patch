@@ -1,0 +1,127 @@
+From 4dc2e0775cbafb725ac08c6e7ad1d0b9bbcd1d89 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 18 Feb 2015 14:26:58 -0500
+Subject: [PATCH 102/315] display: add session-type property
+
+The session-type property is analagous to the
+sd_login session type.  It can be either
+"x11" or "wayland".
+
+This helps us decide whether to start a wayland
+session or an X session.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c       | 23 +++++++++++++++++++++++
+ daemon/gdm-local-display.c |  5 ++++-
+ 2 files changed, 27 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 6bdb1fc3..b03fa4e3 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -61,6 +61,7 @@ struct GdmDisplayPrivate
+         char                 *seat_id;
+         char                 *session_id;
+         char                 *session_class;
++        char                 *session_type;
+ 
+         char                 *remote_hostname;
+         int                   x11_display_number;
+@@ -102,6 +103,7 @@ enum {
+         PROP_SEAT_ID,
+         PROP_SESSION_ID,
+         PROP_SESSION_CLASS,
++        PROP_SESSION_TYPE,
+         PROP_REMOTE_HOSTNAME,
+         PROP_X11_DISPLAY_NUMBER,
+         PROP_X11_DISPLAY_NAME,
+@@ -843,6 +845,14 @@ _gdm_display_set_session_class (GdmDisplay *self,
+         self->priv->session_class = g_strdup (session_class);
+ }
+ 
++static void
++_gdm_display_set_session_type (GdmDisplay *self,
++                               const char *session_type)
++{
++        g_free (self->priv->session_type);
++        self->priv->session_type = g_strdup (session_type);
++}
++
+ static void
+ _gdm_display_set_remote_hostname (GdmDisplay     *self,
+                                   const char     *hostname)
+@@ -930,6 +940,9 @@ gdm_display_set_property (GObject        *object,
+         case PROP_SESSION_CLASS:
+                 _gdm_display_set_session_class (self, g_value_get_string (value));
+                 break;
++        case PROP_SESSION_TYPE:
++                _gdm_display_set_session_type (self, g_value_get_string (value));
++                break;
+         case PROP_REMOTE_HOSTNAME:
+                 _gdm_display_set_remote_hostname (self, g_value_get_string (value));
+                 break;
+@@ -986,6 +999,9 @@ gdm_display_get_property (GObject        *object,
+         case PROP_SESSION_CLASS:
+                 g_value_set_string (value, self->priv->session_class);
+                 break;
++        case PROP_SESSION_TYPE:
++                g_value_set_string (value, self->priv->session_type);
++                break;
+         case PROP_REMOTE_HOSTNAME:
+                 g_value_set_string (value, self->priv->remote_hostname);
+                 break;
+@@ -1274,6 +1290,13 @@ gdm_display_class_init (GdmDisplayClass *klass)
+                                                               NULL,
+                                                               "greeter",
+                                                               G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
++        g_object_class_install_property (object_class,
++                                         PROP_SESSION_TYPE,
++                                         g_param_spec_string ("session-type",
++                                                              NULL,
++                                                              NULL,
++                                                              NULL,
++                                                              G_PARAM_READWRITE));
+         g_object_class_install_property (object_class,
+                                          PROP_IS_INITIAL,
+                                          g_param_spec_boolean ("is-initial",
+diff --git a/daemon/gdm-local-display.c b/daemon/gdm-local-display.c
+index 50a3719d..3df6bb7f 100644
+--- a/daemon/gdm-local-display.c
++++ b/daemon/gdm-local-display.c
+@@ -92,6 +92,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+         GdmLaunchEnvironment *launch_environment;
+         char          *seat_id;
+         char          *session_class;
++        char          *session_type;
+         gboolean       doing_initial_setup = FALSE;
+ 
+         seat_id = NULL;
+@@ -100,6 +101,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+                       "seat-id", &seat_id,
+                       "doing-initial-setup", &doing_initial_setup,
+                       "session-class", &session_class,
++                      "session-type", &session_type,
+                       NULL);
+ 
+         if (g_strcmp0 (session_class, "greeter") != 0) {
+@@ -109,7 +111,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+         if (!doing_initial_setup) {
+                 launch_environment = gdm_create_greeter_launch_environment (NULL,
+                                                                             seat_id,
+-                                                                            NULL,
++                                                                            session_type,
+                                                                             NULL,
+                                                                             TRUE);
+         } else {
+@@ -125,6 +127,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+ out:
+         g_free (seat_id);
+         g_free (session_class);
++        g_free (session_type);
+         return GDM_DISPLAY_CLASS (gdm_local_display_parent_class)->prepare (display);
+ }
+ 
+-- 
+2.15.1
+

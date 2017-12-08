@@ -1,0 +1,133 @@
+From f783a6e111e5bc67f56736bce743ce3ce0c39f7c Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 16:19:59 -0500
+Subject: [PATCH 126/315] display: contact accountsservice up front
+
+We need to know if there are any user accounts before the
+display is prepared, since we use that information to figure
+out how to prepare the display.
+
+Fixes gnome-shell tanking on start up with wayland.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c | 80 ++++++++++++++++++++++++----------------------------
+ 1 file changed, 37 insertions(+), 43 deletions(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index b03fa4e3..10c7cbc6 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -625,57 +625,44 @@ gdm_display_real_prepare (GdmDisplay *self)
+ }
+ 
+ static void
+-on_list_cached_users_complete (GObject       *proxy,
+-                               GAsyncResult  *result,
+-                               GdmDisplay    *self)
++look_for_existing_users_sync (GdmDisplay *self)
+ {
++        GError *error = NULL;
+         GVariant *call_result;
+         GVariant *user_list;
+ 
+-        call_result = g_dbus_proxy_call_finish (G_DBUS_PROXY (proxy), result, NULL);
++        self->priv->accountsservice_proxy = g_dbus_proxy_new_sync (self->priv->connection,
++                                                                   0, NULL,
++                                                                   "org.freedesktop.Accounts",
++                                                                   "/org/freedesktop/Accounts",
++                                                                   "org.freedesktop.Accounts",
++                                                                   NULL,
++                                                                   &error);
+ 
+-        if (!call_result) {
+-                self->priv->have_existing_user_accounts = FALSE;
+-        } else {
+-                g_variant_get (call_result, "(@ao)", &user_list);
+-                self->priv->have_existing_user_accounts = g_variant_n_children (user_list) > 0;
+-                g_variant_unref (user_list);
+-                g_variant_unref (call_result);
+-        }
+-
+-        if (GDM_DISPLAY_GET_CLASS (self)->manage != NULL) {
+-                GDM_DISPLAY_GET_CLASS (self)->manage (self);
+-        }
+-}
+-
+-static void
+-on_accountsservice_ready (GObject        *object,
+-                          GAsyncResult   *result,
+-                          GdmDisplay     *self)
+-{
+-        GError *local_error = NULL;
+-
+-        self->priv->accountsservice_proxy = g_dbus_proxy_new_for_bus_finish (result, &local_error);
+         if (!self->priv->accountsservice_proxy) {
+-                g_error ("Failed to contact accountsservice: %s", local_error->message);
++                g_warning ("Failed to contact accountsservice: %s", error->message);
++                goto out;
+         }
+ 
+-        g_dbus_proxy_call (self->priv->accountsservice_proxy, "ListCachedUsers", NULL, 0, -1, NULL,
+-                           (GAsyncReadyCallback)
+-                           on_list_cached_users_complete, self);
+-}
++        call_result = g_dbus_proxy_call_sync (self->priv->accountsservice_proxy,
++                                              "ListCachedUsers",
++                                              NULL,
++                                              0,
++                                              -1,
++                                              NULL,
++                                              &error);
+ 
+-static void
+-look_for_existing_users_and_manage (GdmDisplay *self)
+-{
+-        g_dbus_proxy_new (self->priv->connection,
+-                          0, NULL,
+-                          "org.freedesktop.Accounts",
+-                          "/org/freedesktop/Accounts",
+-                          "org.freedesktop.Accounts",
+-                          NULL,
+-                          (GAsyncReadyCallback)
+-                          on_accountsservice_ready, self);
++        if (!call_result) {
++                g_warning ("Failed to list cached users: %s", error->message);
++                goto out;
++        }
++
++        g_variant_get (call_result, "(@ao)", &user_list);
++        self->priv->have_existing_user_accounts = g_variant_n_children (user_list) > 0;
++        g_variant_unref (user_list);
++        g_variant_unref (call_result);
++out:
++        g_clear_error (&error);
+ }
+ 
+ gboolean
+@@ -687,6 +674,11 @@ gdm_display_prepare (GdmDisplay *self)
+ 
+         g_debug ("GdmDisplay: Preparing display: %s", self->priv->id);
+ 
++        /* FIXME: we should probably do this in a more global place,
++         * asynchronously
++         */
++        look_for_existing_users_sync (self);
++
+         g_object_ref (self);
+         ret = GDM_DISPLAY_GET_CLASS (self)->prepare (self);
+         g_object_unref (self);
+@@ -714,7 +706,9 @@ gdm_display_manage (GdmDisplay *self)
+         g_timer_start (self->priv->server_timer);
+ 
+         if (g_strcmp0 (self->priv->session_class, "greeter") == 0) {
+-                look_for_existing_users_and_manage (self);
++                if (GDM_DISPLAY_GET_CLASS (self)->manage != NULL) {
++                        GDM_DISPLAY_GET_CLASS (self)->manage (self);
++                }
+         }
+ 
+         return TRUE;
+-- 
+2.15.1
+

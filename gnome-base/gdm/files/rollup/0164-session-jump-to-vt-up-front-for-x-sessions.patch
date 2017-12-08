@@ -1,0 +1,44 @@
+From 5dcbc5ac1e8877787587d916a0bbcc6c4136a7c0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 27 Feb 2015 07:49:17 -0500
+Subject: [PATCH 164/315] session: jump to VT up front for X sessions
+
+It turns out that in order for X to work without being
+run as root, it needs to have its VT be active at start up.
+This is because it bails out of some of its logind codepaths
+if it gets given a "paused" device by logind, and then sometimes
+fails in its fallback code paths as it races to open
+/dev/dri/card0 while logind is still giving the user
+permissions to it.
+
+As a workaround, until X is fixed, this commit jumps to the VT up
+front before starting X. That adds flicker, which we'll address in
+a follow up commit.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=745031
+---
+ daemon/gdm-session.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index c66a6ff3..27eb531a 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2945,10 +2945,11 @@ gdm_session_get_display_mode (GdmSession *self)
+                 return GDM_SESSION_DISPLAY_MODE_LOGIND_MANAGED;
+         }
+ 
+-        /* user based X sessions start on a new VT now and are managed
+-         * by logind
++        /* user based X sessions need us to allocate a VT for them
++         * and jump to it up front, because the X servers logind support
++         * currently relies on X running in the foreground VT.
+          */
+-        return GDM_SESSION_DISPLAY_MODE_LOGIND_MANAGED;
++        return GDM_SESSION_DISPLAY_MODE_NEW_VT;
+ }
+ 
+ void
+-- 
+2.15.1
+

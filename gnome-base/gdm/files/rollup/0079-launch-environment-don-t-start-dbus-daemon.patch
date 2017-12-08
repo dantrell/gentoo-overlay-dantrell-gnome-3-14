@@ -1,0 +1,37 @@
+From ee9d69158d9e2b36b39292746d391c82dac2d34b Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Feb 2015 14:54:46 -0500
+Subject: [PATCH 079/315] launch-environment: don't start dbus-daemon
+
+Either the wrappers will start one, or gnome-session will start
+one, or libdbus will start one.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-launch-environment.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-launch-environment.c b/daemon/gdm-launch-environment.c
+index c572a41f..a11aa9fd 100644
+--- a/daemon/gdm-launch-environment.c
++++ b/daemon/gdm-launch-environment.c
+@@ -50,7 +50,6 @@
+ #include "gdm-settings-direct.h"
+ #include "gdm-settings-keys.h"
+ 
+-#define DBUS_LAUNCH_COMMAND BINDIR "/dbus-launch --exit-with-session"
+ #define INITIAL_SETUP_USERNAME "gnome-initial-setup"
+ #define GNOME_SESSION_SESSIONS_PATH DATADIR "/gnome-session/sessions"
+ 
+@@ -621,7 +620,7 @@ _gdm_launch_environment_set_command (GdmLaunchEnvironment *launch_environment,
+                                      const char           *name)
+ {
+         g_free (launch_environment->priv->command);
+-        launch_environment->priv->command = g_strdup_printf ("%s %s", DBUS_LAUNCH_COMMAND, name);
++        launch_environment->priv->command = g_strdup (name);
+ }
+ 
+ static void
+-- 
+2.15.1
+

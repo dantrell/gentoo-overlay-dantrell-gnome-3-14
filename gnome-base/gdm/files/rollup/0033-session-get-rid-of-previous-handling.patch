@@ -1,0 +1,33 @@
+From ecb7f149e4d855ff0b99cf139a40140ecd5928ef Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Feb 2015 12:47:08 -0500
+Subject: [PATCH 033/315] session: get rid of __previous handling
+
+It's vestigial.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index ab8b2fbe..52f7aed3 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -2954,12 +2954,7 @@ gdm_session_select_session (GdmSession *self,
+         gpointer key, value;
+ 
+         g_free (self->priv->selected_session);
+-
+-        if (strcmp (text, "__previous") == 0) {
+-                self->priv->selected_session = NULL;
+-        } else {
+-                self->priv->selected_session = g_strdup (text);
+-        }
++        self->priv->selected_session = g_strdup (text);
+ 
+         g_hash_table_iter_init (&iter, self->priv->conversations);
+         while (g_hash_table_iter_next (&iter, &key, &value)) {
+-- 
+2.15.1
+

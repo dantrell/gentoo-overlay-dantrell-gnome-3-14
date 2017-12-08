@@ -1,0 +1,188 @@
+From 35719a79adfb0a47894f1bc304bab665aaefcd49 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 17 Feb 2015 16:46:29 -0500
+Subject: [PATCH 096/315] display: add new session-class property
+
+The session-class property is analagous to the
+sd_login session class.  It can be either
+"greeter" or "user".
+
+This helps us decide whether or not to add a
+launch environment to the display.
+
+We need this because some displays go straight
+to a user session.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-display.c       | 33 ++++++++++++++++++++++++++++++++-
+ daemon/gdm-local-display.c |  9 +++++++++
+ daemon/gdm-manager.c       |  2 ++
+ 3 files changed, 43 insertions(+), 1 deletion(-)
+
+diff --git a/daemon/gdm-display.c b/daemon/gdm-display.c
+index 46e8041f..d70a6fb6 100644
+--- a/daemon/gdm-display.c
++++ b/daemon/gdm-display.c
+@@ -60,6 +60,7 @@ struct GdmDisplayPrivate
+         char                 *id;
+         char                 *seat_id;
+         char                 *session_id;
++        char                 *session_class;
+ 
+         char                 *remote_hostname;
+         int                   x11_display_number;
+@@ -100,6 +101,7 @@ enum {
+         PROP_STATUS,
+         PROP_SEAT_ID,
+         PROP_SESSION_ID,
++        PROP_SESSION_CLASS,
+         PROP_REMOTE_HOSTNAME,
+         PROP_X11_DISPLAY_NUMBER,
+         PROP_X11_DISPLAY_NAME,
+@@ -713,7 +715,10 @@ gdm_display_manage (GdmDisplay *self)
+         }
+ 
+         g_timer_start (self->priv->server_timer);
+-        look_for_existing_users_and_manage (self);
++
++        if (g_strcmp0 (self->priv->session_class, "greeter") == 0) {
++                look_for_existing_users_and_manage (self);
++        }
+ 
+         return TRUE;
+ }
+@@ -835,6 +840,14 @@ _gdm_display_set_session_id (GdmDisplay     *self,
+         self->priv->session_id = g_strdup (session_id);
+ }
+ 
++static void
++_gdm_display_set_session_class (GdmDisplay *self,
++                                const char *session_class)
++{
++        g_free (self->priv->session_class);
++        self->priv->session_class = g_strdup (session_class);
++}
++
+ static void
+ _gdm_display_set_remote_hostname (GdmDisplay     *self,
+                                   const char     *hostname)
+@@ -919,6 +932,9 @@ gdm_display_set_property (GObject        *object,
+         case PROP_SESSION_ID:
+                 _gdm_display_set_session_id (self, g_value_get_string (value));
+                 break;
++        case PROP_SESSION_CLASS:
++                _gdm_display_set_session_class (self, g_value_get_string (value));
++                break;
+         case PROP_REMOTE_HOSTNAME:
+                 _gdm_display_set_remote_hostname (self, g_value_get_string (value));
+                 break;
+@@ -972,6 +988,9 @@ gdm_display_get_property (GObject        *object,
+         case PROP_SESSION_ID:
+                 g_value_set_string (value, self->priv->session_id);
+                 break;
++        case PROP_SESSION_CLASS:
++                g_value_set_string (value, self->priv->session_class);
++                break;
+         case PROP_REMOTE_HOSTNAME:
+                 g_value_set_string (value, self->priv->remote_hostname);
+                 break;
+@@ -1249,6 +1268,13 @@ gdm_display_class_init (GdmDisplayClass *klass)
+                                                               "session id",
+                                                               NULL,
+                                                               G_PARAM_READWRITE));
++        g_object_class_install_property (object_class,
++                                         PROP_SESSION_CLASS,
++                                         g_param_spec_string ("session-class",
++                                                              NULL,
++                                                              NULL,
++                                                              "greeter",
++                                                              G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+         g_object_class_install_property (object_class,
+                                          PROP_IS_INITIAL,
+                                          g_param_spec_boolean ("is-initial",
+@@ -1344,6 +1370,7 @@ gdm_display_finalize (GObject *object)
+         g_debug ("GdmDisplay: Finalizing display: %s", self->priv->id);
+         g_free (self->priv->id);
+         g_free (self->priv->seat_id);
++        g_free (self->priv->session_class);
+         g_free (self->priv->remote_hostname);
+         g_free (self->priv->x11_display_name);
+         g_free (self->priv->x11_cookie);
+@@ -1479,6 +1506,8 @@ void
+ gdm_display_set_up_greeter_session (GdmDisplay  *self,
+                                     char       **username)
+ {
++        g_return_if_fail (g_strcmp0 (self->priv->session_class, "greeter") == 0);
++
+         self->priv->doing_initial_setup = wants_initial_setup (self);
+ 
+         if (self->priv->doing_initial_setup) {
+@@ -1497,6 +1526,8 @@ gdm_display_start_greeter_session (GdmDisplay *self)
+         char          *hostname;
+         char          *auth_file;
+ 
++        g_return_if_fail (g_strcmp0 (self->priv->session_class, "greeter") == 0);
++
+         g_debug ("GdmDisplay: Running greeter");
+ 
+         display_name = NULL;
+diff --git a/daemon/gdm-local-display.c b/daemon/gdm-local-display.c
+index 6fc2e60f..a9762a7a 100644
+--- a/daemon/gdm-local-display.c
++++ b/daemon/gdm-local-display.c
+@@ -91,6 +91,7 @@ gdm_local_display_prepare (GdmDisplay *display)
+         GdmLocalDisplay *self = GDM_LOCAL_DISPLAY (display);
+         GdmLaunchEnvironment *launch_environment;
+         char          *seat_id;
++        char          *session_class;
+         gboolean       doing_initial_setup = FALSE;
+ 
+         seat_id = NULL;
+@@ -98,8 +99,13 @@ gdm_local_display_prepare (GdmDisplay *display)
+         g_object_get (self,
+                       "seat-id", &seat_id,
+                       "doing-initial-setup", &doing_initial_setup,
++                      "session-class", &session_class,
+                       NULL);
+ 
++        if (g_strcmp0 (session_class, "greeter") != 0) {
++                goto out;
++        }
++
+         if (!doing_initial_setup) {
+                 launch_environment = gdm_create_greeter_launch_environment (NULL,
+                                                                             seat_id,
+@@ -115,6 +121,9 @@ gdm_local_display_prepare (GdmDisplay *display)
+         g_object_set (self, "launch-environment", launch_environment, NULL);
+         g_object_unref (launch_environment);
+ 
++out:
++        g_free (seat_id);
++        g_free (session_class);
+         return GDM_DISPLAY_CLASS (gdm_local_display_parent_class)->prepare (display);
+ }
+ 
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index b7754ae2..2a6e22e6 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1454,6 +1454,7 @@ set_up_greeter_session (GdmManager *manager,
+         if (!will_autologin) {
+                  gdm_display_set_up_greeter_session (display, &allowed_user);
+         } else {
++                 g_object_set (G_OBJECT (display), "session-class", "user", NULL);
+                  allowed_user = g_strdup ("root");
+         }
+ 
+@@ -1627,6 +1628,7 @@ on_start_user_session (StartUserSessionOperation *operation)
+                  * the user session display. Kill the greeter on this session
+                  * and let the user session follow the same display. */
+                 gdm_display_stop_greeter_session (display);
++                g_object_set (G_OBJECT (display), "session-class", "user", NULL);
+         } else {
+                 uid_t allowed_uid;
+ 
+-- 
+2.15.1
+

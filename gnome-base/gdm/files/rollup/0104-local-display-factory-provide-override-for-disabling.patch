@@ -1,0 +1,77 @@
+From 0c30572a8bea202a92440c7aa5141c7e38b6f0b6 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 18 Feb 2015 17:16:43 -0500
+Subject: [PATCH 104/315] local-display-factory: provide override for disabling
+ wayland
+
+Since this wayland code is still pretty new, we need to provide
+an exit tactic for users.
+
+This commit introduces daemon/WaylandEnable which can be set to false,
+to disable wayland support.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ common/gdm-settings-keys.h         | 1 +
+ daemon/gdm-local-display-factory.c | 9 ++++++++-
+ data/gdm.schemas.in.in             | 5 +++++
+ 3 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/common/gdm-settings-keys.h b/common/gdm-settings-keys.h
+index fd2c64e0..f0059b5c 100644
+--- a/common/gdm-settings-keys.h
++++ b/common/gdm-settings-keys.h
+@@ -33,6 +33,7 @@ G_BEGIN_DECLS
+ #define GDM_KEY_TIMED_LOGIN_USER "daemon/TimedLogin"
+ #define GDM_KEY_TIMED_LOGIN_DELAY "daemon/TimedLoginDelay"
+ #define GDM_KEY_INITIAL_SETUP_ENABLE "daemon/InitialSetupEnable"
++#define GDM_KEY_WAYLAND_ENABLE "daemon/WaylandEnable"
+ 
+ #define GDM_KEY_DEBUG "debug/Enable"
+ 
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index b2fbc057..95be1a82 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -34,6 +34,8 @@
+ #include "gdm-local-display-factory.h"
+ #include "gdm-local-display-factory-glue.h"
+ 
++#include "gdm-settings-keys.h"
++#include "gdm-settings-direct.h"
+ #include "gdm-display-store.h"
+ #include "gdm-local-display.h"
+ #include "gdm-legacy-display.h"
+@@ -474,7 +476,12 @@ static gboolean gdm_local_display_factory_sync_seats (GdmLocalDisplayFactory *fa
+                 if (g_strcmp0 (seat, "seat0") == 0) {
+                         is_initial = TRUE;
+ #ifdef ENABLE_WAYLAND_SUPPORT
+-                        session_type = "wayland";
++                        gboolean wayland_enabled = FALSE;
++                        if (gdm_settings_direct_get_boolean (GDM_KEY_INITIAL_SETUP_ENABLE, &wayland_enabled)) {
++                                if (wayland_enabled) {
++                                        session_type = "wayland";
++                                }
++                        }
+ #endif
+                 } else {
+                         is_initial = FALSE;
+diff --git a/data/gdm.schemas.in.in b/data/gdm.schemas.in.in
+index 67a0e045..8ad20310 100644
+--- a/data/gdm.schemas.in.in
++++ b/data/gdm.schemas.in.in
+@@ -52,6 +52,11 @@
+       <signature>b</signature>
+       <default>true</default>
+     </schema>
++    <schema>
++      <key>daemon/WaylandEnable</key>
++      <signature>b</signature>
++      <default>true</default>
++    </schema>
+     <schema>
+       <key>security/AllowRemoteAutoLogin</key>
+       <signature>b</signature>
+-- 
+2.15.1
+

@@ -1,0 +1,53 @@
+From cb2655435b8acf9b6ac9e332591ab3c5f00d978f Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Mar 2015 08:17:14 -0500
+Subject: [PATCH 186/315] data: drop caribou autostart file
+
+It's no longer needed and it makes assumptions about
+install location.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=740788
+---
+ data/autostart/Makefile.am                  | 3 ---
+ data/autostart/caribou-autostart.desktop.in | 6 ------
+ 2 files changed, 9 deletions(-)
+ delete mode 100644 data/autostart/caribou-autostart.desktop.in
+
+diff --git a/data/autostart/Makefile.am b/data/autostart/Makefile.am
+index d6696b53..0ca6c861 100644
+--- a/data/autostart/Makefile.am
++++ b/data/autostart/Makefile.am
+@@ -5,10 +5,8 @@ NULL =
+ 
+ desktopdir = $(pkgdatadir)/greeter/autostart
+ desktop_in_files =							\
+-	caribou-autostart.desktop.in					\
+ 	$(NULL)
+ desktop_DATA = orca-autostart.desktop					\
+-	       $(desktop_in_files:.desktop.in=.desktop)			\
+ 	       $(NULL)
+ 
+ EXTRA_DIST =								\
+@@ -17,7 +15,6 @@ EXTRA_DIST =								\
+ 	$(NULL)
+ 
+ DISTCLEANFILES =							\
+-	$(desktop_in_files:.desktop.in=.desktop)			\
+ 	$(NULL)
+ 
+ MAINTAINERCLEANFILES =                  				\
+diff --git a/data/autostart/caribou-autostart.desktop.in b/data/autostart/caribou-autostart.desktop.in
+deleted file mode 100644
+index 38b3fc66..00000000
+--- a/data/autostart/caribou-autostart.desktop.in
++++ /dev/null
+@@ -1,6 +0,0 @@
+-[Desktop Entry]
+-Type=Application
+-Name=Caribou
+-Exec=@LIBEXECDIR@/caribou
+-AutostartCondition=GSettings org.gnome.desktop.a11y.applications screen-keyboard-enabled
+-X-GNOME-AutoRestart=true
+-- 
+2.15.1
+

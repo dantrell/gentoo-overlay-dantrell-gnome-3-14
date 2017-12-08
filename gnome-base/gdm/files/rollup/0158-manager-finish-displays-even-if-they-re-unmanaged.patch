@@ -1,0 +1,33 @@
+From d80054c8452d52a69416a85960087511b1886c49 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Wed, 25 Feb 2015 16:33:18 -0500
+Subject: [PATCH 158/315] manager: finish displays even if they're unmanaged
+
+Some displays may be PREPARED, but not yet MANAGED.
+Those need to be finished at finalize time too.
+
+Fixes an assertion failure crash in some cases.
+---
+ daemon/gdm-manager.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 77546b67..14085827 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -2651,10 +2651,8 @@ finish_display (const char *id,
+                 GdmDisplay *display,
+                 GdmManager *manager)
+ {
+-        if (gdm_display_get_status (display) != GDM_DISPLAY_MANAGED)
+-                return;
+-
+-        gdm_display_unmanage (display);
++        if (gdm_display_get_status (display) == GDM_DISPLAY_MANAGED)
++                gdm_display_unmanage (display);
+         gdm_display_finish (display);
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,44 @@
+From cf31b8ffb7f5d6567116f81488bd68dc646b356a Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 08:47:22 -0500
+Subject: [PATCH 087/315] local-display: don't manage automatically
+
+Now that local displays register themselves and registration
+leads to the displays getting managed, we don't need to manage
+explicitly (and prematurely).
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-local-display.c | 9 ---------
+ 1 file changed, 9 deletions(-)
+
+diff --git a/daemon/gdm-local-display.c b/daemon/gdm-local-display.c
+index d79212d7..6fc2e60f 100644
+--- a/daemon/gdm-local-display.c
++++ b/daemon/gdm-local-display.c
+@@ -118,14 +118,6 @@ gdm_local_display_prepare (GdmDisplay *display)
+         return GDM_DISPLAY_CLASS (gdm_local_display_parent_class)->prepare (display);
+ }
+ 
+-static void
+-gdm_local_display_manage (GdmDisplay *display)
+-{
+-        GdmLocalDisplay *self = GDM_LOCAL_DISPLAY (display);
+-
+-        g_object_set (G_OBJECT (self), "status", GDM_DISPLAY_MANAGED, NULL);
+-}
+-
+ static void
+ gdm_local_display_class_init (GdmLocalDisplayClass *klass)
+ {
+@@ -136,7 +128,6 @@ gdm_local_display_class_init (GdmLocalDisplayClass *klass)
+         object_class->finalize = gdm_local_display_finalize;
+ 
+         display_class->prepare = gdm_local_display_prepare;
+-        display_class->manage = gdm_local_display_manage;
+ 
+         g_type_class_add_private (klass, sizeof (GdmLocalDisplayPrivate));
+ }
+-- 
+2.15.1
+

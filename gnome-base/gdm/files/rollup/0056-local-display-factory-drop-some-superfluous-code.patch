@@ -1,0 +1,63 @@
+From 7d9da46a06d53713db8b0d623c2d1aaddebb25ed Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 11:27:10 -0500
+Subject: [PATCH 056/315] local-display-factory: drop some superfluous code
+
+The store_display function takes a display number as
+an argument, it then uses that display number to reserve
+a slot in the "used display numbers" hash table.
+
+There's no reason for it to do this though, because the
+slot is already reserved when the next available display
+number is looked up in take_next_display_number.
+
+This commit drops the superfluous code.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-local-display-factory.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index bf5a220a..d49bf25e 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -177,7 +177,6 @@ on_display_disposed (GdmLocalDisplayFactory *factory,
+ 
+ static void
+ store_display (GdmLocalDisplayFactory *factory,
+-               guint32                 num,
+                GdmDisplay             *display)
+ {
+         GdmDisplayStore *store;
+@@ -189,9 +188,6 @@ store_display (GdmLocalDisplayFactory *factory,
+ 
+         store = gdm_display_factory_get_display_store (GDM_DISPLAY_FACTORY (factory));
+         gdm_display_store_add (store, display);
+-
+-        /* now fill our reserved spot */
+-        g_hash_table_insert (factory->priv->used_display_numbers, GUINT_TO_POINTER (num), NULL);
+ }
+ 
+ static const char *
+@@ -242,7 +238,7 @@ gdm_local_display_factory_create_transient_display (GdmLocalDisplayFactory *fact
+                       "allow-timed-login", FALSE,
+                       NULL);
+ 
+-        store_display (factory, num, display);
++        store_display (factory, display);
+ 
+         if (! gdm_display_manage (display)) {
+                 display = NULL;
+@@ -377,7 +373,7 @@ create_display (GdmLocalDisplayFactory *factory,
+         g_object_set (display, "seat-id", seat_id, NULL);
+         g_object_set (display, "is-initial", initial, NULL);
+ 
+-        store_display (factory, num, display);
++        store_display (factory, display);
+ 
+         /* let store own the ref */
+         g_object_unref (display);
+-- 
+2.15.1
+

@@ -1,0 +1,29 @@
+From d816c19562b01f5a85fb61c8cb90e5b23fd04ca5 Mon Sep 17 00:00:00 2001
+From: Luca Bruno <lucabru@src.gnome.org>
+Date: Sat, 29 Nov 2014 15:13:42 +0100
+Subject: [PATCH 009/315] launch-environment: Propagate XCURSOR_PATH and
+ XDG_CONFIG_DIRS
+
+https://bugzilla.gnome.org/show_bug.cgi?id=740632
+---
+ daemon/gdm-launch-environment.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-launch-environment.c b/daemon/gdm-launch-environment.c
+index 5d8c8ada..e6b16dde 100644
+--- a/daemon/gdm-launch-environment.c
++++ b/daemon/gdm-launch-environment.c
+@@ -220,8 +220,8 @@ build_launch_environment (GdmLaunchEnvironment *launch_environment,
+                 "LANG", "LANGUAGE", "LC_CTYPE", "LC_NUMERIC", "LC_TIME",
+                 "LC_COLLATE", "LC_MONETARY", "LC_MESSAGES", "LC_PAPER",
+                 "LC_NAME", "LC_ADDRESS", "LC_TELEPHONE", "LC_MEASUREMENT",
+-                "LC_IDENTIFICATION", "LC_ALL", "WINDOWPATH",
+-                NULL
++                "LC_IDENTIFICATION", "LC_ALL", "WINDOWPATH", "XCURSOR_PATH",
++                "XDG_CONFIG_DIRS", NULL
+         };
+         char *system_data_dirs;
+         int i;
+-- 
+2.15.1
+

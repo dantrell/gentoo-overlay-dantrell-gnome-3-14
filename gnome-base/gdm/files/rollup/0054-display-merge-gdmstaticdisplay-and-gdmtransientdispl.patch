@@ -1,0 +1,555 @@
+From 2cb9568900adc5fd7f7f5033ae746b91001054d0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Tue, 3 Feb 2015 14:00:26 -0500
+Subject: [PATCH 054/315] display: merge GdmStaticDisplay and
+ GdmTransientDisplay
+
+They basically do the same thing with very minor differences,
+so merge them into a new GdmLocalDisplay object.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/Makefile.am                                 |  34 ++----
+ daemon/gdm-local-display-factory.c                 |  16 +--
+ .../{gdm-static-display.c => gdm-local-display.c}  |  54 +++++-----
+ .../{gdm-static-display.h => gdm-local-display.h}  |  30 +++---
+ ...dm-static-display.xml => gdm-local-display.xml} |   2 +-
+ daemon/gdm-transient-display.c                     | 119 ---------------------
+ daemon/gdm-transient-display.h                     |  57 ----------
+ daemon/gdm-transient-display.xml                   |   5 -
+ 8 files changed, 62 insertions(+), 255 deletions(-)
+ rename daemon/{gdm-static-display.c => gdm-local-display.c} (54%)
+ rename daemon/{gdm-static-display.h => gdm-local-display.h} (50%)
+ rename daemon/{gdm-static-display.xml => gdm-local-display.xml} (74%)
+ delete mode 100644 daemon/gdm-transient-display.c
+ delete mode 100644 daemon/gdm-transient-display.h
+ delete mode 100644 daemon/gdm-transient-display.xml
+
+diff --git a/daemon/Makefile.am b/daemon/Makefile.am
+index 6b809729..949cf36a 100644
+--- a/daemon/Makefile.am
++++ b/daemon/Makefile.am
+@@ -35,8 +35,7 @@ AM_CPPFLAGS = \
+ BUILT_SOURCES =					\
+ 	gdm-display-glue.h			\
+ 	gdm-manager-glue.h			\
+-	gdm-static-display-glue.h		\
+-	gdm-transient-display-glue.h		\
++	gdm-local-display-glue.h		\
+ 	gdm-local-display-factory-glue.h	\
+ 	gdm-session-glue.h			\
+ 	gdm-session-worker-glue.h		\
+@@ -56,19 +55,12 @@ gdm-display-glue.c gdm-display-glue.h: gdm-display.xml Makefile.am
+ 		--generate-c-code=gdm-display-glue			\
+ 		$(srcdir)/gdm-display.xml
+ 
+-gdm-transient-display-glue.c gdm-transient-display-glue.h: gdm-transient-display.xml Makefile.am
++gdm-local-display-glue.c gdm-local-display-glue.h: gdm-local-display.xml Makefile.am
+ 	$(AM_V_GEN)gdbus-codegen 					\
+ 		--c-namespace=GdmDBus					\
+ 		--interface-prefix=org.gnome.DisplayManager		\
+-		--generate-c-code=gdm-transient-display-glue		\
+-		$(srcdir)/gdm-transient-display.xml
+-
+-gdm-static-display-glue.c gdm-static-display-glue.h: gdm-static-display.xml Makefile.am
+-	$(AM_V_GEN)gdbus-codegen 					\
+-		--c-namespace=GdmDBus					\
+-		--interface-prefix=org.gnome.DisplayManager		\
+-		--generate-c-code=gdm-static-display-glue		\
+-		$(srcdir)/gdm-static-display.xml
++		--generate-c-code=gdm-local-display-glue		\
++		$(srcdir)/gdm-local-display.xml
+ 
+ gdm-local-display-factory-glue.c gdm-local-display-factory-glue.h : gdm-local-display-factory.xml Makefile.am
+ 	$(AM_V_GEN)gdbus-codegen 					\
+@@ -186,10 +178,8 @@ gdm_SOURCES = 			\
+ 	gdm-local-display-factory.h	\
+ 	gdm-display.c			\
+ 	gdm-display.h			\
+-	gdm-static-display.c		\
+-	gdm-static-display.h		\
+-	gdm-transient-display.c		\
+-	gdm-transient-display.h		\
++	gdm-local-display.c		\
++	gdm-local-display.h		\
+ 	gdm-launch-environment.c	\
+ 	gdm-launch-environment.h	\
+ 	gdm-manager.c			\
+@@ -221,10 +211,8 @@ nodist_gdm_SOURCES = 			\
+ 	gdm-local-display-factory-glue.c	\
+ 	gdm-manager-glue.h			\
+ 	gdm-manager-glue.c			\
+-	gdm-transient-display-glue.h		\
+-	gdm-transient-display-glue.c		\
+-	gdm-static-display-glue.h		\
+-	gdm-static-display-glue.c		\
++	gdm-local-display-glue.h		\
++	gdm-local-display-glue.c		\
+ 	gdm-session-glue.h			\
+ 	gdm-session-glue.c			\
+ 	gdm-session-worker-glue.c		\
+@@ -279,8 +267,7 @@ CLEANFILES =					\
+ 	gdm-session-glue.c			\
+ 	gdm-session-worker-glue.c		\
+ 	gdm-session-enum-types.c		\
+-	gdm-static-display-glue.c		\
+-	gdm-transient-display-glue.c		\
++	gdm-local-display-glue.c		\
+ 	$(BUILT_SOURCES)			\
+ 	$(NULL)
+ 
+@@ -289,8 +276,7 @@ EXTRA_DIST = 				\
+ 	gdm-session-worker.xml		\
+ 	gdm-session.xml			\
+ 	gdm-display.xml			\
+-	gdm-static-display.xml		\
+-	gdm-transient-display.xml	\
++	gdm-local-display.xml		\
+ 	gdm-local-display-factory.xml	\
+ 	gdm-session-enum-types.c.in	\
+ 	gdm-session-enum-types.h.in	\
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index 7457fc38..ba7757d5 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -35,8 +35,7 @@
+ #include "gdm-local-display-factory-glue.h"
+ 
+ #include "gdm-display-store.h"
+-#include "gdm-static-display.h"
+-#include "gdm-transient-display.h"
++#include "gdm-local-display.h"
+ 
+ #define GDM_LOCAL_DISPLAY_FACTORY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GDM_TYPE_LOCAL_DISPLAY_FACTORY, GdmLocalDisplayFactoryPrivate))
+ 
+@@ -235,10 +234,13 @@ gdm_local_display_factory_create_transient_display (GdmLocalDisplayFactory *fact
+ 
+         g_debug ("GdmLocalDisplayFactory: Creating transient display %d", num);
+ 
+-        display = gdm_transient_display_new (num);
++        display = gdm_local_display_new (num);
+ 
+         seat_id = get_seat_of_transient_display (factory);
+-        g_object_set (display, "seat-id", seat_id, NULL);
++        g_object_set (display,
++                      "seat-id", seat_id,
++                      "allow-timed-login", FALSE,
++                      NULL);
+ 
+         store_display (factory, num, display);
+ 
+@@ -291,7 +293,7 @@ on_display_status_changed (GdmDisplay             *display,
+                 gdm_display_store_remove (store, display);
+ 
+                 /* Create a new equivalent display if it was static */
+-                if (GDM_IS_STATIC_DISPLAY (display)) {
++                if (GDM_IS_LOCAL_DISPLAY (display)) {
+                         /* reset num failures */
+                         factory->priv->num_failures = 0;
+ 
+@@ -304,7 +306,7 @@ on_display_status_changed (GdmDisplay             *display,
+                 gdm_display_store_remove (store, display);
+ 
+                 /* Create a new equivalent display if it was static */
+-                if (GDM_IS_STATIC_DISPLAY (display)) {
++                if (GDM_IS_LOCAL_DISPLAY (display)) {
+ 
+                         factory->priv->num_failures++;
+ 
+@@ -370,7 +372,7 @@ create_display (GdmLocalDisplayFactory *factory,
+ 
+         num = take_next_display_number (factory);
+ 
+-        display = gdm_static_display_new (num);
++        display = gdm_local_display_new (num);
+ 
+         g_object_set (display, "seat-id", seat_id, NULL);
+         g_object_set (display, "is-initial", initial, NULL);
+diff --git a/daemon/gdm-static-display.c b/daemon/gdm-local-display.c
+similarity index 54%
+rename from daemon/gdm-static-display.c
+rename to daemon/gdm-local-display.c
+index ba767b02..caaf3041 100644
+--- a/daemon/gdm-static-display.c
++++ b/daemon/gdm-local-display.c
+@@ -38,33 +38,33 @@
+ 
+ #include "gdm-common.h"
+ #include "gdm-display.h"
+-#include "gdm-static-display.h"
+-#include "gdm-static-display-glue.h"
++#include "gdm-local-display.h"
++#include "gdm-local-display-glue.h"
+ 
+-#define GDM_STATIC_DISPLAY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GDM_TYPE_STATIC_DISPLAY, GdmStaticDisplayPrivate))
++#define GDM_LOCAL_DISPLAY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GDM_TYPE_LOCAL_DISPLAY, GdmLocalDisplayPrivate))
+ 
+-struct GdmStaticDisplayPrivate
++struct GdmLocalDisplayPrivate
+ {
+-        GdmDBusStaticDisplay *skeleton;
++        GdmDBusLocalDisplay *skeleton;
+ };
+ 
+-static void     gdm_static_display_class_init   (GdmStaticDisplayClass *klass);
+-static void     gdm_static_display_init         (GdmStaticDisplay      *static_display);
++static void     gdm_local_display_class_init   (GdmLocalDisplayClass *klass);
++static void     gdm_local_display_init         (GdmLocalDisplay      *local_display);
+ 
+-G_DEFINE_TYPE (GdmStaticDisplay, gdm_static_display, GDM_TYPE_DISPLAY)
++G_DEFINE_TYPE (GdmLocalDisplay, gdm_local_display, GDM_TYPE_DISPLAY)
+ 
+ static GObject *
+-gdm_static_display_constructor (GType                  type,
+-                                   guint                  n_construct_properties,
+-                                   GObjectConstructParam *construct_properties)
++gdm_local_display_constructor (GType                  type,
++                               guint                  n_construct_properties,
++                               GObjectConstructParam *construct_properties)
+ {
+-        GdmStaticDisplay      *display;
++        GdmLocalDisplay      *display;
+ 
+-        display = GDM_STATIC_DISPLAY (G_OBJECT_CLASS (gdm_static_display_parent_class)->constructor (type,
+-                                                                                                           n_construct_properties,
+-                                                                                                           construct_properties));
++        display = GDM_LOCAL_DISPLAY (G_OBJECT_CLASS (gdm_local_display_parent_class)->constructor (type,
++                                                                                                   n_construct_properties,
++                                                                                                   construct_properties));
+ 
+-        display->priv->skeleton = GDM_DBUS_STATIC_DISPLAY (gdm_dbus_static_display_skeleton_new ());
++        display->priv->skeleton = GDM_DBUS_LOCAL_DISPLAY (gdm_dbus_local_display_skeleton_new ());
+ 
+         g_dbus_object_skeleton_add_interface (gdm_display_get_object_skeleton (GDM_DISPLAY (display)),
+                                               G_DBUS_INTERFACE_SKELETON (display->priv->skeleton));
+@@ -73,41 +73,41 @@ gdm_static_display_constructor (GType                  type,
+ }
+ 
+ static void
+-gdm_static_display_finalize (GObject *object)
++gdm_local_display_finalize (GObject *object)
+ {
+-        GdmStaticDisplay *display = GDM_STATIC_DISPLAY (object);
++        GdmLocalDisplay *display = GDM_LOCAL_DISPLAY (object);
+ 
+         g_clear_object (&display->priv->skeleton);
+ 
+-        G_OBJECT_CLASS (gdm_static_display_parent_class)->finalize (object);
++        G_OBJECT_CLASS (gdm_local_display_parent_class)->finalize (object);
+ }
+ 
+ static void
+-gdm_static_display_class_init (GdmStaticDisplayClass *klass)
++gdm_local_display_class_init (GdmLocalDisplayClass *klass)
+ {
+         GObjectClass *object_class = G_OBJECT_CLASS (klass);
+ 
+-        object_class->constructor = gdm_static_display_constructor;
+-        object_class->finalize = gdm_static_display_finalize;
++        object_class->constructor = gdm_local_display_constructor;
++        object_class->finalize = gdm_local_display_finalize;
+ 
+-        g_type_class_add_private (klass, sizeof (GdmStaticDisplayPrivate));
++        g_type_class_add_private (klass, sizeof (GdmLocalDisplayPrivate));
+ }
+ 
+ static void
+-gdm_static_display_init (GdmStaticDisplay *static_display)
++gdm_local_display_init (GdmLocalDisplay *local_display)
+ {
+ 
+-        static_display->priv = GDM_STATIC_DISPLAY_GET_PRIVATE (static_display);
++        local_display->priv = GDM_LOCAL_DISPLAY_GET_PRIVATE (local_display);
+ }
+ 
+ GdmDisplay *
+-gdm_static_display_new (int display_number)
++gdm_local_display_new (int display_number)
+ {
+         GObject *object;
+         char    *x11_display;
+ 
+         x11_display = g_strdup_printf (":%d", display_number);
+-        object = g_object_new (GDM_TYPE_STATIC_DISPLAY,
++        object = g_object_new (GDM_TYPE_LOCAL_DISPLAY,
+                                "x11-display-number", display_number,
+                                "x11-display-name", x11_display,
+                                NULL);
+diff --git a/daemon/gdm-static-display.h b/daemon/gdm-local-display.h
+similarity index 50%
+rename from daemon/gdm-static-display.h
+rename to daemon/gdm-local-display.h
+index 4abaa0e6..9ece9bee 100644
+--- a/daemon/gdm-static-display.h
++++ b/daemon/gdm-local-display.h
+@@ -19,39 +19,39 @@
+  */
+ 
+ 
+-#ifndef __GDM_STATIC_DISPLAY_H
+-#define __GDM_STATIC_DISPLAY_H
++#ifndef __GDM_LOCAL_DISPLAY_H
++#define __GDM_LOCAL_DISPLAY_H
+ 
+ #include <glib-object.h>
+ #include "gdm-display.h"
+ 
+ G_BEGIN_DECLS
+ 
+-#define GDM_TYPE_STATIC_DISPLAY         (gdm_static_display_get_type ())
+-#define GDM_STATIC_DISPLAY(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), GDM_TYPE_STATIC_DISPLAY, GdmStaticDisplay))
+-#define GDM_STATIC_DISPLAY_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), GDM_TYPE_STATIC_DISPLAY, GdmStaticDisplayClass))
+-#define GDM_IS_STATIC_DISPLAY(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), GDM_TYPE_STATIC_DISPLAY))
+-#define GDM_IS_STATIC_DISPLAY_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), GDM_TYPE_STATIC_DISPLAY))
+-#define GDM_STATIC_DISPLAY_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), GDM_TYPE_STATIC_DISPLAY, GdmStaticDisplayClass))
++#define GDM_TYPE_LOCAL_DISPLAY         (gdm_local_display_get_type ())
++#define GDM_LOCAL_DISPLAY(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), GDM_TYPE_LOCAL_DISPLAY, GdmLocalDisplay))
++#define GDM_LOCAL_DISPLAY_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), GDM_TYPE_LOCAL_DISPLAY, GdmLocalDisplayClass))
++#define GDM_IS_LOCAL_DISPLAY(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), GDM_TYPE_LOCAL_DISPLAY))
++#define GDM_IS_LOCAL_DISPLAY_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), GDM_TYPE_LOCAL_DISPLAY))
++#define GDM_LOCAL_DISPLAY_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), GDM_TYPE_LOCAL_DISPLAY, GdmLocalDisplayClass))
+ 
+-typedef struct GdmStaticDisplayPrivate GdmStaticDisplayPrivate;
++typedef struct GdmLocalDisplayPrivate GdmLocalDisplayPrivate;
+ 
+ typedef struct
+ {
+         GdmDisplay               parent;
+-        GdmStaticDisplayPrivate *priv;
+-} GdmStaticDisplay;
++        GdmLocalDisplayPrivate *priv;
++} GdmLocalDisplay;
+ 
+ typedef struct
+ {
+         GdmDisplayClass   parent_class;
+ 
+-} GdmStaticDisplayClass;
++} GdmLocalDisplayClass;
+ 
+-GType               gdm_static_display_get_type                (void);
+-GdmDisplay *        gdm_static_display_new                     (int display_number);
++GType               gdm_local_display_get_type                (void);
++GdmDisplay *        gdm_local_display_new                     (int display_number);
+ 
+ 
+ G_END_DECLS
+ 
+-#endif /* __GDM_STATIC_DISPLAY_H */
++#endif /* __GDM_LOCAL_DISPLAY_H */
+diff --git a/daemon/gdm-static-display.xml b/daemon/gdm-local-display.xml
+similarity index 74%
+rename from daemon/gdm-static-display.xml
+rename to daemon/gdm-local-display.xml
+index bd3670b8..3d52dd28 100644
+--- a/daemon/gdm-static-display.xml
++++ b/daemon/gdm-local-display.xml
+@@ -1,5 +1,5 @@
+ <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+ <node>
+-  <interface name="org.gnome.DisplayManager.StaticDisplay">
++  <interface name="org.gnome.DisplayManager.LocalDisplay">
+   </interface>
+ </node>
+diff --git a/daemon/gdm-transient-display.c b/daemon/gdm-transient-display.c
+deleted file mode 100644
+index 21d7ebf6..00000000
+--- a/daemon/gdm-transient-display.c
++++ /dev/null
+@@ -1,119 +0,0 @@
+-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
+- *
+- * Copyright (C) 2008 William Jon McCann <jmccann@redhat.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+- *
+- */
+-
+-#include "config.h"
+-
+-#include <errno.h>
+-#include <stdlib.h>
+-#include <stdio.h>
+-#include <fcntl.h>
+-#include <pwd.h>
+-#include <unistd.h>
+-#include <string.h>
+-#include <signal.h>
+-#include <sys/stat.h>
+-#include <sys/types.h>
+-#include <sys/socket.h>
+-
+-#include <glib.h>
+-#include <glib/gi18n.h>
+-#include <glib-object.h>
+-#include <gio/gio.h>
+-
+-#include "gdm-common.h"
+-#include "gdm-display.h"
+-#include "gdm-transient-display.h"
+-#include "gdm-transient-display-glue.h"
+-
+-#define GDM_TRANSIENT_DISPLAY_GET_PRIVATE(o) (G_TYPE_INSTANCE_GET_PRIVATE ((o), GDM_TYPE_TRANSIENT_DISPLAY, GdmTransientDisplayPrivate))
+-
+-struct GdmTransientDisplayPrivate
+-{
+-        GdmDBusTransientDisplay *skeleton;
+-};
+-
+-static void     gdm_transient_display_class_init   (GdmTransientDisplayClass *klass);
+-static void     gdm_transient_display_init         (GdmTransientDisplay      *display);
+-
+-G_DEFINE_TYPE (GdmTransientDisplay, gdm_transient_display, GDM_TYPE_DISPLAY)
+-
+-static GObject *
+-gdm_transient_display_constructor (GType                  type,
+-                                   guint                  n_construct_properties,
+-                                   GObjectConstructParam *construct_properties)
+-{
+-        GdmTransientDisplay      *display;
+-
+-        display = GDM_TRANSIENT_DISPLAY (G_OBJECT_CLASS (gdm_transient_display_parent_class)->constructor (type,
+-                                                                                                           n_construct_properties,
+-                                                                                                           construct_properties));
+-
+-        display->priv->skeleton = GDM_DBUS_TRANSIENT_DISPLAY (gdm_dbus_transient_display_skeleton_new ());
+-
+-        g_dbus_object_skeleton_add_interface (gdm_display_get_object_skeleton (GDM_DISPLAY (display)),
+-                                              G_DBUS_INTERFACE_SKELETON (display->priv->skeleton));
+-
+-        return G_OBJECT (display);
+-}
+-
+-static void
+-gdm_transient_display_finalize (GObject *object)
+-{
+-        GdmTransientDisplay *display = GDM_TRANSIENT_DISPLAY (object);
+-
+-        g_clear_object (&display->priv->skeleton);
+-
+-        G_OBJECT_CLASS (gdm_transient_display_parent_class)->finalize (object);
+-}
+-
+-static void
+-gdm_transient_display_class_init (GdmTransientDisplayClass *klass)
+-{
+-        GObjectClass *object_class = G_OBJECT_CLASS (klass);
+-
+-        object_class->constructor = gdm_transient_display_constructor;
+-        object_class->finalize = gdm_transient_display_finalize;
+-
+-        g_type_class_add_private (klass, sizeof (GdmTransientDisplayPrivate));
+-}
+-
+-static void
+-gdm_transient_display_init (GdmTransientDisplay *display)
+-{
+-
+-        display->priv = GDM_TRANSIENT_DISPLAY_GET_PRIVATE (display);
+-}
+-
+-GdmDisplay *
+-gdm_transient_display_new (int display_number)
+-{
+-        GObject *object;
+-        char    *x11_display;
+-
+-        x11_display = g_strdup_printf (":%d", display_number);
+-        object = g_object_new (GDM_TYPE_TRANSIENT_DISPLAY,
+-                               "x11-display-number", display_number,
+-                               "x11-display-name", x11_display,
+-                               "allow-timed-login", FALSE,
+-                               NULL);
+-        g_free (x11_display);
+-
+-        return GDM_DISPLAY (object);
+-}
+diff --git a/daemon/gdm-transient-display.h b/daemon/gdm-transient-display.h
+deleted file mode 100644
+index 1cbe05e0..00000000
+--- a/daemon/gdm-transient-display.h
++++ /dev/null
+@@ -1,57 +0,0 @@
+-/* -*- Mode: C; tab-width: 8; indent-tabs-mode: nil; c-basic-offset: 8 -*-
+- *
+- * Copyright (C) 2008 William Jon McCann <jmccann@redhat.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+- *
+- */
+-
+-
+-#ifndef __GDM_TRANSIENT_DISPLAY_H
+-#define __GDM_TRANSIENT_DISPLAY_H
+-
+-#include <glib-object.h>
+-#include "gdm-display.h"
+-
+-G_BEGIN_DECLS
+-
+-#define GDM_TYPE_TRANSIENT_DISPLAY         (gdm_transient_display_get_type ())
+-#define GDM_TRANSIENT_DISPLAY(o)           (G_TYPE_CHECK_INSTANCE_CAST ((o), GDM_TYPE_TRANSIENT_DISPLAY, GdmTransientDisplay))
+-#define GDM_TRANSIENT_DISPLAY_CLASS(k)     (G_TYPE_CHECK_CLASS_CAST((k), GDM_TYPE_TRANSIENT_DISPLAY, GdmTransientDisplayClass))
+-#define GDM_IS_TRANSIENT_DISPLAY(o)        (G_TYPE_CHECK_INSTANCE_TYPE ((o), GDM_TYPE_TRANSIENT_DISPLAY))
+-#define GDM_IS_TRANSIENT_DISPLAY_CLASS(k)  (G_TYPE_CHECK_CLASS_TYPE ((k), GDM_TYPE_TRANSIENT_DISPLAY))
+-#define GDM_TRANSIENT_DISPLAY_GET_CLASS(o) (G_TYPE_INSTANCE_GET_CLASS ((o), GDM_TYPE_TRANSIENT_DISPLAY, GdmTransientDisplayClass))
+-
+-typedef struct GdmTransientDisplayPrivate GdmTransientDisplayPrivate;
+-
+-typedef struct
+-{
+-        GdmDisplay                  parent;
+-        GdmTransientDisplayPrivate *priv;
+-} GdmTransientDisplay;
+-
+-typedef struct
+-{
+-        GdmDisplayClass   parent_class;
+-
+-} GdmTransientDisplayClass;
+-
+-GType               gdm_transient_display_get_type                (void);
+-GdmDisplay *        gdm_transient_display_new                     (int display_number);
+-
+-
+-G_END_DECLS
+-
+-#endif /* __GDM_TRANSIENT_DISPLAY_H */
+diff --git a/daemon/gdm-transient-display.xml b/daemon/gdm-transient-display.xml
+deleted file mode 100644
+index 9a3cd0ca..00000000
+--- a/daemon/gdm-transient-display.xml
++++ /dev/null
+@@ -1,5 +0,0 @@
+-<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+-<node>
+-  <interface name="org.gnome.DisplayManager.TransientDisplay">
+-  </interface>
+-</node>
+-- 
+2.15.1
+

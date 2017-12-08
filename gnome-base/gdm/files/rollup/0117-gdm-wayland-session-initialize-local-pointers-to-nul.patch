@@ -1,0 +1,81 @@
+From 7981fe45dd93405d63f4147098c7a2820b4297d0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Fri, 20 Feb 2015 10:20:34 -0500
+Subject: [PATCH 117/315] gdm-wayland-session: initialize local pointers to
+ NULL
+
+We follow the "goto out" idiom for error handling, and so
+it's important that pointers cleaned up at out time, are
+initialized.
+
+This commit does a sweep and nullifies them across the board.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744787
+---
+ daemon/gdm-wayland-session.c | 24 ++++++++++++------------
+ 1 file changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/daemon/gdm-wayland-session.c b/daemon/gdm-wayland-session.c
+index 16a70b6e..14a75a8f 100644
+--- a/daemon/gdm-wayland-session.c
++++ b/daemon/gdm-wayland-session.c
+@@ -90,14 +90,14 @@ static gboolean
+ spawn_bus (State        *state,
+            GCancellable *cancellable)
+ {
+-        GPtrArray           *arguments;
+-        GSubprocessLauncher *launcher;
+-        GSubprocess         *subprocess;
+-        GInputStream        *input_stream;
+-        GDataInputStream    *data_stream;
++        GPtrArray           *arguments = NULL;
++        GSubprocessLauncher *launcher = NULL;
++        GSubprocess         *subprocess = NULL;
++        GInputStream        *input_stream = NULL;
++        GDataInputStream    *data_stream = NULL;
+         GError              *error = NULL;
+-        char                *bus_address_fd_string;
+-        char                *bus_address;
++        char                *bus_address_fd_string = NULL;
++        char                *bus_address = NULL;
+         gsize                bus_address_size;
+ 
+         gboolean  is_running = FALSE;
+@@ -214,12 +214,12 @@ static gboolean
+ spawn_session (State        *state,
+                GCancellable *cancellable)
+ {
+-        GSubprocessLauncher *launcher;
++        GSubprocessLauncher *launcher = NULL;
+         GSubprocess         *subprocess = NULL;
+         GError              *error = NULL;
+         gboolean             is_running = FALSE;
+         int                  ret;
+-        char               **argv;
++        char               **argv = NULL;
+ 
+         g_debug ("Running wayland session");
+ 
+@@ -287,7 +287,7 @@ static gboolean
+ register_display (State        *state,
+                   GCancellable *cancellable)
+ {
+-        GdmDBusManager  *manager;
++        GdmDBusManager  *manager = NULL;
+         GError          *error = NULL;
+         gboolean         registered = FALSE;
+         GVariantBuilder  details;
+@@ -358,8 +358,8 @@ int
+ main (int    argc,
+       char **argv)
+ {
+-        State           *state;
+-        GOptionContext  *context;
++        State           *state = NULL;
++        GOptionContext  *context = NULL;
+         static char    **args = NULL;
+         gboolean         debug = FALSE;
+         gboolean         ret;
+-- 
+2.15.1
+

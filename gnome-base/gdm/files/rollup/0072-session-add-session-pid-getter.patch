@@ -1,0 +1,43 @@
+From 01920832ac257feb634cb8bbc5ee3b6e29e545b0 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 17:12:24 -0500
+Subject: [PATCH 072/315] session: add session pid getter
+
+We're going to move wtmp recording to GdmManager,
+and for that we'll need the pid of the session.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 6 ++++++
+ daemon/gdm-session.h | 1 +
+ 2 files changed, 7 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 55f67096..3a125a98 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -3603,3 +3603,9 @@ gdm_session_display_mode_to_string (GdmSessionDisplayMode mode)
+         g_warning ("Unknown GdmSessionDisplayMode %d", mode);
+         return "";
+ }
++
++GPid
++gdm_session_get_pid (GdmSession *session)
++{
++        return session->priv->session_pid;
++}
+diff --git a/daemon/gdm-session.h b/daemon/gdm-session.h
+index 86862b47..c339f3f6 100644
+--- a/daemon/gdm-session.h
++++ b/daemon/gdm-session.h
+@@ -182,6 +182,7 @@ void              gdm_session_set_timed_login_details     (GdmSession *session,
+                                                            int         delay);
+ gboolean          gdm_session_client_is_connected         (GdmSession *session);
+ gboolean          gdm_session_is_running                  (GdmSession *session);
++GPid              gdm_session_get_pid                     (GdmSession *session);
+ 
+ G_END_DECLS
+ 
+-- 
+2.15.1
+

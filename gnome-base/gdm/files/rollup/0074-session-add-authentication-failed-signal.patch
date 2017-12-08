@@ -1,0 +1,78 @@
+From 020601ecd47a889ae223ea34b5addcb81191dc73 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Mon, 16 Feb 2015 17:47:55 -0500
+Subject: [PATCH 074/315] session: add authentication-failed signal
+
+This signal records when a user tried to log in but typed
+the wrong password (or whatever).
+
+We'll need this to move session recording up to GdmManager.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=744764
+---
+ daemon/gdm-session.c | 20 ++++++++++++++++++++
+ daemon/gdm-session.h |  3 +++
+ 2 files changed, 23 insertions(+)
+
+diff --git a/daemon/gdm-session.c b/daemon/gdm-session.c
+index 3a125a98..6f4ae3ea 100644
+--- a/daemon/gdm-session.c
++++ b/daemon/gdm-session.c
+@@ -153,6 +153,7 @@ enum {
+         CLIENT_DISCONNECTED,
+         CLIENT_READY_FOR_SESSION_TO_START,
+         DISCONNECTED,
++        AUTHENTICATION_FAILED,
+         VERIFICATION_COMPLETE,
+         SESSION_OPENED,
+         SESSION_STARTED,
+@@ -283,6 +284,12 @@ on_authenticate_cb (GdmDBusWorker *proxy,
+         if (worked) {
+                 gdm_session_authorize (self, service_name);
+         } else {
++                g_signal_emit (self,
++                               signals[AUTHENTICATION_FAILED],
++                               0,
++                               service_name,
++                               conversation->worker_pid);
++
+                 gdm_session_record_failed (conversation->worker_pid,
+                                            self->priv->selected_user,
+                                            self->priv->display_hostname,
+@@ -3291,6 +3298,19 @@ gdm_session_class_init (GdmSessionClass *session_class)
+                               G_TYPE_NONE,
+                               1,
+                               G_TYPE_STRING);
++
++        signals [AUTHENTICATION_FAILED] =
++                g_signal_new ("authentication-failed",
++                              GDM_TYPE_SESSION,
++                              G_SIGNAL_RUN_FIRST,
++                              G_STRUCT_OFFSET (GdmSessionClass, authentication_failed),
++                              NULL,
++                              NULL,
++                              NULL,
++                              G_TYPE_NONE,
++                              2,
++                              G_TYPE_STRING,
++                              G_TYPE_INT);
+         signals [VERIFICATION_COMPLETE] =
+                 g_signal_new ("verification-complete",
+                               GDM_TYPE_SESSION,
+diff --git a/daemon/gdm-session.h b/daemon/gdm-session.h
+index c339f3f6..4e23301f 100644
+--- a/daemon/gdm-session.h
++++ b/daemon/gdm-session.h
+@@ -84,6 +84,9 @@ typedef struct
+         void (* disconnected)                (GdmSession   *session);
+         void (* verification_complete)       (GdmSession   *session,
+                                               const char   *service_name);
++        void (* authentication_failed)       (GdmSession   *session,
++                                              const char   *service_name,
++                                              GPid          worker_pid);
+         void (* session_opened)              (GdmSession   *session,
+                                               const char   *service_name,
+                                               const char   *session_id);
+-- 
+2.15.1
+

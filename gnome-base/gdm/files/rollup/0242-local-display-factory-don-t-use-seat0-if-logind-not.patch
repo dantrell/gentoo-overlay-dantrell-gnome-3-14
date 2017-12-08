@@ -1,0 +1,48 @@
+From 9ba521c06b5ed0bb58b5b9b87f233fa9f9a590ee Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 19 Mar 2015 22:16:43 -0400
+Subject: [PATCH 242/315] local-display-factory: don't use seat0 if logind not
+ running
+
+We currently only allow ConsoleKit seats if GDM is built without systemd
+support, but it's possible to build GDM with systemd support and not
+be running logind.
+
+This commit fixes it to do a run time check.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=746497
+---
+ daemon/gdm-local-display-factory.c | 12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index ba01b2f5..af15617f 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -197,15 +197,19 @@ store_display (GdmLocalDisplayFactory *factory,
+ static const char *
+ get_seat_of_transient_display (GdmLocalDisplayFactory *factory)
+ {
+-        const char *seat_id;
++        const char *seat_id = NULL;
+ 
+         /* FIXME: don't hardcode seat */
+ #ifdef WITH_SYSTEMD
+-        seat_id = SYSTEMD_SEAT0_PATH;
+-#else
+-        seat_id = CK_SEAT1_PATH;
++        if (LOGIND_RUNNING() > 0) {
++                seat_id = SYSTEMD_SEAT0_PATH;
++        }
+ #endif
+ 
++        if (seat_id == NULL) {
++                seat_id = CK_SEAT1_PATH;
++        }
++
+         return seat_id;
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,71 @@
+From 6902187cfbe81d549a374083501a54bd66df41c9 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 2 Apr 2015 10:01:32 -0400
+Subject: [PATCH 268/315] manager: set display device on session object at
+ registration time
+
+When the wayland server used at login time registers with GDM, GDM tries
+to write a wtmp session record for it.
+
+wtmp registration for wayland sessions shouldn't use $DISPLAY like X11
+displays, since $DISPLAY isn't as core and meaningful to wayland
+displays.
+
+Instead it could probably use tty device, but the tty device isn't
+up to date.
+
+This commit makes sure the tty device is associated with the session
+object at registration time.
+
+A future commit will probably move the tty association code to
+gdm-session.c at session open time.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=747169
+---
+ daemon/gdm-manager.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-manager.c b/daemon/gdm-manager.c
+index 1e1499e4..1eadcd4a 100644
+--- a/daemon/gdm-manager.c
++++ b/daemon/gdm-manager.c
+@@ -1159,13 +1159,14 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+         GVariantIter     iter;
+         char            *key = NULL;
+         char            *value = NULL;
+-        const char      *x11_display_name = NULL;
++        char            *x11_display_name = NULL;
++        char            *tty = NULL;
+ 
+         g_debug ("GdmManager: trying to register new display");
+ 
+         sender = g_dbus_method_invocation_get_sender (invocation);
+         connection = g_dbus_method_invocation_get_connection (invocation);
+-        get_display_and_details_for_bus_sender (self, connection, sender, &display, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
++        get_display_and_details_for_bus_sender (self, connection, sender, &display, NULL, NULL, &tty, NULL, NULL, NULL, NULL);
+ 
+         if (display == NULL) {
+                 g_dbus_method_invocation_return_error_literal (invocation,
+@@ -1190,6 +1191,11 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+                 if (x11_display_name != NULL)
+                         g_object_set (G_OBJECT (session), "display-name", x11_display_name, NULL);
+ 
++                /* FIXME: this should happen in gdm-session.c when the session is opened
++                 */
++                if (tty != NULL)
++                        g_object_set (G_OBJECT (session), "display-device", tty, NULL);
++
+                 pid = gdm_session_get_pid (session);
+ 
+                 if (pid > 0) {
+@@ -1203,6 +1209,7 @@ gdm_manager_handle_register_display (GdmDBusManager        *manager,
+                                                     invocation);
+ 
+         g_clear_pointer (&x11_display_name, g_free);
++        g_clear_pointer (&tty, g_free);
+         return TRUE;
+ }
+ 
+-- 
+2.15.1
+

@@ -1,0 +1,59 @@
+From 78f91789926affd42b159bd7cb037e5dd584e356 Mon Sep 17 00:00:00 2001
+From: Ray Strode <rstrode@redhat.com>
+Date: Thu, 10 Sep 2015 09:38:12 -0400
+Subject: [PATCH 302/315] local-display-factory: call sync function after
+ display finishes
+
+Right now if a local display finishes we create a new one of the
+same type to replace it.  But if a user display finishes we don't
+want to create a new user display, we want to create greeter
+display.  Furthermore if the user session is X11, we still want the
+login screen that comes up to be wayland by default.
+
+This commit changes the code to just call sync_seats after a display
+finishes, since sync_seats is where the logic for where the login
+screen display information is stored.
+
+sync_seats is idempotent anyway, and will only create displays for
+seats that need them, so it's safe to call it any time any local
+display finishes.
+
+https://bugzilla.gnome.org/show_bug.cgi?id=749418
+---
+ daemon/gdm-local-display-factory.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/daemon/gdm-local-display-factory.c b/daemon/gdm-local-display-factory.c
+index e902c3d1..e6709219 100644
+--- a/daemon/gdm-local-display-factory.c
++++ b/daemon/gdm-local-display-factory.c
+@@ -83,6 +83,7 @@ static void     on_display_status_changed               (GdmDisplay
+                                                          GParamSpec                  *arg1,
+                                                          GdmLocalDisplayFactory      *factory);
+ 
++static gboolean gdm_local_display_factory_sync_seats    (GdmLocalDisplayFactory *factory);
+ static gpointer local_display_factory_object = NULL;
+ 
+ G_DEFINE_TYPE (GdmLocalDisplayFactory, gdm_local_display_factory, GDM_TYPE_DISPLAY_FACTORY)
+@@ -312,12 +313,16 @@ on_display_status_changed (GdmDisplay             *display,
+                 }
+                 gdm_display_store_remove (store, display);
+ 
+-                /* Create a new equivalent display if it was static */
++                /* if this is a local display, do a full resync.  Only
++                 * seats without displays will get created anyway.  This
++                 * ensures we get a new login screen when the user logs out,
++                 * if there isn't one.
++                 */
+                 if (is_local) {
+                         /* reset num failures */
+                         factory->priv->num_failures = 0;
+ 
+-                        create_display (factory, seat_id, session_type, is_initial);
++                        gdm_local_display_factory_sync_seats (factory);
+                 }
+                 break;
+         case GDM_DISPLAY_FAILED:
+-- 
+2.15.1
+
