@@ -1,0 +1,177 @@
+diff '--exclude=.git' -urN a/tests/libgitg/repository.vala b/tests/libgitg/repository.vala
+--- a/tests/libgitg/repository.vala	2014-12-06 06:45:25.000000000 -0500
++++ b/tests/libgitg/repository.vala	2017-12-10 00:22:01.095793770 -0500
+@@ -82,7 +82,7 @@
+ 			}
+ 			catch (GLib.Error e)
+ 			{
+-				assert_no_error(e);
++				Assert.assert_no_error(e);
+ 			}
+ 		}
+ 	}
+@@ -107,7 +107,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -119,7 +119,7 @@
+ 			}
+ 			catch (GLib.Error e)
+ 			{
+-				assert_no_error(e);
++				Assert.assert_no_error(e);
+ 			}
+ 		}
+ 
+@@ -132,7 +132,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -146,7 +146,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -158,7 +158,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -187,7 +187,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -197,7 +197,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 		}
+ 	}
+ 
+@@ -221,7 +221,7 @@
+ 			}
+ 			catch (GLib.Error e)
+ 			{
+-				assert_no_error(e);
++				Assert.assert_no_error(e);
+ 			}
+ 		}
+ 	}
+@@ -256,7 +256,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -269,7 +269,7 @@
+ 			}
+ 			catch (GLib.Error e)
+ 			{
+-				assert_no_error(e);
++				Assert.assert_no_error(e);
+ 				continue;
+ 			}
+ 
+@@ -280,7 +280,7 @@
+ 			}
+ 			catch (GLib.Error e)
+ 			{
+-				assert_no_error(e);
++				Assert.assert_no_error(e);
+ 			}
+ 		}
+ 
+@@ -290,7 +290,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 		}
+ 	}
+ 
+@@ -306,7 +306,7 @@
+ 		}
+ 		catch (GLib.Error e)
+ 		{
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 			return;
+ 		}
+ 
+@@ -319,7 +319,7 @@
+ 		catch (GLib.Error e)
+ 		{
+ 			GLib.DirUtils.remove(wd);
+-			assert_no_error(e);
++			Assert.assert_no_error(e);
+ 		}
+ 	}
+ 
+diff '--exclude=.git' -urN a/tests/libgitg/test-stage.vala b/tests/libgitg/test-stage.vala
+--- a/tests/libgitg/test-stage.vala	2014-12-06 06:45:25.000000000 -0500
++++ b/tests/libgitg/test-stage.vala	2017-12-10 00:22:01.100793741 -0500
+@@ -101,7 +101,7 @@
+ 			try
+ 			{
+ 				stage.stage.end(res);
+-			} catch (Error e) { assert_no_error(e); }
++			} catch (Error e) { Assert.assert_no_error(e); }
+ 
+ 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
+ 
+@@ -128,7 +128,7 @@
+ 			try
+ 			{
+ 				stage.unstage.end(res);
+-			} catch (Error e) { assert_no_error(e); }
++			} catch (Error e) { Assert.assert_no_error(e); }
+ 
+ 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
+ 
+@@ -155,7 +155,7 @@
+ 			try
+ 			{
+ 				stage.revert.end(res);
+-			} catch (Error e) { assert_no_error(e); }
++			} catch (Error e) { Assert.assert_no_error(e); }
+ 
+ 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
+ 
+@@ -181,7 +181,7 @@
+ 			try
+ 			{
+ 				stage.delete.end(res);
+-			} catch (Error e) { assert_no_error(e); }
++			} catch (Error e) { Assert.assert_no_error(e); }
+ 
+ 			var m = new Gee.HashMap<string, Ggit.StatusFlags>();
+ 
