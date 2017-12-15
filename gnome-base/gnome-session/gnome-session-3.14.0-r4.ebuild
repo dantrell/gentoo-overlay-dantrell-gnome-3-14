@@ -103,14 +103,12 @@ src_configure() {
 	# 3. Enable old gconf support
 	if use ck; then
 		myconf+=(
-			$(use_enable ck consolekit)
-			$(use_enable consolekit)
+			$(use_enable ck deprecated)
 		)
 	fi
 
 	if ! use ck; then
 		myconf+=(
-			$(use_enable consolekit)
 			UPOWER_CFLAGS=""
 			UPOWER_LIBS=""
 		)
