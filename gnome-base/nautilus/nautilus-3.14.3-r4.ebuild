@@ -87,7 +87,7 @@ src_prepare() {
 
 	# Restore the nautilus-2.x Delete shortcut (Ctrl+Delete will still work);
 	# bug #393663
-	eapply "${FILESDIR}/${PN}-3.5.91-delete.patch"
+	eapply "${FILESDIR}"/${PN}-3.5.91-delete.patch
 
 	# From GNOME:
 	# 	https://git.gnome.org/browse/nautilus/commit/?id=a0cbf72827b87a28fba47988957001a8b4fbddf5

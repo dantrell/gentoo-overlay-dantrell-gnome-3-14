@@ -71,7 +71,7 @@ DEPEND="${RDEPEND}
 
 src_prepare() {
 	# Fix parallel installation, bug #543812 (from 'master')
-	eapply "${FILESDIR}/${PN}-1.22.4-fix-parallel.patch"
+	eapply "${FILESDIR}"/${PN}-1.22.4-fix-parallel.patch
 
 	# From GNOME:
 	# 	https://git.gnome.org/browse/gvfs/commit/?id=7bee91695bbe5d9228392e6da496186f02df5c39
