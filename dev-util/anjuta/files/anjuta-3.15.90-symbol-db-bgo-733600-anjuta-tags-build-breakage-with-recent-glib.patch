@@ -1,0 +1,344 @@
+From 2a404b226a0f1ac27bca526a667e250cb5c982c0 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?S=C3=A9bastien=20Granjoux?= <seb.sfo@free.fr>
+Date: Sun, 7 Dec 2014 22:53:44 +0100
+Subject: symbol-db: bgo #733600 - anjuta-tags - build breakage with recent
+ glib
+
+---
+ plugins/symbol-db/anjuta-tags/c.c        |  4 ++--
+ plugins/symbol-db/anjuta-tags/debug.h    |  2 +-
+ plugins/symbol-db/anjuta-tags/eiffel.c   |  2 +-
+ plugins/symbol-db/anjuta-tags/general.h  |  8 ++++----
+ plugins/symbol-db/anjuta-tags/lregex.c   | 30 +++++++++++++++---------------
+ plugins/symbol-db/anjuta-tags/lua.c      |  2 +-
+ plugins/symbol-db/anjuta-tags/main.c     |  2 +-
+ plugins/symbol-db/anjuta-tags/options.c  | 24 ++++++++++++------------
+ plugins/symbol-db/anjuta-tags/options.h  |  2 +-
+ plugins/symbol-db/anjuta-tags/parse.c    |  2 +-
+ plugins/symbol-db/anjuta-tags/python.c   |  2 +-
+ plugins/symbol-db/anjuta-tags/routines.c |  2 +-
+ plugins/symbol-db/anjuta-tags/routines.h |  2 +-
+ 13 files changed, 42 insertions(+), 42 deletions(-)
+
+diff --git a/plugins/symbol-db/anjuta-tags/c.c b/plugins/symbol-db/anjuta-tags/c.c
+index ccca3a4..6f9b634 100644
+--- a/plugins/symbol-db/anjuta-tags/c.c
++++ b/plugins/symbol-db/anjuta-tags/c.c
+@@ -622,7 +622,7 @@ static const char *keywordString (const keywordId keyword)
+ 	return name;
+ }
+ 
+-static void __unused__ pt (tokenInfo *const token)
++static void CTAGS_GNUC_UNUSED pt (tokenInfo *const token)
+ {
+ 	if (isType (token, TOKEN_NAME))
+ 		printf ("type: %-12s: %-13s   line: %lu\n",
+@@ -637,7 +637,7 @@ static void __unused__ pt (tokenInfo *const token)
+ 			tokenString (token->type), token->lineNumber);
+ }
+ 
+-static void __unused__ ps (statementInfo *const st)
++static void CTAGS_GNUC_UNUSED ps (statementInfo *const st)
+ {
+ 	unsigned int i;
+ 	printf ("scope: %s   decl: %s   gotName: %s   gotParenName: %s isPointer: %s\n",
+diff --git a/plugins/symbol-db/anjuta-tags/debug.h b/plugins/symbol-db/anjuta-tags/debug.h
+index 41a6881..911013c 100644
+--- a/plugins/symbol-db/anjuta-tags/debug.h
++++ b/plugins/symbol-db/anjuta-tags/debug.h
+@@ -58,7 +58,7 @@ enum eDebugLevels {
+ *   Function prototypes
+ */
+ extern void lineBreak (void);
+-extern void debugPrintf (const enum eDebugLevels level, const char *const format, ...) __printf__ (2, 3);
++extern void debugPrintf (const enum eDebugLevels level, const char *const format, ...) CTAGS_GNUC_PRINTF (2, 3);
+ extern void debugPutc (const int level, const int c);
+ extern void debugParseNest (const boolean increase, const unsigned int level);
+ extern void debugCppNest (const boolean begin, const unsigned int level);
+diff --git a/plugins/symbol-db/anjuta-tags/eiffel.c b/plugins/symbol-db/anjuta-tags/eiffel.c
+index e2f5a5c..1171ebd 100644
+--- a/plugins/symbol-db/anjuta-tags/eiffel.c
++++ b/plugins/symbol-db/anjuta-tags/eiffel.c
+@@ -807,7 +807,7 @@ static void findKeyword (tokenInfo *const token, const keywordId keyword)
+ 
+ static boolean parseType (tokenInfo *const token);
+ 
+-static void parseGeneric (tokenInfo *const token, boolean declaration __unused__)
++static void parseGeneric (tokenInfo *const token, boolean declaration CTAGS_GNUC_UNUSED)
+ {
+ 	unsigned int depth = 0;
+ #ifdef TYPE_REFERENCE_TOOL
+diff --git a/plugins/symbol-db/anjuta-tags/general.h b/plugins/symbol-db/anjuta-tags/general.h
+index 2d1d629..ef871a3 100644
+--- a/plugins/symbol-db/anjuta-tags/general.h
++++ b/plugins/symbol-db/anjuta-tags/general.h
+@@ -57,11 +57,11 @@
+  *  to prevent warnings about unused variables.
+  */
+ #if (__GNUC__ > 2  ||  (__GNUC__ == 2  &&  __GNUC_MINOR__ >= 7)) && !defined (__GNUG__)
+-# define __unused__  __attribute__((unused))
+-# define __printf__(s,f)  __attribute__((format (printf, s, f)))
++# define CTAGS_GNUC_UNUSED  __attribute__((unused))
++# define CTAGS_GNUC_PRINTF(s,f)  __attribute__((format (printf, s, f)))
+ #else
+-# define __unused__
+-# define __printf__(s,f)
++# define CTAGS_GNUC_UNUSED
++# define CTAGS_GNUC_PRINTF(s,f)
+ #endif
+ 
+ /*
+diff --git a/plugins/symbol-db/anjuta-tags/lregex.c b/plugins/symbol-db/anjuta-tags/lregex.c
+index 37d7ea0..a006f12 100644
+--- a/plugins/symbol-db/anjuta-tags/lregex.c
++++ b/plugins/symbol-db/anjuta-tags/lregex.c
+@@ -538,11 +538,11 @@ extern void findRegexTags (void)
+ #endif  /* HAVE_REGEX */
+ 
+ extern void addTagRegex (
+-		const langType language __unused__,
+-		const char* const regex __unused__,
+-		const char* const name __unused__,
+-		const char* const kinds __unused__,
+-		const char* const flags __unused__)
++		const langType language CTAGS_GNUC_UNUSED,
++		const char* const regex CTAGS_GNUC_UNUSED,
++		const char* const name CTAGS_GNUC_UNUSED,
++		const char* const kinds CTAGS_GNUC_UNUSED,
++		const char* const flags CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	Assert (regex != NULL);
+@@ -564,10 +564,10 @@ extern void addTagRegex (
+ }
+ 
+ extern void addCallbackRegex (
+-		const langType language __unused__,
+-		const char* const regex __unused__,
+-		const char* const flags __unused__,
+-		const regexCallback callback __unused__)
++		const langType language CTAGS_GNUC_UNUSED,
++		const char* const regex CTAGS_GNUC_UNUSED,
++		const char* const flags CTAGS_GNUC_UNUSED,
++		const regexCallback callback CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	Assert (regex != NULL);
+@@ -581,7 +581,7 @@ extern void addCallbackRegex (
+ }
+ 
+ extern void addLanguageRegex (
+-		const langType language __unused__, const char* const regex __unused__)
++		const langType language CTAGS_GNUC_UNUSED, const char* const regex CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	if (! regexBroken)
+@@ -602,7 +602,7 @@ extern void addLanguageRegex (
+ */
+ 
+ extern boolean processRegexOption (const char *const option,
+-								   const char *const parameter __unused__)
++								   const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ 	boolean handled = FALSE;
+ 	const char* const dash = strchr (option, '-');
+@@ -624,7 +624,7 @@ extern boolean processRegexOption (const char *const option,
+ 	return handled;
+ }
+ 
+-extern void disableRegexKinds (const langType language __unused__)
++extern void disableRegexKinds (const langType language CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	if (language <= SetUpper  &&  Sets [language].count > 0)
+@@ -639,8 +639,8 @@ extern void disableRegexKinds (const langType language __unused__)
+ }
+ 
+ extern boolean enableRegexKind (
+-		const langType language __unused__,
+-		const int kind __unused__, const boolean mode __unused__)
++		const langType language CTAGS_GNUC_UNUSED,
++		const int kind CTAGS_GNUC_UNUSED, const boolean mode CTAGS_GNUC_UNUSED)
+ {
+ 	boolean result = FALSE;
+ #ifdef HAVE_REGEX
+@@ -660,7 +660,7 @@ extern boolean enableRegexKind (
+ 	return result;
+ }
+ 
+-extern void printRegexKinds (const langType language __unused__, boolean indent __unused__)
++extern void printRegexKinds (const langType language CTAGS_GNUC_UNUSED, boolean indent CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	if (language <= SetUpper  &&  Sets [language].count > 0)
+diff --git a/plugins/symbol-db/anjuta-tags/lua.c b/plugins/symbol-db/anjuta-tags/lua.c
+index d385544..bf51bda 100644
+--- a/plugins/symbol-db/anjuta-tags/lua.c
++++ b/plugins/symbol-db/anjuta-tags/lua.c
+@@ -37,7 +37,7 @@ static kindOption LuaKinds [] = {
+ */
+ 
+ /* for debugging purposes */
+-static void __unused__ print_string (char *p, char *q)
++static void CTAGS_GNUC_UNUSED print_string (char *p, char *q)
+ {
+ 	for ( ; p != q; p++)
+ 		fprintf (errout, "%c", *p);
+diff --git a/plugins/symbol-db/anjuta-tags/main.c b/plugins/symbol-db/anjuta-tags/main.c
+index 79948fe..944f5a6 100644
+--- a/plugins/symbol-db/anjuta-tags/main.c
++++ b/plugins/symbol-db/anjuta-tags/main.c
+@@ -522,7 +522,7 @@ static void makeTags (cookedArgs *args)
+  *		Start up code
+  */
+ 
+-extern int main (int __unused__ argc, char **argv)
++extern int main (int CTAGS_GNUC_UNUSED argc, char **argv)
+ {
+ 	cookedArgs *args;
+ #ifdef VMS
+diff --git a/plugins/symbol-db/anjuta-tags/options.c b/plugins/symbol-db/anjuta-tags/options.c
+index 1bee61d..1d5077d 100644
+--- a/plugins/symbol-db/anjuta-tags/options.c
++++ b/plugins/symbol-db/anjuta-tags/options.c
+@@ -731,7 +731,7 @@ static void processEtagsInclude (
+ }
+ 
+ static void processExcludeOption (
+-		const char *const option __unused__, const char *const parameter)
++		const char *const option CTAGS_GNUC_UNUSED, const char *const parameter)
+ {
+ 	const char *const fileName = parameter + 1;
+ 	if (parameter [0] == '\0')
+@@ -869,7 +869,7 @@ static void processFieldsOption (
+ }
+ 
+ static void processFilterTerminatorOption (
+-		const char *const option __unused__, const char *const parameter)
++		const char *const option CTAGS_GNUC_UNUSED, const char *const parameter)
+ {
+ 	freeString (&Option.filterTerminator);
+ 	Option.filterTerminator = stringCopy (parameter);
+@@ -932,8 +932,8 @@ static void printProgramIdentification (void)
+ }
+ 
+ static void processHelpOption (
+-		const char *const option __unused__,
+-		const char *const parameter __unused__)
++		const char *const option CTAGS_GNUC_UNUSED,
++		const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ 	printProgramIdentification ();
+ 	putchar ('\n');
+@@ -1141,8 +1141,8 @@ static void processLanguagesOption (
+ }
+ 
+ static void processLicenseOption (
+-		const char *const option __unused__,
+-		const char *const parameter __unused__)
++		const char *const option CTAGS_GNUC_UNUSED,
++		const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ 	printProgramIdentification ();
+ 	puts ("");
+@@ -1168,8 +1168,8 @@ static void processListKindsOption (
+ }
+ 
+ static void processListMapsOption (
+-		const char *const __unused__ option,
+-		const char *const __unused__ parameter)
++		const char *const CTAGS_GNUC_UNUSED option,
++		const char *const CTAGS_GNUC_UNUSED parameter)
+ {
+ 	if (parameter [0] == '\0' || strcasecmp (parameter, "all") == 0)
+ 	    printLanguageMaps (LANG_AUTO);
+@@ -1185,8 +1185,8 @@ static void processListMapsOption (
+ }
+ 
+ static void processListLanguagesOption (
+-		const char *const option __unused__,
+-		const char *const parameter __unused__)
++		const char *const option CTAGS_GNUC_UNUSED,
++		const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ 	printLanguageList ();
+ 	exit (0);
+@@ -1360,8 +1360,8 @@ static void processIgnoreOption (const char *const list)
+ }
+ 
+ static void processVersionOption (
+-		const char *const option __unused__,
+-		const char *const parameter __unused__)
++		const char *const option CTAGS_GNUC_UNUSED,
++		const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ 	printProgramIdentification ();
+ 	exit (0);
+diff --git a/plugins/symbol-db/anjuta-tags/options.h b/plugins/symbol-db/anjuta-tags/options.h
+index 28b276f..04c8c6b 100644
+--- a/plugins/symbol-db/anjuta-tags/options.h
++++ b/plugins/symbol-db/anjuta-tags/options.h
+@@ -123,7 +123,7 @@ extern CONST_OPTION optionValues		Option;
+ /*
+ *   FUNCTION PROTOTYPES
+ */
+-extern void verbose (const char *const format, ...) __printf__ (1, 2);
++extern void verbose (const char *const format, ...) CTAGS_GNUC_PRINTF (1, 2);
+ extern void freeList (stringList** const pString);
+ extern void setDefaultTagFileName (void);
+ extern void checkOptions (void);
+diff --git a/plugins/symbol-db/anjuta-tags/parse.c b/plugins/symbol-db/anjuta-tags/parse.c
+index 0b5e2c3..daf3136 100644
+--- a/plugins/symbol-db/anjuta-tags/parse.c
++++ b/plugins/symbol-db/anjuta-tags/parse.c
+@@ -376,7 +376,7 @@ extern void freeParserResources (void)
+ */
+ 
+ extern void processLanguageDefineOption (
+-		const char *const option, const char *const parameter __unused__)
++		const char *const option, const char *const parameter CTAGS_GNUC_UNUSED)
+ {
+ #ifdef HAVE_REGEX
+ 	if (parameter [0] == '\0')
+diff --git a/plugins/symbol-db/anjuta-tags/python.c b/plugins/symbol-db/anjuta-tags/python.c
+index a90d072..e15c650 100644
+--- a/plugins/symbol-db/anjuta-tags/python.c
++++ b/plugins/symbol-db/anjuta-tags/python.c
+@@ -135,7 +135,7 @@ static boolean isIdentifierCharacter (int c)
+  * extract all relevant information and create a tag.
+  */
+ static void makeFunctionTag (vString *const function,
+-	vString *const parent, int is_class_parent, const char *arglist __unused__)
++	vString *const parent, int is_class_parent, const char *arglist CTAGS_GNUC_UNUSED)
+ {
+ 	tagEntryInfo tag;
+ 	initTagEntry (&tag, vStringValue (function));
+diff --git a/plugins/symbol-db/anjuta-tags/routines.c b/plugins/symbol-db/anjuta-tags/routines.c
+index 83bcdcc..d23d455 100644
+--- a/plugins/symbol-db/anjuta-tags/routines.c
++++ b/plugins/symbol-db/anjuta-tags/routines.c
+@@ -526,7 +526,7 @@ static boolean isPathSeparator (const int c)
+ 
+ #if ! defined (HAVE_STAT_ST_INO)
+ 
+-static void canonicalizePath (char *const path __unused__)
++static void canonicalizePath (char *const path CTAGS_GNUC_UNUSED)
+ {
+ #if defined (MSDOS_STYLE_PATH)
+ 	char *p;
+diff --git a/plugins/symbol-db/anjuta-tags/routines.h b/plugins/symbol-db/anjuta-tags/routines.h
+index c623e17..7889cfe 100644
+--- a/plugins/symbol-db/anjuta-tags/routines.h
++++ b/plugins/symbol-db/anjuta-tags/routines.h
+@@ -85,7 +85,7 @@ extern void freeRoutineResources (void);
+ extern void setExecutableName (const char *const path);
+ extern const char *getExecutableName (void);
+ extern const char *getExecutablePath (void);
+-extern void error (const errorSelection selection, const char *const format, ...) __printf__ (2, 3);
++extern void error (const errorSelection selection, const char *const format, ...) CTAGS_GNUC_PRINTF (2, 3);
+ 
+ /* Memory allocation functions */
+ #ifdef NEED_PROTO_MALLOC
+-- 
+cgit v0.12
+

@@ -94,6 +94,10 @@ will need to:
 	sed -e '/SUBDIRS =/ s/benchmark//' \
 		-i plugins/symbol-db/Makefile.{am,in} || die
 
+	# From GNOME:
+	# 	https://git.gnome.org/browse/anjuta/commit/?id=2a404b226a0f1ac27bca526a667e250cb5c982c0
+	eapply "${FILESDIR}"/${PN}-3.15.90-symbol-db-bgo-733600-anjuta-tags-build-breakage-with-recent-glib.patch
+
 	use vala && vala_src_prepare
 	gnome2_src_prepare
 }
