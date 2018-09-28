@@ -53,8 +53,8 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gitg/commit/?id=a1f43c1c985e48b8c8ca941e3d1c8d1dcc19122a
-	# 	https://git.gnome.org/browse/gitg/commit/?id=84eee97117fc358544095541d5a54eca7639bb0f
+	# 	https://gitlab.gnome.org/GNOME/gitg/commit/a1f43c1c985e48b8c8ca941e3d1c8d1dcc19122a
+	# 	https://gitlab.gnome.org/GNOME/gitg/commit/84eee97117fc358544095541d5a54eca7639bb0f
 	"${FILESDIR}"/${PN}-3.14.1-libgit2-glib-0.22.0.patch
 	"${FILESDIR}"/${PN}-3.14.1-unambiguate-references-to-assert-no-error.patch
 )
@@ -74,8 +74,8 @@ src_prepare() {
 		-i Gitg-1.0.gir || die
 
 	eautoreconf
-	gnome2_src_prepare
 	vala_src_prepare
+	gnome2_src_prepare
 }
 
 src_configure() {

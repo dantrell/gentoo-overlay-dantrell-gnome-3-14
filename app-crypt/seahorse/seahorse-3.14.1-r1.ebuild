@@ -48,9 +48,9 @@ src_prepare() {
 		-i configure.ac configure || die "sed 1 failed"
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/seahorse/commit/?id=48362cd12c80b941b2371ceaab3decb74811ed7a
-	# 	https://git.gnome.org/browse/seahorse/commit/?id=dfabc8de30e87fd7b6dc6d12f34fa29858caed95
-	# 	https://git.gnome.org/browse/seahorse/commit/?id=31a9a6ffc10f9737e70d7f0051ff590ff284ad07
+	# 	https://gitlab.gnome.org/GNOME/seahorse/commit/48362cd12c80b941b2371ceaab3decb74811ed7a
+	# 	https://gitlab.gnome.org/GNOME/seahorse/commit/dfabc8de30e87fd7b6dc6d12f34fa29858caed95
+	# 	https://gitlab.gnome.org/GNOME/seahorse/commit/31a9a6ffc10f9737e70d7f0051ff590ff284ad07
 	eapply "${FILESDIR}"/${PN}-3.15.90-pgp-force-use-of-the-first-gnupg-found-by-configure-ac.patch
 	eapply "${FILESDIR}"/${PN}-3.17.4-avoid-binding-seahorse-to-the-build-time-version-of-gpg.patch
 	eapply "${FILESDIR}"/${PN}-9999-accept-gnupg-2-2-x-as-supported-version.patch

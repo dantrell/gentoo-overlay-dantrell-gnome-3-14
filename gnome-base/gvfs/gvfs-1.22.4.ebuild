@@ -74,10 +74,10 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-1.22.4-fix-parallel.patch
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gvfs/commit/?id=7bee91695bbe5d9228392e6da496186f02df5c39
-	# 	https://git.gnome.org/browse/gvfs/commit/?id=77daad9b0ddaebc032627af6d347afc22a0e0641
-	# 	https://git.gnome.org/browse/gvfs/commit/?id=48877cbca19d13f4bdb9aae4bf366e78831cedc4
-	# 	https://git.gnome.org/browse/gvfs/commit/?id=3424bef7ef71dc3a8c2c71310671cd6d39e7b3e7
+	# 	https://gitlab.gnome.org/GNOME/gvfs/commit/7bee91695bbe5d9228392e6da496186f02df5c39
+	# 	https://gitlab.gnome.org/GNOME/gvfs/commit/77daad9b0ddaebc032627af6d347afc22a0e0641
+	# 	https://gitlab.gnome.org/GNOME/gvfs/commit/48877cbca19d13f4bdb9aae4bf366e78831cedc4
+	# 	https://gitlab.gnome.org/GNOME/gvfs/commit/3424bef7ef71dc3a8c2c71310671cd6d39e7b3e7
 	eapply "${FILESDIR}"/${PN}-1.22.5-gvfs-open-add-hack-to-close-up-dbus-daemon-race.patch
 	eapply "${FILESDIR}"/${PN}-1.22.5-gvfs-open-do-not-use-g-steal-pointer.patch
 	eapply "${FILESDIR}"/${PN}-1.24.4-gvfs-open-also-replace-dashes-when-computing-object-path.patch

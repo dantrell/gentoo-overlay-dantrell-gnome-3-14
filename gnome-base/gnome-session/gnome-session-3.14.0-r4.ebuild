@@ -5,7 +5,7 @@ EAPI="6"
 inherit autotools gnome2
 
 DESCRIPTION="Gnome session manager"
-HOMEPAGE="https://git.gnome.org/browse/gnome-session"
+HOMEPAGE="https://gitlab.gnome.org/GNOME/gnome-session"
 
 LICENSE="GPL-2 LGPL-2 FDL-1.1"
 SLOT="0"
@@ -87,7 +87,7 @@ src_prepare() {
 
 	# From GNOME:
 	# 	https://bugzilla.gnome.org/show_bug.cgi?id=731173
-	# 	https://git.gnome.org/browse/gnome-session/commit/?id=d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
+	# 	https://gitlab.gnome.org/GNOME/gnome-session/commit/d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
 	eapply "${FILESDIR}"/${PN}-3.15.3-add-new-commandline-option-disable-acceleration-check.patch
 
 	eautoreconf

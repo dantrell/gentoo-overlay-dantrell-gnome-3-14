@@ -53,9 +53,9 @@ DEPEND="${RDEPEND}
 
 src_prepare() {
 	# From GNOME:
-	# 	https://git.gnome.org/browse/vino/commit/?id=ccf0986fc8ec5c1770505435c28c6438847263ed
-	# 	https://git.gnome.org/browse/vino/commit/?id=4d53f758db39da152b7156587fa6ef66acefe1d0
-	# 	https://git.gnome.org/browse/vino/commit/?id=9fa956adc7af65be0828f68237e716bdc1edfad1
+	# 	https://gitlab.gnome.org/GNOME/vino/commit/ccf0986fc8ec5c1770505435c28c6438847263ed
+	# 	https://gitlab.gnome.org/GNOME/vino/commit/4d53f758db39da152b7156587fa6ef66acefe1d0
+	# 	https://gitlab.gnome.org/GNOME/vino/commit/9fa956adc7af65be0828f68237e716bdc1edfad1
 	eapply "${FILESDIR}"/${PN}-3.15.4-remove-obsolete-gsettings-conversion-file.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-vino-upnp-use-gnetworkmonitor.patch
 	eapply "${FILESDIR}"/${PN}-3.15.91-avoid-a-critical-eggsmclient-warning-on-startup.patch

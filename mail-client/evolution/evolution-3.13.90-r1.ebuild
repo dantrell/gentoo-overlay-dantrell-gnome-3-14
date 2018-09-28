@@ -96,7 +96,7 @@ file from /usr/share/applications if you use a different browser)."
 
 src_prepare() {
 	# From GNOME:
-	# 	https://git.gnome.org/browse/evolution/log/?h=wip/webkit2
+	# 	https://gitlab.gnome.org/GNOME/evolution/commits/wip/webkit2
 	eapply "${FILESDIR}"
 
 	sed -e "s/m4_define(\[evo_major_version\], \[.*\])/m4_define(\[evo_major_version\], \[3\])/" \

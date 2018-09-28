@@ -103,10 +103,10 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-non-bash-support.patch
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gtk+/commit/?id=34e6e1a599375da5665f4829faedf4c640f031a6
-	# 	https://git.gnome.org/browse/gtk+/commit/?id=2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c
-	# 	https://git.gnome.org/browse/gtk+/commit/?id=8753ef612940d5977bc8af2cca3ceb6cc669d1e4
-	# 	https://git.gnome.org/browse/gtk+/commit/?id=631f6b536485829a0bd00532f5826ad302b4951b
+	# 	https://gitlab.gnome.org/GNOME/gtk+/commit/34e6e1a599375da5665f4829faedf4c640f031a6
+	# 	https://gitlab.gnome.org/GNOME/gtk+/commit/2db7e3eaa8ed95adde5c2f8753cd3f63766ae67c
+	# 	https://gitlab.gnome.org/GNOME/gtk+/commit/8753ef612940d5977bc8af2cca3ceb6cc669d1e4
+	# 	https://gitlab.gnome.org/GNOME/gtk+/commit/631f6b536485829a0bd00532f5826ad302b4951b
 	eapply "${FILESDIR}"/${PN}-3.14.15-avoid-g-set-object.patch
 	eapply "${FILESDIR}"/${PN}-3.14.15-gtkplacessidebar-protect-for-checking-a-null-event.patch
 	eapply "${FILESDIR}"/${PN}-3.15.2-render-shadows-for-half-tiled-windows.patch

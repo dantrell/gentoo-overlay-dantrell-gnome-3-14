@@ -137,7 +137,7 @@ src_prepare() {
 		eapply "${FILESDIR}"/${PN}-3.14.4-restore-deprecated-background-code.patch
 	else
 		# From GNOME:
-		# 	https://git.gnome.org/browse/gnome-shell/commit/?id=965aedb0bb15c0246c67384e2dab13fa027df917
+		# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/965aedb0bb15c0246c67384e2dab13fa027df917
 		eapply "${FILESDIR}"/${PN}-3.19.3-background-reload-animation-on-timezone-changes.patch
 	fi
 
@@ -156,9 +156,9 @@ src_prepare() {
 	fi
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=6660342d2f41d4d22a23fa0653f8e1f36b6bf7dc
-	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=be3c3c64c164e1b2edb5e43343ea177db473fbb4
-	# 	https://git.gnome.org/browse/gnome-shell/commit/?id=7aa75f8eb060beaaa933f96df6aa6a98f4461a46
+	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/6660342d2f41d4d22a23fa0653f8e1f36b6bf7dc
+	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/be3c3c64c164e1b2edb5e43343ea177db473fbb4
+	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/7aa75f8eb060beaaa933f96df6aa6a98f4461a46
 	eapply "${FILESDIR}"/${PN}-3.14.4-authprompt-fix-hang-if-user-types-password-really-fast.patch
 	eapply "${FILESDIR}"/${PN}-3.15.2-port-gnome-shell-to-python-3.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-calendar-server-bump-dataserver-version.patch
@@ -240,6 +240,6 @@ pkg_postinst() {
 	if ! use systemd; then
 		ewarn "You have emerged ${PN} without systemd,"
 		ewarn "if you experience any issues please use the support thread:"
-		ewarn "https://forums.gentoo.org/viewtopic-t-1022050.html"
+		ewarn "https://forums.gentoo.org/viewtopic-t-1082226.html"
 	fi
 }

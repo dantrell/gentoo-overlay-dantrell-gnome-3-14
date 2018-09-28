@@ -5,7 +5,7 @@ EAPI="6"
 inherit gnome.org
 
 DESCRIPTION="Notification daemon"
-HOMEPAGE="https://git.gnome.org/browse/notification-daemon/"
+HOMEPAGE="https://gitlab.gnome.org/GNOME/notification-daemon/"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -31,12 +31,12 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=69bbecf9fde68cce13f8f25a89544d0f7757a9a5
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=4dbd90ebac1a3005137f57b027b5dff07d5032d5
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=6e472aa507939a60b9cd8be8c2428d37e10fd81c
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=72430ca9062719f1125cc9b1ff7171194325e775
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=3430a3425c44329073d1fb522c5661ea64c4eb38
-	# 	https://git.gnome.org/browse/notification-daemon/commit/?id=659a0da0f4ceb9fe3dcf50096f96c6c267f3673f
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/69bbecf9fde68cce13f8f25a89544d0f7757a9a5
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/4dbd90ebac1a3005137f57b027b5dff07d5032d5
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/6e472aa507939a60b9cd8be8c2428d37e10fd81c
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/72430ca9062719f1125cc9b1ff7171194325e775
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/3430a3425c44329073d1fb522c5661ea64c4eb38
+	# 	https://gitlab.gnome.org/GNOME/notification-daemon/commit/659a0da0f4ceb9fe3dcf50096f96c6c267f3673f
 	"${FILESDIR}"/${PN}-3.16.0-nd-notfification-fix-crash-when-hint-is-real-boolean.patch
 	"${FILESDIR}"/${PN}-3.16.0-nd-notification-properly-check-if-gvariant-is-string.patch
 	"${FILESDIR}"/${PN}-3.16.0-nd-bubble-fix-timeout.patch

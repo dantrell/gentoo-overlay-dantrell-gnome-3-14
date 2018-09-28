@@ -90,12 +90,12 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-3.5.91-delete.patch
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=a0cbf72827b87a28fba47988957001a8b4fbddf5
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=45413c18167cddaefefc092b63ec75d8fadc6f50
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=bfe878e4313e21b4c539d95a88d243065d30fc2c
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=079d349206c2dd182df82e4b26e3e23c9b7a75c4
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=618f6a6d1965b35e302b2623cbd7e4e81e752ded
-	# 	https://git.gnome.org/browse/nautilus/commit/?id=e96f73cf1589c023ade74e4aeb16a0c422790161
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/a0cbf72827b87a28fba47988957001a8b4fbddf5
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/45413c18167cddaefefc092b63ec75d8fadc6f50
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/bfe878e4313e21b4c539d95a88d243065d30fc2c
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/079d349206c2dd182df82e4b26e3e23c9b7a75c4
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/618f6a6d1965b35e302b2623cbd7e4e81e752ded
+	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/e96f73cf1589c023ade74e4aeb16a0c422790161
 	eapply "${FILESDIR}"/${PN}-3.14.3-window-menus-unref-extension-created-action.patch
 	eapply "${FILESDIR}"/${PN}-3.14.3-application-actions-use-valid-window-list.patch
 	eapply "${FILESDIR}"/${PN}-3.17.3-ignore-no-desktop-if-not-first-launch.patch

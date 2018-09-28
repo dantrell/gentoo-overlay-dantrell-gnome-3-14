@@ -88,8 +88,8 @@ pkg_setup() {
 
 src_prepare() {
 	# From GNOME:
-	# 	https://git.gnome.org/browse/totem/patch/?id=c36121418b09b36634965b6dc08f046b50cb8cf0
-	# 	https://git.gnome.org/browse/totem/patch/?id=c76e276b415c458e38966d3ec58cd750452c9b15
+	# 	https://gitlab.gnome.org/GNOME/totem/commit/c36121418b09b36634965b6dc08f046b50cb8cf0
+	# 	https://gitlab.gnome.org/GNOME/totem/commit/c76e276b415c458e38966d3ec58cd750452c9b15
 	eapply "${FILESDIR}"/${PN}-3.15.90-data-remove-outdated-bug-report-helper-script.patch
 	eapply "${FILESDIR}"/${PN}-3.15.92-opensubtitles-fix-downloading-subtitles-with-newer-python.patch
 

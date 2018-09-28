@@ -139,7 +139,7 @@ src_prepare() {
 
 	if use elogind; then
 		# From GNOME:
-		# 	https://git.gnome.org/browse/gdm/log/?h=gnome-3-16
+		# 	https://gitlab.gnome.org/GNOME/gdm/commits/gnome-3-16
 		eapply "${FILESDIR}"/rollup
 
 		eapply "${FILESDIR}"/${PN}-3.16.4-remove-deprecated-consolekit-code.patch

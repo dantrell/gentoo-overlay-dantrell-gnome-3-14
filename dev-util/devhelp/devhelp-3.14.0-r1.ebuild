@@ -47,9 +47,9 @@ src_prepare() {
 	fi
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/devhelp/commit/?id=28364e33f6d21e98c40fae3e232698a751848c3d
-	# 	https://git.gnome.org/browse/devhelp/commit/?id=55e425cbd224e10dd586518863e81281b2de5690
-	# 	https://git.gnome.org/browse/devhelp/commit/?id=05659428acc6da4e6a85d37d9e0d3b00e6adde9d
+	# 	https://gitlab.gnome.org/GNOME/devhelp/commit/28364e33f6d21e98c40fae3e232698a751848c3d
+	# 	https://gitlab.gnome.org/GNOME/devhelp/commit/55e425cbd224e10dd586518863e81281b2de5690
+	# 	https://gitlab.gnome.org/GNOME/devhelp/commit/05659428acc6da4e6a85d37d9e0d3b00e6adde9d
 	eapply "${FILESDIR}"/${PN}-3.15.91-use-gtksettings-gtk-xft-dpi-property-to-keep-track-of-xft-dpi-changes.patch
 	eapply "${FILESDIR}"/${PN}-3.15.92-disable-some-webkit-features-we-dont-need.patch
 	eapply "${FILESDIR}"/${PN}-3.17.3-use-webkit-navigation-policy-decision-get-navigation-action.patch

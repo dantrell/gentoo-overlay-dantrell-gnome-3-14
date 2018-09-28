@@ -33,13 +33,13 @@ DEPEND="${RDEPEND}
 
 src_prepare() {
 	# From GNOME:
-	# 	https://git.gnome.org/browse/zenity/commit/?id=8098bb3dd7c6e1742fb0c8ac349ec35333b15a25
-	# 	https://git.gnome.org/browse/zenity/commit/?id=fad5a25dcd23a46bf2e25d001b008273cc4ea578
-	# 	https://git.gnome.org/browse/zenity/commit/?id=9fdac81d78db26fc10bc7c2370f9f67d723f272a
-	# 	https://git.gnome.org/browse/zenity/commit/?id=5b0553e9ef4fcabebefbc510a088b009af73d4ab
-	# 	https://git.gnome.org/browse/zenity/commit/?id=ec0a74004526eab4d3bfba8f841a5b357026d4f5
-	# 	https://git.gnome.org/browse/zenity/commit/?id=fac40e9c46160a0915d528062dfd19c1afaeac0e
-	# 	https://git.gnome.org/browse/zenity/commit/?id=61c53a042418562c30e816fdd0c63caf2fa9f1b3
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/8098bb3dd7c6e1742fb0c8ac349ec35333b15a25
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/fad5a25dcd23a46bf2e25d001b008273cc4ea578
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/9fdac81d78db26fc10bc7c2370f9f67d723f272a
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/5b0553e9ef4fcabebefbc510a088b009af73d4ab
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/ec0a74004526eab4d3bfba8f841a5b357026d4f5
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/fac40e9c46160a0915d528062dfd19c1afaeac0e
+	# 	https://gitlab.gnome.org/GNOME/zenity/commit/61c53a042418562c30e816fdd0c63caf2fa9f1b3
 	eapply "${FILESDIR}"/${PN}-3.16.0-allow-text-info-to-load-resources-from-absolute-file-uris.patch
 	eapply "${FILESDIR}"/${PN}-3.16.0-allow-text-info-to-load-resources-also-from-relative-file-uris.patch
 	eapply "${FILESDIR}"/${PN}-3.16.0-bug-734049-zenity-text-info-chokes-on-some-utf-8-string.patch

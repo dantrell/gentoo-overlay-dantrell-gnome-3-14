@@ -56,14 +56,14 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=a8a818bfb525036a54c5197abe813b68a0c2c5e4
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=aac4049b8699d72147186ea4a6a283972ed4f8ce
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=b2051083c807dfcb3f6d176107e4035146affcca
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=de78b78bcd1b1f61fd04856d51e3f20caa6ff2ce
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=19565da9620a19fdce0335a23f7c70057eefebcc
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=cdfaf4621c359200d86bbf21823172d3048319b7
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=dbf2ccbccc8198920e564a14fc61671dc49174aa
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=2c6f5cb83eaae898973e9f3858228a1b48358e2a
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/a8a818bfb525036a54c5197abe813b68a0c2c5e4
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/aac4049b8699d72147186ea4a6a283972ed4f8ce
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/b2051083c807dfcb3f6d176107e4035146affcca
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/de78b78bcd1b1f61fd04856d51e3f20caa6ff2ce
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/19565da9620a19fdce0335a23f7c70057eefebcc
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/cdfaf4621c359200d86bbf21823172d3048319b7
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/dbf2ccbccc8198920e564a14fc61671dc49174aa
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/2c6f5cb83eaae898973e9f3858228a1b48358e2a
 	"${FILESDIR}"/${PN}-3.15.91-imap-smtp-dont-leak-the-strings.patch
 	"${FILESDIR}"/${PN}-3.15.91-provider-dont-leak-the-gkeyfiles.patch
 	"${FILESDIR}"/${PN}-3.15.91-pocket-add-missing-includes.patch
@@ -74,17 +74,17 @@ PATCHES=(
 	"${FILESDIR}"/${PN}-3.17.91-build-fix-parallel-install-failure.patch
 
 	# From GNOME:
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=5dc30f43e6c721708a6d15fcfcd086a11d41bc2d
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=01882bde514aae12796c98e03818f8d30cbd13b9
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=53ce478c99d43f0cf8333e452edd228418112a2d
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=674330b0ccb816530ee6d31cea0f752e334f15d7
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=924689ce724cc0f1b893e1e0845c04f59eabd765
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=389ce7fad248998178778ca4a95dd8d09d4f38eb
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=236987b0dc06fb429e319bd29a2e9227b78b35e1
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=ee460859029833c7e607f668270d5946525e7d18
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=2893345fb5a81ae2de631ea82d4e9ff467c610f6
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=1f18560d1c151d69f2f72b63c436cfe2b86443a1
-	# 	https://git.gnome.org/browse/gnome-online-accounts/commit/?id=5583ceb2d001655a492446238ac8074e31c7d2c9
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/5dc30f43e6c721708a6d15fcfcd086a11d41bc2d
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/01882bde514aae12796c98e03818f8d30cbd13b9
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/53ce478c99d43f0cf8333e452edd228418112a2d
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/674330b0ccb816530ee6d31cea0f752e334f15d7
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/924689ce724cc0f1b893e1e0845c04f59eabd765
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/389ce7fad248998178778ca4a95dd8d09d4f38eb
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/236987b0dc06fb429e319bd29a2e9227b78b35e1
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/ee460859029833c7e607f668270d5946525e7d18
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/2893345fb5a81ae2de631ea82d4e9ff467c610f6
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/1f18560d1c151d69f2f72b63c436cfe2b86443a1
+	# 	https://gitlab.gnome.org/GNOME/gnome-online-accounts/commit/5583ceb2d001655a492446238ac8074e31c7d2c9
 	"${FILESDIR}"/${PN}-3.20.5-build-new-api-key-for-google.patch
 	"${FILESDIR}"/${PN}-3.20.6-goa-identity-manager-get-identity-finish-should-return-a-new-ref.patch
 	"${FILESDIR}"/${PN}-3.20.6-identity-fix-the-error-handling-when-signing-out-an-identity.patch
