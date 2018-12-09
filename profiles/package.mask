@@ -17,7 +17,6 @@ app-editors/gedit-plugins::gnome-kit
 app-editors/gedit::gentoo
 app-editors/gedit::gnome-kit
 app-editors/latexila::gentoo
-app-editors/latexila::gnome-kit
 app-misc/bijiben::gentoo
 app-misc/bijiben::gnome-kit
 app-misc/gnote::gentoo
@@ -155,7 +154,6 @@ gnome-extra/gnome-software::gnome-kit
 gnome-extra/gnome-system-monitor::gentoo
 gnome-extra/gnome-system-monitor::gnome-kit
 gnome-extra/gnome-tweak-tool::gentoo
-gnome-extra/gnome-tweak-tool::gnome-kit
 gnome-extra/gnome-user-docs::gentoo
 gnome-extra/gnome-user-docs::gnome-kit
 gnome-extra/gnome-weather::gentoo
