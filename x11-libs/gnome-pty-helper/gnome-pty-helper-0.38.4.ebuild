@@ -6,7 +6,7 @@ GNOME_ORG_MODULE="vte"
 inherit gnome2
 
 DESCRIPTION="GNOME Setuid helper for opening ptys"
-HOMEPAGE="https://wiki.gnome.org/action/show/Apps/Terminal/VTE"
+HOMEPAGE="https://wiki.gnome.org/Apps/Terminal/VTE"
 # gnome-pty-helper is inside vte
 
 LICENSE="LGPL-2"
