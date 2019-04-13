@@ -48,7 +48,7 @@ DOC_CONTENTS="To get previous working directory inherited in new opened
 src_prepare() {
 	if use deprecated-transparency; then
 		# From Fedora:
-		# 	http://pkgs.fedoraproject.org/cgit/gnome-terminal.git/tree/restore-transparency.patch?h=f20-gnome-3-12
+		# 	https://src.fedoraproject.org/cgit/gnome-terminal.git/tree/restore-transparency.patch?h=f20-gnome-3-12
 		eapply "${FILESDIR}"/${PN}-3.14.3-restore-transparency.patch
 
 		# From GNOME:
