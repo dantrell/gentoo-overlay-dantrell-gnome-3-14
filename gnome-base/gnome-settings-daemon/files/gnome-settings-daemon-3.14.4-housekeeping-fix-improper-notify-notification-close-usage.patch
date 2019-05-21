@@ -1,0 +1,14 @@
+diff '--exclude=.git' -urN a/plugins/housekeeping/gsd-disk-space.c b/plugins/housekeeping/gsd-disk-space.c
+--- a/plugins/housekeeping/gsd-disk-space.c	2015-04-30 06:56:21.000000000 -0500
++++ b/plugins/housekeeping/gsd-disk-space.c	2019-05-20 23:20:15.098117539 -0500
+@@ -1081,7 +1081,9 @@
+         g_clear_object (&settings);
+         g_clear_object (&privacy_settings);
+         g_clear_object (&dialog);
+-        g_clear_pointer (&notification, notify_notification_close);
++        /* NotifyNotification::closed callback will drop reference */
++        if (notification != NULL)
++                notify_notification_close (notification, NULL);
+         g_slist_free_full (ignore_paths, g_free);
+         ignore_paths = NULL;
+ }
