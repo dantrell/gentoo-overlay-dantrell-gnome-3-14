@@ -22,7 +22,7 @@ COMMON_DEPEND="
 	>=gnome-base/librsvg-2.26.0
 	>=dev-libs/libgdata-0.15.2:0=[gnome-online-accounts]
 	media-libs/babl
-	>=media-libs/gegl-0.2:0[cairo,jpeg2k,raw]
+	>=media-libs/gegl-0.2:0[cairo,raw]
 	>=media-libs/grilo-0.2.6:0.2=
 	>=media-libs/exempi-1.99.5:2
 	media-libs/lcms:2
