@@ -14,6 +14,8 @@ KEYWORDS="*"
 
 IUSE="test"
 
+RESTRICT="!test? ( test )"
+
 RDEPEND="
 	>=dev-libs/gjs-1.41.4
 	>=dev-libs/glib-2.32:2
