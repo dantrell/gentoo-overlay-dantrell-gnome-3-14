@@ -23,7 +23,10 @@ RDEPEND="
 	gtk? ( >=x11-libs/gtk+-3:3[introspection] )
 	python? (
 		${PYTHON_DEPS}
-		>=dev-python/pygobject-3.0.0:3[${PYTHON_USEDEP}] )
+		$(python_gen_cond_dep '
+			>=dev-python/pygobject-3.0.0:3[${PYTHON_MULTI_USEDEP}]
+		')
+	)
 "
 DEPEND="${RDEPEND}
 	>=dev-util/gtk-doc-am-1.11
