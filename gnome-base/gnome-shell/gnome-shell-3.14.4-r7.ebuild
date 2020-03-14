@@ -11,7 +11,7 @@ HOMEPAGE="https://wiki.gnome.org/Projects/GnomeShell"
 
 LICENSE="GPL-2+ LGPL-2+"
 SLOT="0"
-KEYWORDS="~*"
+KEYWORDS="*"
 
 IUSE="+bluetooth browser-extension ck +deprecated-background elogind +ibus +networkmanager nsplugin systemd vanilla-gc vanilla-motd vanilla-screen wayland"
 REQUIRED_USE="${PYTHON_REQUIRED_USE}
