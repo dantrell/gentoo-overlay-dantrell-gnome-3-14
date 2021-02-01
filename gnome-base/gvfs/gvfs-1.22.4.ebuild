@@ -5,7 +5,7 @@ GNOME2_LA_PUNT="yes"
 
 inherit autotools bash-completion-r1 gnome2
 
-DESCRIPTION="Virtual filesystem implementation for gio"
+DESCRIPTION="Virtual filesystem implementation for GIO"
 HOMEPAGE="https://wiki.gnome.org/Projects/gvfs"
 
 LICENSE="LGPL-2+"
@@ -43,7 +43,9 @@ RDEPEND="
 		>=app-pda/libimobiledevice-1.1.5:=
 		>=app-pda/libplist-1:= )
 	mtp? ( >=media-libs/libmtp-1.1.6 )
-	samba? ( >=net-fs/samba-4[client] )
+	samba? (
+		sys-libs/libunwind:=
+		>=net-fs/samba-4[client] )
 	systemd? ( sys-apps/systemd:0= )
 	udev? (
 		cdda? ( dev-libs/libcdio-paranoia )

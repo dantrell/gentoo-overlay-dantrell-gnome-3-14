@@ -2,6 +2,7 @@
 
 EAPI="6"
 GNOME2_LA_PUNT="yes"
+GNOME2_EAUTORECONF="yes"
 PYTHON_COMPAT=( python{3_6,3_7,3_8,3_9} )
 
 inherit gnome2 multilib python-single-r1 virtualx
@@ -32,8 +33,15 @@ DEPEND="${RDEPEND}
 	>=dev-util/gtk-doc-am-1.11
 	>=dev-util/intltool-0.40
 	virtual/pkgconfig
+
+	dev-libs/gobject-introspection-common
+	gnome-base/gnome-common
 "
 # eautoreconf needs gobject-introspection-common, gnome-common
+
+PATCHES=(
+	"${FILESDIR}"/${PN}-1.22.0-py38-support.patch # Fix py3.8 support, bug 702810
+)
 
 pkg_setup() {
 	use python && python-single-r1_pkg_setup

@@ -81,9 +81,7 @@ RDEPEND="${COMMON_DEPEND}
 		>=app-accessibility/orca-3.10
 		app-accessibility/caribou
 		gnome-extra/mousetweaks )
-	fprint? (
-		sys-auth/fprintd
-		sys-auth/pam_fprint )
+	fprint? ( sys-auth/fprintd[pam] )
 
 	!gnome-extra/fast-user-switch-applet
 "
