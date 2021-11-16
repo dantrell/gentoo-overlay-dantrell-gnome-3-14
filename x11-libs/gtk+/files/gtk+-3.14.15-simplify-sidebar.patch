@@ -1,0 +1,309 @@
+diff '--exclude=.git' -urN a/gtk/gtkplacessidebar.c b/gtk/gtkplacessidebar.c
+--- a/gtk/gtkplacessidebar.c	2015-07-21 09:22:36.000000000 -0500
++++ b/gtk/gtkplacessidebar.c	2020-03-14 02:50:21.497108878 -0500
+@@ -1018,163 +1018,6 @@
+   /* Application-side shortcuts */
+   add_application_shortcuts (sidebar);
+ 
+-  /* go through all connected drives */
+-  drives = g_volume_monitor_get_connected_drives (volume_monitor);
+-
+-  for (l = drives; l != NULL; l = l->next)
+-    {
+-      drive = l->data;
+-
+-      volumes = g_drive_get_volumes (drive);
+-      if (volumes != NULL)
+-        {
+-          for (ll = volumes; ll != NULL; ll = ll->next)
+-            {
+-              volume = ll->data;
+-              identifier = g_volume_get_identifier (volume, G_VOLUME_IDENTIFIER_KIND_CLASS);
+-
+-              if (g_strcmp0 (identifier, "network") == 0)
+-                {
+-                  g_free (identifier);
+-                  network_volumes = g_list_prepend (network_volumes, volume);
+-                  continue;
+-                }
+-              g_free (identifier);
+-
+-              mount = g_volume_get_mount (volume);
+-              if (mount != NULL)
+-                {
+-                  /* Show mounted volume in the sidebar */
+-                  icon = g_mount_get_symbolic_icon (mount);
+-                  root = g_mount_get_default_location (mount);
+-                  mount_uri = g_file_get_uri (root);
+-                  name = g_mount_get_name (mount);
+-                  tooltip = g_file_get_parse_name (root);
+-
+-                  add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                             SECTION_DEVICES,
+-                             name, icon, mount_uri,
+-                             drive, volume, mount, 0, tooltip);
+-                  g_object_unref (root);
+-                  g_object_unref (mount);
+-                  g_object_unref (icon);
+-                  g_free (tooltip);
+-                  g_free (name);
+-                  g_free (mount_uri);
+-                }
+-              else
+-                {
+-                  /* Do show the unmounted volumes in the sidebar;
+-                   * this is so the user can mount it (in case automounting
+-                   * is off).
+-                   *
+-                   * Also, even if automounting is enabled, this gives a visual
+-                   * cue that the user should remember to yank out the media if
+-                   * he just unmounted it.
+-                   */
+-                  icon = g_volume_get_symbolic_icon (volume);
+-                  name = g_volume_get_name (volume);
+-                  tooltip = g_strdup_printf (_("Mount and open %s"), name);
+-
+-                  add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                             SECTION_DEVICES,
+-                             name, icon, NULL,
+-                             drive, volume, NULL, 0, tooltip);
+-                  g_object_unref (icon);
+-                  g_free (name);
+-                  g_free (tooltip);
+-                }
+-              g_object_unref (volume);
+-            }
+-          g_list_free (volumes);
+-        }
+-      else
+-        {
+-          if (g_drive_is_media_removable (drive) && !g_drive_is_media_check_automatic (drive))
+-            {
+-              /* If the drive has no mountable volumes and we cannot detect media change.. we
+-               * display the drive in the sidebar so the user can manually poll the drive by
+-               * right clicking and selecting "Rescan..."
+-               *
+-               * This is mainly for drives like floppies where media detection doesn't
+-               * work.. but it's also for human beings who like to turn off media detection
+-               * in the OS to save battery juice.
+-               */
+-              icon = g_drive_get_symbolic_icon (drive);
+-              name = g_drive_get_name (drive);
+-              tooltip = g_strdup_printf (_("Mount and open %s"), name);
+-
+-              add_place (sidebar, PLACES_BUILT_IN,
+-                         SECTION_DEVICES,
+-                         name, icon, NULL,
+-                         drive, NULL, NULL, 0, tooltip);
+-              g_object_unref (icon);
+-              g_free (tooltip);
+-              g_free (name);
+-            }
+-        }
+-      g_object_unref (drive);
+-    }
+-  g_list_free (drives);
+-
+-  /* add all volumes that is not associated with a drive */
+-  volumes = g_volume_monitor_get_volumes (volume_monitor);
+-  for (l = volumes; l != NULL; l = l->next)
+-    {
+-      volume = l->data;
+-      drive = g_volume_get_drive (volume);
+-      if (drive != NULL)
+-        {
+-          g_object_unref (volume);
+-          g_object_unref (drive);
+-          continue;
+-        }
+-
+-      identifier = g_volume_get_identifier (volume, G_VOLUME_IDENTIFIER_KIND_CLASS);
+-
+-      if (g_strcmp0 (identifier, "network") == 0)
+-        {
+-          g_free (identifier);
+-          network_volumes = g_list_prepend (network_volumes, volume);
+-          continue;
+-        }
+-      g_free (identifier);
+-
+-      mount = g_volume_get_mount (volume);
+-      if (mount != NULL)
+-        {
+-          icon = g_mount_get_symbolic_icon (mount);
+-          root = g_mount_get_default_location (mount);
+-          mount_uri = g_file_get_uri (root);
+-          tooltip = g_file_get_parse_name (root);
+-          name = g_mount_get_name (mount);
+-          add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                     SECTION_DEVICES,
+-                     name, icon, mount_uri,
+-                     NULL, volume, mount, 0, tooltip);
+-          g_object_unref (mount);
+-          g_object_unref (root);
+-          g_object_unref (icon);
+-          g_free (name);
+-          g_free (tooltip);
+-          g_free (mount_uri);
+-        }
+-      else
+-        {
+-          /* see comment above in why we add an icon for an unmounted mountable volume */
+-          icon = g_volume_get_symbolic_icon (volume);
+-          name = g_volume_get_name (volume);
+-          add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                     SECTION_DEVICES,
+-                     name, icon, NULL,
+-                     NULL, volume, NULL, 0, name);
+-          g_object_unref (icon);
+-          g_free (name);
+-        } 
+-      g_object_unref (volume);
+-    }
+-  g_list_free (volumes);
+-
+   /* file system root */
+ 
+   mount_uri = "file:///"; /* No need to strdup */
+@@ -1186,49 +1029,19 @@
+              _("Open the contents of the file system"));
+   g_object_unref (icon);
+ 
+-  /* add mounts that has no volume (/etc/mtab mounts, ftp, sftp,...) */
+-  mounts = g_volume_monitor_get_mounts (volume_monitor);
++  /* removable media (FHS complaint) */
+ 
+-  for (l = mounts; l != NULL; l = l->next)
+-    {
+-      mount = l->data;
+-      if (g_mount_is_shadowed (mount))
+-        {
+-          g_object_unref (mount);
+-          continue;
+-        }
+-      volume = g_mount_get_volume (mount);
+-      if (volume != NULL)
+-        {
+-          g_object_unref (volume);
+-          g_object_unref (mount);
+-          continue;
+-        }
+-      root = g_mount_get_default_location (mount);
+-
+-      if (!g_file_is_native (root))
+-        {
+-          network_mounts = g_list_prepend (network_mounts, mount);
+-          g_object_unref (root);
+-          continue;
+-        }
+-
+-      icon = g_mount_get_symbolic_icon (mount);
+-      mount_uri = g_file_get_uri (root);
+-      name = g_mount_get_name (mount);
+-      tooltip = g_file_get_parse_name (root);
+-      add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                 SECTION_COMPUTER,
+-                 name, icon, mount_uri,
+-                 NULL, NULL, mount, 0, tooltip);
+-      g_object_unref (root);
+-      g_object_unref (mount);
+-      g_object_unref (icon);
+-      g_free (name);
+-      g_free (mount_uri);
+-      g_free (tooltip);
+-    }
+-  g_list_free (mounts);
++  /* See https://bugs.freedesktop.org/show_bug.cgi?id=51709
++   */
++
++  mount_uri = "file:///media";
++  icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_FILESYSTEM);
++  add_place (sidebar, PLACES_BUILT_IN,
++             SECTION_DEVICES,
++             _("Media"), icon, mount_uri,
++             NULL, NULL, NULL, 0,
++             _("Open removable media"));
++  g_object_unref (icon);
+ 
+   /* add bookmarks */
+ 
+@@ -1270,79 +1083,6 @@
+   g_slist_foreach (bookmarks, (GFunc) g_object_unref, NULL);
+   g_slist_free (bookmarks);
+ 
+-  /* network */
+-  if (!sidebar->local_only)
+-    {
+-      add_heading (sidebar, SECTION_NETWORK, _("Network"));
+-
+-      mount_uri = "network:///";
+-      icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_NETWORK);
+-      add_place (sidebar, PLACES_BUILT_IN,
+-                 SECTION_NETWORK,
+-                 _("Browse Network"), icon, mount_uri,
+-                 NULL, NULL, NULL, 0,
+-                 _("Browse the contents of the network"));
+-      g_object_unref (icon);
+-
+-      if (sidebar->show_connect_to_server)
+-        {
+-          icon = g_themed_icon_new_with_default_fallbacks (ICON_NAME_NETWORK_SERVER);
+-          add_place (sidebar, PLACES_CONNECT_TO_SERVER,
+-                     SECTION_NETWORK,
+-                     _("Connect to Server"), icon, NULL,
+-                     NULL, NULL, NULL, 0,
+-                     _("Connect to a network server address"));
+-          g_object_unref (icon);
+-        }
+-
+-      network_volumes = g_list_reverse (network_volumes);
+-      for (l = network_volumes; l != NULL; l = l->next)
+-        {
+-          volume = l->data;
+-          mount = g_volume_get_mount (volume);
+-
+-          if (mount != NULL)
+-            {
+-              network_mounts = g_list_prepend (network_mounts, mount);
+-              continue;
+-            }
+-          else
+-            {
+-              icon = g_volume_get_symbolic_icon (volume);
+-              name = g_volume_get_name (volume);
+-              tooltip = g_strdup_printf (_("Mount and open %s"), name);
+-
+-              add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                         SECTION_NETWORK,
+-                         name, icon, NULL,
+-                         NULL, volume, NULL, 0, tooltip);
+-              g_object_unref (icon);
+-              g_free (name);
+-              g_free (tooltip);
+-            }
+-        }
+-
+-      network_mounts = g_list_reverse (network_mounts);
+-      for (l = network_mounts; l != NULL; l = l->next)
+-        {
+-          mount = l->data;
+-          root = g_mount_get_default_location (mount);
+-          icon = g_mount_get_symbolic_icon (mount);
+-          mount_uri = g_file_get_uri (root);
+-          name = g_mount_get_name (mount);
+-          tooltip = g_file_get_parse_name (root);
+-          add_place (sidebar, PLACES_MOUNTED_VOLUME,
+-                     SECTION_NETWORK,
+-                     name, icon, mount_uri,
+-                     NULL, NULL, mount, 0, tooltip);
+-          g_object_unref (root);
+-          g_object_unref (icon);
+-          g_free (name);
+-          g_free (mount_uri);
+-          g_free (tooltip);
+-        }
+-    }
+-
+   g_list_free_full (network_volumes, g_object_unref);
+   g_list_free_full (network_mounts, g_object_unref);
+ 

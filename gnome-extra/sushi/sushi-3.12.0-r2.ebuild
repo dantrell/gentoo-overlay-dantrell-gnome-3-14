@@ -11,7 +11,7 @@ LICENSE="GPL-2+"
 SLOT="0"
 KEYWORDS="*"
 
-IUSE="office"
+IUSE="office webkit"
 
 # Optional app-office/unoconv support (OOo to pdf)
 # freetype needed for font loader
@@ -31,7 +31,7 @@ COMMON_DEPEND="
 	media-libs/gst-plugins-base:1.0[introspection]
 	media-libs/clutter-gst:2.0[introspection]
 	media-libs/musicbrainz:5=
-	net-libs/webkit-gtk:4[introspection]
+	webkit? ( net-libs/webkit-gtk:4[introspection] )
 	x11-libs/gtksourceview:3.0[introspection]
 
 	office? ( app-office/unoconv )
@@ -58,6 +58,11 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-3.15.90-gst-fix-the-icons-in-rtl.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-use-margin-startend-instead-of-margin-leftright.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-port-html-viewer-to-webkit.patch
+
+	if ! use webkit; then
+		# From GNOME Without Systemd:
+		eapply "${FILESDIR}"/${PN}-3.15.90-make-webkit-optional.patch
+	fi
 
 	eautoreconf
 	gnome2_src_prepare

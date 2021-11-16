@@ -12,7 +12,7 @@ LICENSE="LGPL-2+"
 SLOT="3/14" # From WebKit: http://trac.webkit.org/changeset/195811
 KEYWORDS="*"
 
-IUSE="aqua broadway cloudprint colord cups examples +introspection test vim-syntax wayland X xinerama"
+IUSE="aqua broadway cloudprint colord cups examples +introspection test +vanilla-sidebar vim-syntax wayland X xinerama"
 REQUIRED_USE="
 	|| ( aqua wayland X )
 	xinerama? ( X )
@@ -39,6 +39,7 @@ COMMON_DEPEND="
 	colord? ( >=x11-misc/colord-0.1.9:0=[${MULTILIB_USEDEP}] )
 	cups? ( >=net-print/cups-1.2[${MULTILIB_USEDEP}] )
 	introspection? ( >=dev-libs/gobject-introspection-1.39:= )
+	!vanilla-sidebar? ( sys-fs/udisks[fhs] )
 	wayland? (
 		>=dev-libs/wayland-1.5.91[${MULTILIB_USEDEP}]
 		media-libs/mesa[wayland,${MULTILIB_USEDEP}]
@@ -122,6 +123,12 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-3.17.7-gdk-add-gdk-touchpad-gesture-mask-to-gdkeventmask.patch
 	eapply "${FILESDIR}"/${PN}-3.17.7-gdk-proxy-touchpad-events-through-the-client-side-window-hierarchy.patch
 	eapply "${FILESDIR}"/${PN}-3.18.6-document-gdk-touchpad-gesture-mask.patch
+
+	# From Ubuntu:
+	# 	https://askubuntu.com/questions/325518/how-can-i-edit-nautilus-places-sidebar-and-unity-quicklist
+	if ! use vanilla-sidebar; then
+		eapply "${FILESDIR}"/${PN}-3.14.15-simplify-sidebar.patch
+	fi
 
 	# -O3 and company cause random crashes in applications. Bug #133469
 	replace-flags -O3 -O2
