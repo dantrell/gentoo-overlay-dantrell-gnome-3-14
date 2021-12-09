@@ -12,7 +12,7 @@ LICENSE="LGPL-2+"
 SLOT="3/14" # From WebKit: http://trac.webkit.org/changeset/195811
 KEYWORDS="*"
 
-IUSE="aqua broadway cloudprint colord cups examples +introspection test +vanilla-sidebar vim-syntax wayland X xinerama"
+IUSE="aqua broadway cloudprint colord cups examples +introspection test +vanilla-sidebar vanilla-touchpad vim-syntax wayland X xinerama"
 REQUIRED_USE="
 	|| ( aqua wayland X )
 	xinerama? ( X )
@@ -119,10 +119,12 @@ src_prepare() {
 	# 	https://gitlab.gnome.org/GNOME/gtk/commit/8c2b3930daa6d3886626907fbc79b812579b42d7
 	# 	https://gitlab.gnome.org/GNOME/gtk/commit/5092febaf841939c7b3539ef447f43e1ce464037
 	# 	https://gitlab.gnome.org/GNOME/gtk/commit/f8b24884b5cc6fbd582eae5e7aab3e234b3c4c26
-	eapply "${FILESDIR}"/${PN}-3.17.7-gdk-add-touchpad-gesture-events-and-event-types.patch
-	eapply "${FILESDIR}"/${PN}-3.17.7-gdk-add-gdk-touchpad-gesture-mask-to-gdkeventmask.patch
-	eapply "${FILESDIR}"/${PN}-3.17.7-gdk-proxy-touchpad-events-through-the-client-side-window-hierarchy.patch
-	eapply "${FILESDIR}"/${PN}-3.18.6-document-gdk-touchpad-gesture-mask.patch
+	if ! use vanilla-touchpad; then
+		eapply "${FILESDIR}"/${PN}-3.17.7-gdk-add-touchpad-gesture-events-and-event-types.patch
+		eapply "${FILESDIR}"/${PN}-3.17.7-gdk-add-gdk-touchpad-gesture-mask-to-gdkeventmask.patch
+		eapply "${FILESDIR}"/${PN}-3.17.7-gdk-proxy-touchpad-events-through-the-client-side-window-hierarchy.patch
+		eapply "${FILESDIR}"/${PN}-3.18.6-document-gdk-touchpad-gesture-mask.patch
+	fi
 
 	# From Ubuntu:
 	# 	https://askubuntu.com/questions/325518/how-can-i-edit-nautilus-places-sidebar-and-unity-quicklist
