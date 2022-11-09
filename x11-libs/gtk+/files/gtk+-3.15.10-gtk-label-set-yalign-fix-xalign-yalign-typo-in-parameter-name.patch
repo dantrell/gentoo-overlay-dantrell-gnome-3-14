@@ -1,0 +1,26 @@
+From 66d25c4a060458001d4725aceb39a0a1a12db39a Mon Sep 17 00:00:00 2001
+From: Murray Cumming <murrayc@murrayc.com>
+Date: Mon, 2 Mar 2015 10:58:23 +0100
+Subject: [PATCH] gtk_label_set_yalign(): Fix xalign/yalign typo in parameter
+ name.
+
+---
+ gtk/gtklabel.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/gtk/gtklabel.h b/gtk/gtklabel.h
+index 7cadc115bd..424c8f3d71 100644
+--- a/gtk/gtklabel.h
++++ b/gtk/gtklabel.h
+@@ -222,7 +222,7 @@ gfloat       gtk_label_get_xalign (GtkLabel *label);
+ 
+ GDK_AVAILABLE_IN_3_16
+ void         gtk_label_set_yalign (GtkLabel *label,
+-                                   gfloat    xalign);
++                                   gfloat    yalign);
+ 
+ GDK_AVAILABLE_IN_3_16
+ gfloat       gtk_label_get_yalign (GtkLabel *label);
+-- 
+GitLab
+

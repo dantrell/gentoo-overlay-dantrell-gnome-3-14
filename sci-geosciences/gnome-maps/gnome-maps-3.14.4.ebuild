@@ -19,7 +19,7 @@ COMMON_DEPEND="
 	>=dev-libs/gobject-introspection-0.10.1:=
 	>=dev-libs/glib-2.39.3:2
 	media-libs/libchamplain:0.12[gtk,introspection]
-	sci-geosciences/geocode-glib[introspection]
+	sci-geosciences/geocode-glib:0[introspection]
 	>=x11-libs/gtk+-3.10:3[introspection]
 "
 # Found by grepping imports.gi in ${S}

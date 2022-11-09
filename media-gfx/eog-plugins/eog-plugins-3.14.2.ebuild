@@ -1,13 +1,12 @@
 # Distributed under the terms of the GNU General Public License v2
 
-EAPI="6"
-GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{3_8,3_9,3_10} )
+EAPI="7"
+PYTHON_COMPAT=( python{3_8,3_9,3_10,3_11} )
 
 inherit gnome2 python-single-r1
 
 DESCRIPTION="Eye of GNOME plugins"
-HOMEPAGE="https://wiki.gnome.org/Apps/EyeOfGnome/Plugins"
+HOMEPAGE="https://wiki.gnome.org/Apps/EyeOfGnome/Plugins https://gitlab.gnome.org/GNOME/eog-plugins"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -43,7 +42,8 @@ RDEPEND="
 		x11-libs/gtk+:3[introspection]
 		x11-libs/pango[introspection] )
 "
-DEPEND="${RDEPEND}
+DEPEND="${RDEPEND}"
+BDEPEND="
 	>=dev-util/intltool-0.50.1
 	sys-devel/gettext
 	virtual/pkgconfig
@@ -63,4 +63,15 @@ src_configure() {
 	gnome2_src_configure \
 		$(use_enable python) \
 		--with-plugins=${plugins}
+}
+
+src_install() {
+	default
+
+	# From AppStream (the /usr/share/appdata location is deprecated):
+	# 	https://www.freedesktop.org/software/appstream/docs/chap-Metadata.html#spec-component-location
+	# 	https://bugs.gentoo.org/709450
+	mv "${ED}"/usr/share/{appdata,metainfo} || die
+
+	find "${ED}" -type f -name "*.la" -delete || die
 }

@@ -11,7 +11,7 @@ LICENSE="GPL-2+ LGPL-2.1+ FDL-1.1+"
 SLOT="0/6" # subslot = suffix of libgdict-1.0.so
 KEYWORDS="*"
 
-IUSE="debug ipv6"
+IUSE="debug"
 
 COMMON_DEPEND="
 	>=dev-libs/glib-2.39:2[dbus]
@@ -35,5 +35,5 @@ DEPEND="${COMMON_DEPEND}
 src_configure() {
 	gnome2_src_configure \
 		$(usex debug --enable-debug=yes ' ') \
-		$(use_enable ipv6)
+		--enable-ipv6
 }
