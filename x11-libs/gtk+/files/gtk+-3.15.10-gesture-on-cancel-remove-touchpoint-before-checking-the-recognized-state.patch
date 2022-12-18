@@ -1,0 +1,29 @@
+From 2e52e9964b5c0d463791b26bc0c17a162ea78495 Mon Sep 17 00:00:00 2001
+From: Carlos Garnacho <carlosg@gnome.org>
+Date: Wed, 25 Feb 2015 20:30:11 +0100
+Subject: gesture: On cancel, remove touchpoint before checking the recognized
+ state
+
+Otherwise the touch being removed doesn't account in recognition.
+---
+ gtk/gtkgesture.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/gtk/gtkgesture.c b/gtk/gtkgesture.c
+index cfdd3d0699..826b741ab1 100644
+--- a/gtk/gtkgesture.c
++++ b/gtk/gtkgesture.c
+@@ -1373,8 +1373,9 @@ _gtk_gesture_cancel_sequence (GtkGesture       *gesture,
+     return FALSE;
+ 
+   g_signal_emit (gesture, signals[CANCEL], 0, sequence);
+-  _gtk_gesture_check_recognized (gesture, sequence);
+   _gtk_gesture_remove_point (gesture, data->event);
++  _gtk_gesture_check_recognized (gesture, sequence);
++
+   return TRUE;
+ }
+ 
+-- 
+cgit v1.2.3
+
