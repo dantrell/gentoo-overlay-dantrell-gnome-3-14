@@ -1,0 +1,33 @@
+From c3ac05946428d1f11ee38c6c62e0a79caa9cadf7 Mon Sep 17 00:00:00 2001
+From: Emmanuele Bassi <ebassi@gnome.org>
+Date: Mon, 5 Oct 2015 12:04:55 +0100
+Subject: [PATCH] st: Remove wrong indentation
+
+GObject-Introspection started warning for wrong annotations, and
+StGenericAccessible::set-current-value has a return value annotation
+even if it returns nothing. This generates the warning:
+
+src/st/st-generic-accessible.c:146: Warning: St:
+StGenericAccessible::set-current-value: invalid return annotation
+
+Which, coupled with fatal warnings, breaks the Shell build.
+---
+ src/st/st-generic-accessible.c | 2 --
+ 1 file changed, 2 deletions(-)
+
+diff --git a/src/st/st-generic-accessible.c b/src/st/st-generic-accessible.c
+index e9b930269d..982e81433b 100644
+--- a/src/st/st-generic-accessible.c
++++ b/src/st/st-generic-accessible.c
+@@ -144,8 +144,6 @@ st_generic_accessible_class_init (StGenericAccessibleClass *klass)
+    * Emitted when atk_value_set_current_value() is called on
+    * @self. Right now we only care about doubles, so the value is
+    * directly returned by the signal.
+-   *
+-   * Return value: value of the current element.
+    */
+   st_generic_accessible_signals[SET_CURRENT_VALUE] =
+     g_signal_new ("set-current-value",
+-- 
+GitLab
+

@@ -173,6 +173,10 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-3.14.0-bluetooth-gold.patch
 
 	# From GNOME:
+	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/c3ac05946428d1f11ee38c6c62e0a79caa9cadf7
+	eapply "${FILESDIR}"/${PN}-3.16.4-st-remove-wrong-indentation.patch
+
+	# From GNOME:
 	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/3033506f2c266115a00ff43daaad14e59e3215c5
 	# 	https://gitlab.gnome.org/GNOME/gnome-shell/commit/9c41736a813354fd9291177b12f6c4f85bd1c5f7
 	eapply "${FILESDIR}"/${PN}-3.18.5-dnd-nullify-dragactor-after-weve-destroyed-it-and-avoid-invalid-access.patch
