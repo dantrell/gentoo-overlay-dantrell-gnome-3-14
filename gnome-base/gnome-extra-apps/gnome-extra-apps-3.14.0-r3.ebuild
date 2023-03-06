@@ -9,7 +9,7 @@ LICENSE="metapackage"
 SLOT="3.0"
 KEYWORDS="*"
 
-IUSE="anjuta +bijiben boxes california empathy epiphany +evolution flashback +fonts +games geary gnote latexila +share +shotwell simple-scan +tracker"
+IUSE="anjuta +bijiben boxes california empathy epiphany +evolution flashback +fonts +games gconf geary +ghex gnote gpaste latexila +polari +share +shotwell simple-scan software +tracker"
 
 # Cantarell doesn't provide support for modern emojis so we pair it with Noto,.Symbola, and Unifont:
 #
@@ -20,7 +20,6 @@ RDEPEND="
 	>=app-admin/gnome-system-log-20170809
 	>=app-arch/file-roller-${PV}
 	>=app-dicts/gnome-dictionary-${PV}
-	>=gnome-extra/gconf-editor-3
 	>=gnome-extra/gnome-calculator-${PV}
 	>=gnome-extra/gnome-clocks-${PV}
 	>=gnome-extra/gnome-getting-started-docs-${PV}
@@ -74,12 +73,17 @@ RDEPEND="
 		>=games-puzzle/lightsoff-${PV}
 		>=games-puzzle/quadrapassel-${PV}
 		>=games-puzzle/swell-foop-${PV} )
+	gconf? ( >=gnome-extra/gconf-editor-3 )
 	geary? ( >=mail-client/geary-0.12.4 )
+	ghex? ( >=app-editors/ghex-3.18.4 )
 	gnote? ( >=app-misc/gnote-${PV} )
+	gpaste? ( >=x11-misc/gpaste-${PV} )
 	latexila? ( >=app-editors/latexila-${PV} )
+	polari? ( >=net-irc/polari-${PV} )
 	share? ( >=gnome-extra/gnome-user-share-${PV} )
 	shotwell? ( >=media-gfx/shotwell-0.24 )
 	simple-scan? ( >=media-gfx/simple-scan-${PV} )
+	software? ( >=gnome-extra/gnome-software-${PV} )
 	tracker? (
 		>=app-misc/tracker-1.2:0=
 		>=gnome-extra/gnome-documents-${PV}
