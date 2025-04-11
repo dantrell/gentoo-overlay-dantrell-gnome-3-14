@@ -3,7 +3,7 @@
 EAPI="6"
 GNOME2_LA_PUNT="yes"
 
-inherit autotools gnome2 pam readme.gentoo-r1 systemd
+inherit autotools flag-o-matic gnome2 gnome2 pam readme.gentoo-r1 systemd
 
 DESCRIPTION="GNOME Display Manager for managing graphical display servers and user logins"
 HOMEPAGE="https://wiki.gnome.org/Projects/GDM"
@@ -141,6 +141,9 @@ src_prepare() {
 }
 
 src_configure() {
+	append-cppflags -I"${EPREFIX}"/usr/include/glib-2.0
+	append-cppflags -I"${EPREFIX}"/usr/lib64/glib-2.0/include
+
 	local myconf=()
 
 	# PAM is the only auth scheme supported

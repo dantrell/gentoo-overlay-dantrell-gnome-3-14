@@ -25,7 +25,7 @@ RDEPEND="
 	introspection? ( >=dev-libs/gobject-introspection-0.6.3:= )
 "
 DEPEND="${RDEPEND}
-	>=dev-util/gtk-doc-am-1.13
+	>=dev-build/gtk-doc-am-1.13
 	>=sys-devel/gettext-0.18
 	virtual/pkgconfig
 	test? ( sys-apps/dbus )
@@ -36,12 +36,12 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/7043600c142eeac178c604f6c40866b1a91230ff
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/eb7f87af516f864c89ed83d8236862f3f38f87e4
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/7a6e9ffbb3f54fa8dc8944056ebf3b5c9b1db1d0
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/005075f6a28c18f5196ba60ff07b888776af6dfc
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/f0f85d8d01c64c61dfef3d00af5b9e629e336213
-	# 	https://gitlab.gnome.org/GNOME/geocode-glib/commit/3ce317a218c255b8a8025f8f2a6010ce500dc0ee
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/7043600c142eeac178c604f6c40866b1a91230ff
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/eb7f87af516f864c89ed83d8236862f3f38f87e4
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/7a6e9ffbb3f54fa8dc8944056ebf3b5c9b1db1d0
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/005075f6a28c18f5196ba60ff07b888776af6dfc
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/f0f85d8d01c64c61dfef3d00af5b9e629e336213
+	# 	https://gitlab.gnome.org/GNOME/geocode-glib/-/commit/3ce317a218c255b8a8025f8f2a6010ce500dc0ee
 	"${FILESDIR}"/${PN}-3.15.3.1-forward-reverse-use-https-and-fix-the-cache.patch
 	"${FILESDIR}"/${PN}-3.15.4-derive-street-address-format-from-locale.patch
 	"${FILESDIR}"/${PN}-3.15.4-test-gcglib-add-test-of-address-format.patch

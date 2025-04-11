@@ -1,0 +1,153 @@
+diff '--exclude=.git' -urN a/gi/gobjectmodule.c b/gi/gobjectmodule.c
+--- a/gi/gobjectmodule.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/gobjectmodule.c	2024-02-16 14:28:56.801170685 -0600
+@@ -1557,7 +1557,7 @@
+     PyGObject_MetaType = metaclass;
+     Py_INCREF(metaclass);
+ 
+-    Py_TYPE(&PyGObject_Type) = metaclass;
++    Py_SET_TYPE(&PyGObject_Type, metaclass);
+ 
+     Py_INCREF(Py_None);
+     return Py_None;
+diff '--exclude=.git' -urN a/gi/pygboxed.c b/gi/pygboxed.c
+--- a/gi/pygboxed.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygboxed.c	2024-02-16 14:29:04.968094365 -0600
+@@ -138,7 +138,7 @@
+ 
+     if (!type->tp_dealloc)  type->tp_dealloc  = (destructor)pyg_boxed_dealloc;
+ 
+-    Py_TYPE(type) = &PyType_Type;
++    Py_SET_TYPE(type, &PyType_Type);
+     type->tp_base = &PyGBoxed_Type;
+ 
+     if (PyType_Ready(type) < 0) {
+diff '--exclude=.git' -urN a/gi/pygi-boxed.c b/gi/pygi-boxed.c
+--- a/gi/pygi-boxed.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygi-boxed.c	2024-02-16 14:29:11.370034541 -0600
+@@ -239,7 +239,7 @@
+ void
+ _pygi_boxed_register_types (PyObject *m)
+ {
+-    Py_TYPE(&PyGIBoxed_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGIBoxed_Type, &PyType_Type);
+     PyGIBoxed_Type.tp_base = &PyGBoxed_Type;
+     PyGIBoxed_Type.tp_new = (newfunc) _boxed_new;
+     PyGIBoxed_Type.tp_init = (initproc) _boxed_init;
+diff '--exclude=.git' -urN a/gi/pygi-ccallback.c b/gi/pygi-ccallback.c
+--- a/gi/pygi-ccallback.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygi-ccallback.c	2024-02-16 14:30:10.011486481 -0600
+@@ -89,7 +89,7 @@
+ void
+ _pygi_ccallback_register_types (PyObject *m)
+ {
+-    Py_TYPE(&PyGICCallback_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGICCallback_Type, &PyType_Type);
+     PyGICCallback_Type.tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE);
+     PyGICCallback_Type.tp_dealloc = (destructor) _ccallback_dealloc;
+     PyGICCallback_Type.tp_call = (ternaryfunc) _ccallback_call;
+diff '--exclude=.git' -urN a/gi/pygi-info.c b/gi/pygi-info.c
+--- a/gi/pygi-info.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygi-info.c	2024-02-16 14:33:41.111512334 -0600
+@@ -2205,7 +2205,7 @@
+ _pygi_info_register_types (PyObject *m)
+ {
+ #define _PyGI_REGISTER_TYPE(m, type, cname, base) \
+-    Py_TYPE(&type) = &PyType_Type; \
++    Py_SET_TYPE(&type, &PyType_Type); \
+     type.tp_flags = (Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE); \
+     type.tp_weaklistoffset = offsetof(PyGIBaseInfo, inst_weakreflist); \
+     type.tp_methods = _PyGI##cname##_methods; \
+@@ -2215,7 +2215,7 @@
+     if (PyModule_AddObject(m, #cname, (PyObject *)&type)) \
+         return
+ 
+-    Py_TYPE(&PyGIBaseInfo_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGIBaseInfo_Type, &PyType_Type);
+ 
+     PyGIBaseInfo_Type.tp_dealloc = (destructor) _base_info_dealloc;
+     PyGIBaseInfo_Type.tp_repr = (reprfunc) _base_info_repr;
+diff '--exclude=.git' -urN a/gi/pygi-repository.c b/gi/pygi-repository.c
+--- a/gi/pygi-repository.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygi-repository.c	2024-02-16 14:30:10.013486463 -0600
+@@ -282,7 +282,7 @@
+ void
+ _pygi_repository_register_types (PyObject *m)
+ {
+-    Py_TYPE(&PyGIRepository_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGIRepository_Type, &PyType_Type);
+ 
+     PyGIRepository_Type.tp_flags = Py_TPFLAGS_DEFAULT;
+     PyGIRepository_Type.tp_methods = _PyGIRepository_methods;
+diff '--exclude=.git' -urN a/gi/pygi-struct.c b/gi/pygi-struct.c
+--- a/gi/pygi-struct.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygi-struct.c	2024-02-16 14:30:10.013486463 -0600
+@@ -162,7 +162,7 @@
+ void
+ _pygi_struct_register_types (PyObject *m)
+ {
+-    Py_TYPE(&PyGIStruct_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGIStruct_Type, &PyType_Type);
+     PyGIStruct_Type.tp_base = &PyGPointer_Type;
+     PyGIStruct_Type.tp_new = (newfunc) _struct_new;
+     PyGIStruct_Type.tp_init = (initproc) _struct_init;
+diff '--exclude=.git' -urN a/gi/pyginterface.c b/gi/pyginterface.c
+--- a/gi/pyginterface.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pyginterface.c	2024-02-16 14:30:10.013486463 -0600
+@@ -70,7 +70,7 @@
+ {
+     PyObject *o;
+ 
+-    Py_TYPE(type) = &PyType_Type;
++    Py_SET_TYPE(type, &PyType_Type);
+     type->tp_base = &PyGInterface_Type;
+ 
+     if (PyType_Ready(type) < 0) {
+diff '--exclude=.git' -urN a/gi/pygobject.c b/gi/pygobject.c
+--- a/gi/pygobject.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygobject.c	2024-02-16 14:30:10.022486378 -0600
+@@ -533,7 +533,7 @@
+     } else
+         bases = runtime_bases;
+ 
+-    Py_TYPE(type) = PyGObject_MetaType;
++    Py_SET_TYPE(type, PyGObject_MetaType);
+     type->tp_bases = bases;
+     if (G_LIKELY(bases)) {
+         type->tp_base = (PyTypeObject *)PyTuple_GetItem(bases, 0);
+diff '--exclude=.git' -urN a/gi/pygparamspec.c b/gi/pygparamspec.c
+--- a/gi/pygparamspec.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygparamspec.c	2024-02-16 14:30:10.023486369 -0600
+@@ -400,7 +400,7 @@
+ void
+ pygobject_paramspec_register_types(PyObject *d)
+ {
+-    Py_TYPE(&PyGParamSpec_Type) = &PyType_Type;
++    Py_SET_TYPE(&PyGParamSpec_Type, &PyType_Type);
+     PyGParamSpec_Type.tp_dealloc = (destructor)pyg_param_spec_dealloc;
+     PyGParamSpec_Type.tp_getattr = (getattrfunc)pyg_param_spec_getattr;
+     PyGParamSpec_Type.tp_richcompare = pyg_param_spec_richcompare;
+diff '--exclude=.git' -urN a/gi/pygpointer.c b/gi/pygpointer.c
+--- a/gi/pygpointer.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygpointer.c	2024-02-16 14:30:10.023486369 -0600
+@@ -115,7 +115,7 @@
+ 
+     if (!type->tp_dealloc) type->tp_dealloc = (destructor)pyg_pointer_dealloc;
+ 
+-    Py_TYPE(type) = &PyType_Type;
++    Py_SET_TYPE(type, &PyType_Type);
+     type->tp_base = &PyGPointer_Type;
+ 
+     if (PyType_Ready(type) < 0) {
+diff '--exclude=.git' -urN a/gi/pygtype.c b/gi/pygtype.c
+--- a/gi/pygtype.c	2014-09-10 17:10:32.000000000 -0500
++++ b/gi/pygtype.c	2024-02-16 14:30:10.023486369 -0600
+@@ -1124,7 +1124,7 @@
+     static PyObject *doc_descr = NULL;
+ 
+     if (!doc_descr) {
+-	Py_TYPE(&PyGObjectDoc_Type) = &PyType_Type;
++	Py_SET_TYPE(&PyGObjectDoc_Type, &PyType_Type);
+ 	if (PyType_Ready(&PyGObjectDoc_Type))
+ 	    return NULL;
+ 

@@ -86,7 +86,7 @@ src_prepare() {
 
 	# From GNOME:
 	# 	https://bugzilla.gnome.org/show_bug.cgi?id=731173
-	# 	https://gitlab.gnome.org/GNOME/gnome-session/commit/d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
+	# 	https://gitlab.gnome.org/GNOME/gnome-session/-/commit/d44fe3181c82f4739fc37b745f6f0ac7b6f36efa
 	eapply "${FILESDIR}"/${PN}-3.15.3-add-new-commandline-option-disable-acceleration-check.patch
 
 	eautoreconf

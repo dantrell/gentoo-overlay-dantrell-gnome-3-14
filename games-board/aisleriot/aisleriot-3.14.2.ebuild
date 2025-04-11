@@ -26,7 +26,7 @@ COMMON_DEPEND="
 	)
 	gconf? ( >=gnome-base/gconf-2.0:2 )
 	sound? ( >=media-libs/libcanberra-0.26[gtk3] )
-	valgrind? ( dev-util/valgrind )
+	valgrind? ( dev-debug/valgrind )
 "
 DEPEND="${COMMON_DEPEND}
 	app-arch/gzip

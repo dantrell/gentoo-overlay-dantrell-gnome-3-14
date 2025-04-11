@@ -55,7 +55,7 @@ src_prepare() {
 	fi
 
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/gnome-contacts/commit/207bc1198e3a23ca12af51638781bfd0b50fae6f
+	# 	https://gitlab.gnome.org/GNOME/gnome-contacts/-/commit/207bc1198e3a23ca12af51638781bfd0b50fae6f
 	eapply "${FILESDIR}"/${PN}-3.15.90-contacts-types-avoid-ambiguous-liststore.patch
 
 	vala_src_prepare

@@ -1,0 +1,12 @@
+diff '--exclude=.git' -urN a/src/nautilus-application.c b/src/nautilus-application.c
+--- a/src/nautilus-application.c	2015-06-16 14:58:56.000000000 -0500
++++ b/src/nautilus-application.c	2024-02-12 12:35:45.603491911 -0600
+@@ -70,6 +70,8 @@
+ #include <gdk/gdkx.h>
+ #include <gtk/gtk.h>
+ 
++#include <stdlib.h>
++
+ #define NAUTILUS_ACCEL_MAP_SAVE_DELAY 30
+ 
+ /* The saving of the accelerator map was requested  */

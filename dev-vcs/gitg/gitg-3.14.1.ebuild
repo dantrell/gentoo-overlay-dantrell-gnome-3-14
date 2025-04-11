@@ -2,7 +2,7 @@
 
 EAPI="6"
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{3_9,3_10,3_11} )
+PYTHON_COMPAT=( python{3_10,3_11,3_12,3_13} )
 
 inherit autotools gnome2 pax-utils python-r1 vala
 
@@ -53,8 +53,8 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/gitg/commit/a1f43c1c985e48b8c8ca941e3d1c8d1dcc19122a
-	# 	https://gitlab.gnome.org/GNOME/gitg/commit/84eee97117fc358544095541d5a54eca7639bb0f
+	# 	https://gitlab.gnome.org/GNOME/gitg/-/commit/a1f43c1c985e48b8c8ca941e3d1c8d1dcc19122a
+	# 	https://gitlab.gnome.org/GNOME/gitg/-/commit/84eee97117fc358544095541d5a54eca7639bb0f
 	"${FILESDIR}"/${PN}-3.14.1-libgit2-glib-0.22.0.patch
 	"${FILESDIR}"/${PN}-3.14.1-unambiguate-references-to-assert-no-error.patch
 )

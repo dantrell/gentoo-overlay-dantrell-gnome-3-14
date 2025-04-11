@@ -11,7 +11,7 @@ HOMEPAGE="https://wiki.gnome.org/Apps/Gnote"
 BOOST_M4_COMMIT=32553aaf4d5090da19aa0ec33b936982c685009f
 SRC_URI="${SRC_URI}
 	https://github.com/tsuna/boost.m4/archive/${BOOST_M4_COMMIT}.zip -> boost.m4-${BOOST_M4_COMMIT}.zip"
-# Use sys-devel/boost-m4 when it's bumped, bug #549618
+# Use dev-build/boost-m4 when it's bumped, bug #549618
 
 LICENSE="GPL-3+ FDL-1.1"
 SLOT="0"

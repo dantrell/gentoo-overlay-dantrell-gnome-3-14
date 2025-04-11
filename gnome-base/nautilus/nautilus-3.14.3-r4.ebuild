@@ -3,7 +3,7 @@
 EAPI="6"
 GNOME2_LA_PUNT="yes" # Needed with USE 'sendto'
 
-inherit gnome2 readme.gentoo-r1 versionator virtualx
+inherit flag-o-matic gnome2 readme.gentoo-r1 versionator virtualx
 
 DESCRIPTION="A file manager for the GNOME desktop"
 HOMEPAGE="https://wiki.gnome.org/Apps/Nautilus"
@@ -44,7 +44,7 @@ COMMON_DEPEND="
 DEPEND="${COMMON_DEPEND}
 	>=dev-lang/perl-5
 	>=dev-util/gdbus-codegen-2.33
-	>=dev-util/gtk-doc-am-1.4
+	>=dev-build/gtk-doc-am-1.4
 	>=dev-util/intltool-0.40.1
 	sys-devel/gettext
 	virtual/pkgconfig
@@ -56,7 +56,7 @@ RDEPEND="${COMMON_DEPEND}
 
 # For eautoreconf
 #	gnome-base/gnome-common
-#	dev-util/gtk-doc-am"
+#	dev-build/gtk-doc-am"
 
 PDEPEND="
 	gnome? ( x11-themes/adwaita-icon-theme )
@@ -89,18 +89,22 @@ src_prepare() {
 	eapply "${FILESDIR}"/${PN}-3.5.91-delete.patch
 
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/a0cbf72827b87a28fba47988957001a8b4fbddf5
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/45413c18167cddaefefc092b63ec75d8fadc6f50
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/bfe878e4313e21b4c539d95a88d243065d30fc2c
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/079d349206c2dd182df82e4b26e3e23c9b7a75c4
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/618f6a6d1965b35e302b2623cbd7e4e81e752ded
-	# 	https://gitlab.gnome.org/GNOME/nautilus/commit/e96f73cf1589c023ade74e4aeb16a0c422790161
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/a0cbf72827b87a28fba47988957001a8b4fbddf5
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/45413c18167cddaefefc092b63ec75d8fadc6f50
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/bfe878e4313e21b4c539d95a88d243065d30fc2c
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/079d349206c2dd182df82e4b26e3e23c9b7a75c4
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/618f6a6d1965b35e302b2623cbd7e4e81e752ded
+	# 	https://gitlab.gnome.org/GNOME/nautilus/-/commit/e96f73cf1589c023ade74e4aeb16a0c422790161
 	eapply "${FILESDIR}"/${PN}-3.14.3-window-menus-unref-extension-created-action.patch
 	eapply "${FILESDIR}"/${PN}-3.14.3-application-actions-use-valid-window-list.patch
 	eapply "${FILESDIR}"/${PN}-3.17.3-ignore-no-desktop-if-not-first-launch.patch
 	eapply "${FILESDIR}"/${PN}-3.18.5-thumbnails-avoid-crash-with-jp2-images.patch
 	eapply "${FILESDIR}"/${PN}-3.19.91-files-view-hide-hidden-files-when-renamed.patch
 	eapply "${FILESDIR}"/${PN}-3.20.2-do-not-reset-double-click-status-on-pointer-movement.patch
+
+	# From GCC:
+	# 	https://gcc.gnu.org/gcc-12/porting_to.html
+	eapply "${FILESDIR}"/${PN}-3.14.3-gcc-13.patch
 
 	# Remove -D*DEPRECATED flags. Don't leave this for eclass! (bug #448822)
 	sed -e 's/DISABLE_DEPRECATED_CFLAGS=.*/DISABLE_DEPRECATED_CFLAGS=/' \
@@ -110,6 +114,10 @@ src_prepare() {
 }
 
 src_configure() {
+	append-cppflags -I"${EPREFIX}"/usr/include/libxml2
+	append-cppflags -I"${EPREFIX}"/usr/include/gail-3.0
+	append-cppflags -I"${EPREFIX}"/usr/include/gnome-desktop-3.0
+
 	gnome2_src_configure \
 		--disable-profiling \
 		--disable-update-mimedb \

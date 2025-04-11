@@ -2,9 +2,9 @@
 
 EAPI="6"
 GNOME2_LA_PUNT="yes"
-PYTHON_COMPAT=( python{3_9,3_10,3_11} )
+PYTHON_COMPAT=( python{3_10,3_11,3_12,3_13} )
 
-inherit gnome2 multilib-minimal python-any-r1
+inherit flag-o-matic gnome2 multilib-minimal python-any-r1
 
 DESCRIPTION="HTTP client/server library for GNOME"
 HOMEPAGE="https://wiki.gnome.org/Projects/libsoup"
@@ -28,7 +28,7 @@ RDEPEND="
 "
 DEPEND="${RDEPEND}
 	${PYTHON_DEPS}
-	>=dev-util/gtk-doc-am-1.10
+	>=dev-build/gtk-doc-am-1.10
 	>=dev-util/intltool-0.35
 	sys-devel/gettext
 	virtual/pkgconfig
@@ -43,8 +43,12 @@ DEPEND="${RDEPEND}
 
 PATCHES=(
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/libsoup/commit/03c91c76daf70ee227f38304c5e45a155f45073d
+	# 	https://gitlab.gnome.org/GNOME/libsoup/-/commit/03c91c76daf70ee227f38304c5e45a155f45073d
 	"${FILESDIR}"/${PN}-2.59.90.1-libsoup-fix-chunked-decoding-buffer-overrun-cve-2017-2885.patch
+
+	# From GCC:
+	# 	https://gcc.gnu.org/gcc-13/porting_to.html
+	"${FILESDIR}"/${PN}-2.48.1-gcc-13.patch
 )
 
 src_prepare() {
@@ -62,6 +66,12 @@ src_prepare() {
 }
 
 src_configure() {
+	# Code is not C++17 ready (GCC 11 default)
+	append-cxxflags -std=c++14
+
+	# Work around -fno-common (GCC 10 default)
+	#~append-flags -fcommon
+
 	# FIXME: we need addpredict to workaround bug #324779 until
 	# root cause (bug #249496) is solved
 	addpredict /usr/share/snmp/mibs/.index

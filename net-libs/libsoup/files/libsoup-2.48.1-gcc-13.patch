@@ -1,0 +1,11 @@
+diff '--exclude=.git' -urN a/libsoup/soup-xmlrpc.c b/libsoup/soup-xmlrpc.c
+--- a/libsoup/soup-xmlrpc.c	2014-12-07 05:27:04.000000000 -0600
++++ b/libsoup/soup-xmlrpc.c	2024-02-10 17:44:57.770962421 -0600
+@@ -10,6 +10,7 @@
+ #endif
+ 
+ #include <string.h>
++#include <stdlib.h>
+ 
+ #include <libxml/tree.h>
+ 

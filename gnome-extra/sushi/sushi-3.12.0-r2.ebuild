@@ -46,12 +46,12 @@ RDEPEND="${COMMON_DEPEND}
 
 src_prepare() {
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/f4b6c1c5ca62d82ad139066a09da3da4922fd65e
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/f63ee725482eb6527b43707a2b4c0ab77990eab1
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/6a77fa85b07059835713a469aa23629b5b5529d0
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/49d625b7ee38b395c2d493430d6aa2d2c81fd7c5
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/27c0c4def6311606e3b1ba6bdc4320fa6a3cb368
-	# 	https://gitlab.gnome.org/GNOME/sushi/commit/f814446e9032d64f34f2b02e4f8b899db31688e6
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/f4b6c1c5ca62d82ad139066a09da3da4922fd65e
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/f63ee725482eb6527b43707a2b4c0ab77990eab1
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/6a77fa85b07059835713a469aa23629b5b5529d0
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/49d625b7ee38b395c2d493430d6aa2d2c81fd7c5
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/27c0c4def6311606e3b1ba6bdc4320fa6a3cb368
+	# 	https://gitlab.gnome.org/GNOME/sushi/-/commit/f814446e9032d64f34f2b02e4f8b899db31688e6
 	eapply "${FILESDIR}"/${PN}-3.15.90-build-require-gtk-3-13-2.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-evince-viewer-fix-the-icons-in-rtl.patch
 	eapply "${FILESDIR}"/${PN}-3.15.90-audio-fix-the-icons-in-rtl.patch

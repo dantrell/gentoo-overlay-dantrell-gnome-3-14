@@ -1,0 +1,36 @@
+From 2c1f2fce402d98ad2670c4ccd72fd26a4d2a311d Mon Sep 17 00:00:00 2001
+From: Colin Walters <walters@verbum.org>
+Date: Sun, 27 Sep 2015 16:42:01 -0400
+Subject: [PATCH] window: Remove invalid (transfer) annnotations
+
+This tripped a new g-i warning; see
+https://bugzilla.gnome.org/show_bug.cgi?id=752047
+---
+ src/core/window.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/window.c b/src/core/window.c
+index b69d296fc2a..f7f4a01a86b 100644
+--- a/src/core/window.c
++++ b/src/core/window.c
+@@ -6400,7 +6400,7 @@ find_ancestor_func (MetaWindow *window,
+  * so by traversing the @transient's ancestors until it either locates @window
+  * or reaches an ancestor that is not transient.
+  *
+- * Return Value: (transfer none): %TRUE if window is an ancestor of transient.
++ * Return Value: %TRUE if window is an ancestor of transient.
+  */
+ gboolean
+ meta_window_is_ancestor_of_transient (MetaWindow *window,
+@@ -7138,7 +7138,7 @@ meta_window_get_transient_for (MetaWindow *window)
+  * Returns pid of the process that created this window, if known (obtained from
+  * the _NET_WM_PID property).
+  *
+- * Return value: (transfer none): the pid, or -1 if not known.
++ * Return value: the pid, or -1 if not known.
+  */
+ int
+ meta_window_get_pid (MetaWindow *window)
+-- 
+GitLab
+

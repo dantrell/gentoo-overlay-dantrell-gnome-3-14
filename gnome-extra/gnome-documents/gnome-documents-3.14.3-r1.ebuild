@@ -48,9 +48,9 @@ DEPEND="${COMMON_DEPEND}
 
 src_prepare() {
 	# From GNOME:
-	# 	https://gitlab.gnome.org/GNOME/gnome-documents/commit/7d3af4e4a3452a8ed8e7b3f42216b3460321ec93
-	# 	https://gitlab.gnome.org/GNOME/gnome-documents/commit/9fd8bfaf78b9c1bcc4cb7e9ad75e1708f6727198
-	# 	https://gitlab.gnome.org/GNOME/gnome-documents/commit/103595481ef7135b172965c4c3e7e27cc735b5f6
+	# 	https://gitlab.gnome.org/GNOME/gnome-documents/-/commit/7d3af4e4a3452a8ed8e7b3f42216b3460321ec93
+	# 	https://gitlab.gnome.org/GNOME/gnome-documents/-/commit/9fd8bfaf78b9c1bcc4cb7e9ad75e1708f6727198
+	# 	https://gitlab.gnome.org/GNOME/gnome-documents/-/commit/103595481ef7135b172965c4c3e7e27cc735b5f6
 	eapply "${FILESDIR}"/${PN}-3.15.2-port-to-webkit2.patch
 	eapply "${FILESDIR}"/${PN}-3.15.2-edit-dont-use-undeclared-variables.patch
 	eapply "${FILESDIR}"/${PN}-3.16.2-edit-prevent-webkit2-from-blowing-away-our-cache.patch
